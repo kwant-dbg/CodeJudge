@@ -11,3 +11,4 @@ WORKDIR /app
 COPY --from=builder /app/problems_service .
 EXPOSE 8000
 CMD ["./problems_service"]
+

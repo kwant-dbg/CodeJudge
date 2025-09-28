@@ -11,3 +11,4 @@ WORKDIR /app
 COPY --from=builder /app/submissions_service .
 EXPOSE 8001
 CMD ["./submissions_service"]
+

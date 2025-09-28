@@ -1,9 +1,6 @@
-version: '3.8'
-
 services:
   gateway:
     build: ./api-gateway
-    container_name: api_gateway
     ports:
       - "8080:8080"
     depends_on:
@@ -11,18 +8,8 @@ services:
       - submissions
       - plagiarism
 
-  judge:
-    build: ./judge-service
-    container_name: judge_service
-    volumes:
-      - ./submissions_volume:/app/submissions
-    depends_on:
-      - redis
-      - db
-
   problems:
     build: ./problems-service-go
-    container_name: problems_service_go
     depends_on:
       - db
     environment:
@@ -30,17 +17,18 @@ services:
 
   submissions:
     build: ./submissions-service-go
-    container_name: submissions_service_go
     depends_on:
       - db
       - redis
+    # FIX: Mount the shared volume so it can write files for the judge
+    volumes:
+      - ./submissions_volume:/app/submissions
     environment:
       - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
       - REDIS_URL=redis:6379
 
   plagiarism:
     build: ./plagiarism-service-go
-    container_name: plagiarism_service_go
     depends_on:
       - db
       - redis
@@ -48,13 +36,25 @@ services:
       - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
       - REDIS_URL=redis:6379
 
+  judge:
+    build: ./judge-service
+    depends_on:
+      - redis
+      - db # Add dependency on the database
+    # FIX: Mount the shared volume so it can read submission files
+    volumes:
+        - ./submissions_volume:/app/submissions
+    environment:
+      - REDIS_URL=redis:6379
+      # FIX: Add database URL for the judge to connect
+      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
+
   db:
     image: postgres:14-alpine
-    container_name: postgres_db
     environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=codejudgedb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: codejudgedb
     ports:
       - "5432:5432"
     volumes:
@@ -62,9 +62,11 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: redis_queue
     ports:
       - "6379:6379"
 
 volumes:
   postgres_data:
+  # FIX: Define the shared volume
+  submissions_volume:
+

@@ -7,6 +7,7 @@
 #include <sys/wait.h>
 #include <sys/resource.h>
 #include <hiredis/hiredis.h>
+#include <libpq-fe.h>
 
 void set_limits() {
     struct rlimit time_limit;
@@ -33,89 +34,112 @@ bool compile_code(const std::string& source_path, const std::string& executable_
     return false;
 }
 
-std::string run_code(const std::string& executable_path, const std::string& input_path) {
-    int pipe_fd[2];
-    if (pipe(pipe_fd) == -1) return "RUNTIME_ERROR";
+std::string run_code(const std::string& executable_path, const std::string& input) {
+    int input_pipe[2];
+    int output_pipe[2];
+    if (pipe(input_pipe) == -1 || pipe(output_pipe) == -1) return "JUDGE_ERROR";
 
     pid_t pid = fork();
     if (pid == 0) {
         set_limits();
-        freopen(input_path.c_str(), "r", stdin);
-        dup2(pipe_fd[1], STDOUT_FILENO);
-        close(pipe_fd[0]);
-        close(pipe_fd[1]);
+        
+        dup2(input_pipe[0], STDIN_FILENO);
+        dup2(output_pipe[1], STDOUT_FILENO);
+
+        close(input_pipe[0]);
+        close(input_pipe[1]);
+        close(output_pipe[0]);
+        close(output_pipe[1]);
+        
         execl(executable_path.c_str(), executable_path.c_str(), (char*)NULL);
         exit(127);
     } else if (pid > 0) {
-        close(pipe_fd[1]);
+        close(input_pipe[0]);
+        close(output_pipe[1]);
+
+        write(input_pipe[1], input.c_str(), input.length());
+        close(input_pipe[1]);
+
         std::string output = "";
         char buffer[1024];
         ssize_t count;
-
-        while ((count = read(pipe_fd[0], buffer, sizeof(buffer))) > 0) {
+        while ((count = read(output_pipe[0], buffer, sizeof(buffer))) > 0) {
             output.append(buffer, count);
         }
-        close(pipe_fd[0]);
+        close(output_pipe[0]);
 
         int status;
         waitpid(pid, &status, 0);
 
-        if (WIFEXITED(status) && WEXITSTATUS(status) == 0) return output;
-        if (WIFSIGNALED(status) && WTERMSIG(status) == SIGXCPU) return "TIME_LIMIT_EXCEEDED";
-        
+        if (WIFSIGNALED(status)) {
+            if (WTERMSIG(status) == SIGXCPU) return "TIME_LIMIT_EXCEEDED";
+            return "RUNTIME_ERROR";
+        }
+        if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+             return output;
+        }
         return "RUNTIME_ERROR";
     }
     return "JUDGE_ERROR";
 }
 
-void process_submission(const std::string& submission_id) {
-    std::cout << "Processing submission ID: " << submission_id << std::endl;
 
-    std::string source_code = R"(
-#include <iostream>
-int main() {
-    long long a, b;
-    std::cin >> a >> b;
-    std::cout << a + b << std::endl;
-    return 0;
+void update_verdict(PGconn* db_conn, const std::string& submission_id, const std::string& verdict) {
+    std::string query = "UPDATE submissions SET verdict = $1 WHERE id = $2";
+    const char* paramValues[2] = {verdict.c_str(), submission_id.c_str()};
+    PGresult *res = PQexecParams(db_conn, query.c_str(), 2, NULL, paramValues, NULL, NULL, 0);
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+        fprintf(stderr, "UPDATE failed: %s", PQerrorMessage(db_conn));
+    }
+    PQclear(res);
 }
-    )";
-    std::string test_input = "5 10\n";
-    std::string expected_output = "15\n";
 
+
+void process_submission(const std::string& submission_id, PGconn* db_conn) {
+    std::cout << "Processing submission ID: " << submission_id << std::endl;
+    
     std::string source_path = "/app/submissions/" + submission_id + ".cpp";
-    std::ofstream source_file(source_path);
-    source_file << source_code;
-    source_file.close();
-
-    std::string input_path = "/app/submissions/" + submission_id + "_input.txt";
-    std::ofstream input_file(input_path);
-    input_file << test_input;
-    input_file.close();
-
     std::string executable_path = "/app/submissions/" + submission_id;
+
+    std::string test_input = "5 10\n";
+    std::string expected_output = "15";
+
     if (!compile_code(source_path, executable_path)) {
         std::cout << "Verdict for " << submission_id << ": Compilation Error" << std::endl;
+        update_verdict(db_conn, submission_id, "Compilation Error");
         return;
     }
 
-    std::string user_output = run_code(executable_path, input_path);
+    std::string user_output_str = run_code(executable_path, test_input);
 
-    if (user_output == expected_output) {
-        std::cout << "Verdict for " << submission_id << ": Accepted" << std::endl;
-    } else if (user_output == "TIME_LIMIT_EXCEEDED") {
-        std::cout << "Verdict for " << submission_id << ": Time Limit Exceeded" << std::endl;
+    std::string verdict;
+    if (user_output_str == "TIME_LIMIT_EXCEEDED") {
+        verdict = "Time Limit Exceeded";
+    } else if (user_output_str == "RUNTIME_ERROR" || user_output_str == "JUDGE_ERROR") {
+        verdict = "Runtime Error";
     } else {
-        std::cout << "Verdict for " << submission_id << ": Wrong Answer" << std::endl;
+        size_t end = user_output_str.find_last_not_of(" \n\r\t");
+        std::string trimmed_output = (end == std::string::npos) ? "" : user_output_str.substr(0, end + 1);
+        
+        if (trimmed_output == expected_output) {
+            verdict = "Accepted";
+        } else {
+            verdict = "Wrong Answer";
+        }
     }
 
-    remove(source_path.c_str());
-    remove(input_path.c_str());
+    std::cout << "Verdict for " << submission_id << ": " << verdict << std::endl;
+    update_verdict(db_conn, submission_id, verdict);
+    
     remove(executable_path.c_str());
 }
 
 int main() {
-    redisContext *redis_c = redisConnect("redis", 6379);
+    const char* redis_host = getenv("REDIS_URL");
+    if (redis_host == NULL) {
+        redis_host = "redis";
+    }
+    redisContext *redis_c = redisConnect(redis_host, 6379);
     if (redis_c == NULL || redis_c->err) {
         if (redis_c) {
             std::cerr << "Redis connection error: " << redis_c->errstr << std::endl;
@@ -126,17 +150,33 @@ int main() {
         return 1;
     }
 
+    const char* db_url = getenv("DATABASE_URL");
+    if (db_url == NULL) {
+        std::cerr << "DATABASE_URL not set" << std::endl;
+        return 1;
+    }
+    PGconn *db_conn = PQconnectdb(db_url);
+    if (PQstatus(db_conn) != CONNECTION_OK) {
+        fprintf(stderr, "Connection to database failed: %s\n", PQerrorMessage(db_conn));
+        PQfinish(db_conn);
+        return 1;
+    }
+
     std::cout << "Judge Service Started. Waiting for submissions..." << std::endl;
 
     while (true) {
         redisReply *reply;
         reply = (redisReply*)redisCommand(redis_c, "BLPOP submission_queue 0");
-        if (reply->type == REDIS_REPLY_ARRAY && reply->elements == 2) {
-            process_submission(reply->element[1]->str);
+        if (reply != NULL && reply->type == REDIS_REPLY_ARRAY && reply->elements == 2) {
+            process_submission(reply->element[1]->str, db_conn);
         }
-        freeReplyObject(reply);
+        if (reply != NULL) {
+            freeReplyObject(reply);
+        }
     }
 
     redisFree(redis_c);
+    PQfinish(db_conn);
     return 0;
 }
+

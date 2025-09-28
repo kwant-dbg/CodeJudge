@@ -17,9 +17,9 @@ func newProxy(targetHost string) (*httputil.ReverseProxy, error) {
 }
 
 func main() {
-	problemsProxy, _ := newProxy("http://problems_service_go:8000")
-	submissionsProxy, _ := newProxy("http://submissions_service_go:8001")
-	plagiarismProxy, _ := newProxy("http://plagiarism_service_go:8002")
+	problemsProxy, _ := newProxy("http://problems:8000")
+	submissionsProxy, _ := newProxy("http://submissions:8001")
+	plagiarismProxy, _ := newProxy("http://plagiarism:8002")
 
 	http.HandleFunc("/api/problems/", func(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, "/api")
@@ -30,7 +30,7 @@ func main() {
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, "/api")
 		submissionsProxy.ServeHTTP(w, r)
 	})
-	
+
 	http.HandleFunc("/api/plagiarism/", func(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, "/api")
 		plagiarismProxy.ServeHTTP(w, r)
@@ -41,3 +41,4 @@ func main() {
 		log.Fatal("ListenAndServe: ", err)
 	}
 }
+
