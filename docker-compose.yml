@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  gateway:
+    build: ./api-gateway
+    container_name: api_gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - problems
+      - submissions
+      - plagiarism
+
+  judge:
+    build: ./judge-service
+    container_name: judge_service
+    volumes:
+      - ./submissions_volume:/app/submissions
+    depends_on:
+      - redis
+      - db
+
+  problems:
+    build: ./problems-service-go
+    container_name: problems_service_go
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
+
+  submissions:
+    build: ./submissions-service-go
+    container_name: submissions_service_go
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
+      - REDIS_URL=redis:6379
+
+  plagiarism:
+    build: ./plagiarism-service-go
+    container_name: plagiarism_service_go
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
+      - REDIS_URL=redis:6379
+
+  db:
+    image: postgres:14-alpine
+    container_name: postgres_db
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=codejudgedb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis_queue
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
