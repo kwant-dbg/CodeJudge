@@ -93,7 +93,7 @@ void update_verdict(PGconn* db_conn, const std::string& submission_id, const std
     const char* paramValues[2] = {verdict.c_str(), submission_id.c_str()};
     PGresult *res = PQexecParams(db_conn, query.c_str(), 2, NULL, paramValues, NULL, NULL, 0);
     if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-        fprintf(stderr, "UPDATE failed: %s", PQerrorMessage(db_conn));
+        fprintf(stderr, "UPDATE failed: %s\n", PQerrorMessage(db_conn));
     }
     PQclear(res);
 }
@@ -146,12 +146,14 @@ void process_submission(const std::string& submission_id, PGconn* db_conn) {
     int problem_id = get_problem_id(db_conn, submission_id);
     if (problem_id == -1) {
         update_verdict(db_conn, submission_id, "Judge Error: Problem not found");
+        remove(executable_path.c_str());
         return;
     }
 
     std::vector<TestCase> test_cases = get_test_cases(db_conn, problem_id);
     if (test_cases.empty()) {
         update_verdict(db_conn, submission_id, "Judge Error: No test cases");
+        remove(executable_path.c_str());
         return;
     }
     
@@ -165,10 +167,15 @@ void process_submission(const std::string& submission_id, PGconn* db_conn) {
         } else if (user_output_str == "RUNTIME_ERROR" || user_output_str == "JUDGE_ERROR") {
             verdict = "Runtime Error";
         } else {
+            // Trim trailing whitespace from user output
             size_t end = user_output_str.find_last_not_of(" \n\r\t");
             std::string trimmed_output = (end == std::string::npos) ? "" : user_output_str.substr(0, end + 1);
             
-            if (trimmed_output == tc.output) {
+            // Trim trailing whitespace from expected output
+            end = tc.output.find_last_not_of(" \n\r\t");
+            std::string trimmed_expected = (end == std::string::npos) ? "" : tc.output.substr(0, end + 1);
+
+            if (trimmed_output == trimmed_expected) {
                 verdict = "Accepted";
             } else {
                 verdict = "Wrong Answer";

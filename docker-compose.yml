@@ -21,7 +21,7 @@ services:
       - db
       - redis
     volumes:
-      - ./submissions_volume:/app/submissions
+      - submissions_volume:/app/submissions
     environment:
       - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
       - REDIS_URL=redis:6379
@@ -41,7 +41,7 @@ services:
       - redis
       - db
     volumes:
-        - ./submissions_volume:/app/submissions
+        - submissions_volume:/app/submissions
     environment:
       - REDIS_URL=redis:6379
       - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable

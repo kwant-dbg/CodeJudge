@@ -132,12 +132,13 @@ func testCaseHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	parts := strings.Split(r.URL.Path, "/")
+	// URL path is expected to be /problems/:id/testcases
+	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 	if len(parts) < 3 {
-		http.Error(w, "Invalid URL", http.StatusBadRequest)
+		http.Error(w, "Invalid URL format. Expected /problems/:id/testcases", http.StatusBadRequest)
 		return
 	}
-	problemID, err := strconv.Atoi(parts[2])
+	problemID, err := strconv.Atoi(parts[1])
 	if err != nil {
 		http.Error(w, "Invalid problem ID", http.StatusBadRequest)
 		return
@@ -169,7 +170,7 @@ func main() {
 	defer db.Close()
 
 	http.HandleFunc("/problems/", func(w http.ResponseWriter, r *http.Request) {
-		if strings.Contains(r.URL.Path, "/testcases") {
+		if strings.HasSuffix(r.URL.Path, "/testcases") {
 			testCaseHandler(w, r)
 		} else {
 			problemsHandler(w, r)

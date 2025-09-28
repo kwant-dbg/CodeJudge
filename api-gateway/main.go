@@ -21,7 +21,8 @@ func main() {
 	submissionsProxy, _ := newProxy("http://submissions:8001")
 	plagiarismProxy, _ := newProxy("http://plagiarism:8002")
 
-	// The problemsProxy now handles both /problems/ and /problems/:id/testcases
+	// This single handler correctly forwards all requests starting with /api/problems/
+	// to the problems-service. This includes /api/problems/ and /api/problems/1/testcases
 	http.HandleFunc("/api/problems/", func(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, "/api")
 		problemsProxy.ServeHTTP(w, r)
