@@ -188,11 +188,17 @@ void process_submission(const std::string& submission_id, PGconn* db_conn) {
 }
 
 int main() {
-    const char* redis_host = getenv("REDIS_URL");
-    if (redis_host == NULL) {
-        redis_host = "redis";
+    std::string redis_url_str = getenv("REDIS_URL") ? getenv("REDIS_URL") : "redis:6379";
+    std::string redis_host = "redis";
+    int redis_port = 6379;
+
+    size_t colon_pos = redis_url_str.find(':');
+    if (colon_pos != std::string::npos) {
+        redis_host = redis_url_str.substr(0, colon_pos);
+        redis_port = std::stoi(redis_url_str.substr(colon_pos + 1));
     }
-    redisContext *redis_c = redisConnect(redis_host, 6379);
+
+    redisContext *redis_c = redisConnect(redis_host.c_str(), redis_port);
     if (redis_c == NULL || redis_c->err) {
         if (redis_c) {
             std::cerr << "Redis connection error: " << redis_c->errstr << std::endl;

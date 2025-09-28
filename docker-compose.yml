@@ -20,13 +20,11 @@ services:
     depends_on:
       - db
       - redis
-    # FIX: Mount the shared volume so it can write files for the judge
     volumes:
       - ./submissions_volume:/app/submissions
     environment:
       - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
-      - REDIS_URL=redis
-      
+      - REDIS_URL=redis:6379
 
   plagiarism:
     build: ./plagiarism-service-go
@@ -41,13 +39,11 @@ services:
     build: ./judge-service
     depends_on:
       - redis
-      - db # Add dependency on the database
-    # FIX: Mount the shared volume so it can read submission files
+      - db
     volumes:
         - ./submissions_volume:/app/submissions
     environment:
       - REDIS_URL=redis:6379
-      # FIX: Add database URL for the judge to connect
       - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
 
   db:
@@ -68,6 +64,4 @@ services:
 
 volumes:
   postgres_data:
-  # FIX: Define the shared volume
   submissions_volume:
-

@@ -20,7 +20,6 @@ type Problem struct {
 	Difficulty  string `json:"difficulty"`
 }
 
-// NEW: TestCase struct
 type TestCase struct {
 	ID        int    `json:"id"`
 	ProblemID int    `json:"problem_id"`
@@ -60,7 +59,6 @@ func createTable() {
 	}
 	log.Println("'problems' table is ready.")
 
-	// NEW: Create test_cases table
 	createTestCasesTableSQL := `
 	CREATE TABLE IF NOT EXISTS test_cases (
 		id SERIAL PRIMARY KEY,
@@ -128,7 +126,6 @@ func createProblem(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(p)
 }
 
-// NEW: Handler for creating test cases
 func testCaseHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -171,8 +168,6 @@ func main() {
 	createTable()
 	defer db.Close()
 
-	http.HandleFunc("/problems/", problemsHandler)
-	// NEW: Route for test cases
 	http.HandleFunc("/problems/", func(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(r.URL.Path, "/testcases") {
 			testCaseHandler(w, r)
