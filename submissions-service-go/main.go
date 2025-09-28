@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -79,6 +81,19 @@ func submissionHandler(w http.ResponseWriter, r *http.Request) {
 	err := db.QueryRow(query, s.ProblemID, s.SourceCode).Scan(&s.ID)
 	if err != nil {
 		http.Error(w, "Failed to create submission", http.StatusInternalServerError)
+		return
+	}
+
+	submissionDir := "/app/submissions"
+	if err := os.MkdirAll(submissionDir, os.ModePerm); err != nil {
+		http.Error(w, "Failed to create submission directory", http.StatusInternalServerError)
+		log.Printf("Error creating directory: %v", err)
+		return
+	}
+	filePath := filepath.Join(submissionDir, fmt.Sprintf("%d.cpp", s.ID))
+	if err := os.WriteFile(filePath, []byte(s.SourceCode), 0644); err != nil {
+		http.Error(w, "Failed to write submission file", http.StatusInternalServerError)
+		log.Printf("Error writing file: %v", err)
 		return
 	}
 
