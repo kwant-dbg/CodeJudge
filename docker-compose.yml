@@ -25,7 +25,8 @@ services:
       - ./submissions_volume:/app/submissions
     environment:
       - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
-      - REDIS_URL=redis:6379
+      - REDIS_URL=redis
+      
 
   plagiarism:
     build: ./plagiarism-service-go

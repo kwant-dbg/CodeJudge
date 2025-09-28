@@ -21,6 +21,7 @@ func main() {
 	submissionsProxy, _ := newProxy("http://submissions:8001")
 	plagiarismProxy, _ := newProxy("http://plagiarism:8002")
 
+	// The problemsProxy now handles both /problems/ and /problems/:id/testcases
 	http.HandleFunc("/api/problems/", func(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, "/api")
 		problemsProxy.ServeHTTP(w, r)
@@ -41,4 +42,3 @@ func main() {
 		log.Fatal("ListenAndServe: ", err)
 	}
 }
-

@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -16,6 +18,14 @@ type Problem struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Difficulty  string `json:"difficulty"`
+}
+
+// NEW: TestCase struct
+type TestCase struct {
+	ID        int    `json:"id"`
+	ProblemID int    `json:"problem_id"`
+	Input     string `json:"input"`
+	Output    string `json:"output"`
 }
 
 var db *sql.DB
@@ -37,18 +47,33 @@ func connectDB() {
 }
 
 func createTable() {
-	createTableSQL := `
+	createProblemsTableSQL := `
     CREATE TABLE IF NOT EXISTS problems (
         id SERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         description TEXT,
         difficulty VARCHAR(50)
     );`
-	_, err := db.Exec(createTableSQL)
+	_, err := db.Exec(createProblemsTableSQL)
 	if err != nil {
 		log.Fatalf("Failed to create 'problems' table: %v", err)
 	}
 	log.Println("'problems' table is ready.")
+
+	// NEW: Create test_cases table
+	createTestCasesTableSQL := `
+	CREATE TABLE IF NOT EXISTS test_cases (
+		id SERIAL PRIMARY KEY,
+		problem_id INTEGER NOT NULL,
+		input TEXT NOT NULL,
+		output TEXT NOT NULL,
+		FOREIGN KEY (problem_id) REFERENCES problems(id) ON DELETE CASCADE
+	);`
+	_, err = db.Exec(createTestCasesTableSQL)
+	if err != nil {
+		log.Fatalf("Failed to create 'test_cases' table: %v", err)
+	}
+	log.Println("'test_cases' table is ready.")
 }
 
 func problemsHandler(w http.ResponseWriter, r *http.Request) {
@@ -103,12 +128,59 @@ func createProblem(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(p)
 }
 
+// NEW: Handler for creating test cases
+func testCaseHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	parts := strings.Split(r.URL.Path, "/")
+	if len(parts) < 3 {
+		http.Error(w, "Invalid URL", http.StatusBadRequest)
+		return
+	}
+	problemID, err := strconv.Atoi(parts[2])
+	if err != nil {
+		http.Error(w, "Invalid problem ID", http.StatusBadRequest)
+		return
+	}
+
+	var tc TestCase
+	if err := json.NewDecoder(r.Body).Decode(&tc); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	tc.ProblemID = problemID
+
+	query := "INSERT INTO test_cases (problem_id, input, output) VALUES ($1, $2, $3) RETURNING id"
+	err = db.QueryRow(query, tc.ProblemID, tc.Input, tc.Output).Scan(&tc.ID)
+	if err != nil {
+		http.Error(w, "Failed to create test case", http.StatusInternalServerError)
+		log.Printf("Error creating test case: %v", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(tc)
+}
+
 func main() {
 	connectDB()
 	createTable()
 	defer db.Close()
 
 	http.HandleFunc("/problems/", problemsHandler)
+	// NEW: Route for test cases
+	http.HandleFunc("/problems/", func(w http.ResponseWriter, r *http.Request) {
+		if strings.Contains(r.URL.Path, "/testcases") {
+			testCaseHandler(w, r)
+		} else {
+			problemsHandler(w, r)
+		}
+	})
+
 	log.Println("Problems Service starting on port 8000")
 	if err := http.ListenAndServe(":8000", nil); err != nil {
 		log.Fatalf("Server failed to start: %v", err)

@@ -9,6 +9,11 @@
 #include <hiredis/hiredis.h>
 #include <libpq-fe.h>
 
+struct TestCase {
+    std::string input;
+    std::string output;
+};
+
 void set_limits() {
     struct rlimit time_limit;
     time_limit.rlim_cur = 2;
@@ -83,7 +88,6 @@ std::string run_code(const std::string& executable_path, const std::string& inpu
     return "JUDGE_ERROR";
 }
 
-
 void update_verdict(PGconn* db_conn, const std::string& submission_id, const std::string& verdict) {
     std::string query = "UPDATE submissions SET verdict = $1 WHERE id = $2";
     const char* paramValues[2] = {verdict.c_str(), submission_id.c_str()};
@@ -94,6 +98,38 @@ void update_verdict(PGconn* db_conn, const std::string& submission_id, const std
     PQclear(res);
 }
 
+int get_problem_id(PGconn* db_conn, const std::string& submission_id) {
+    std::string query = "SELECT problem_id FROM submissions WHERE id = $1";
+    const char* paramValues[1] = {submission_id.c_str()};
+    PGresult *res = PQexecParams(db_conn, query.c_str(), 1, NULL, paramValues, NULL, NULL, 0);
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK || PQntuples(res) != 1) {
+        PQclear(res);
+        return -1;
+    }
+    int problem_id = std::stoi(PQgetvalue(res, 0, 0));
+    PQclear(res);
+    return problem_id;
+}
+
+std::vector<TestCase> get_test_cases(PGconn* db_conn, int problem_id) {
+    std::vector<TestCase> test_cases;
+    std::string query = "SELECT input, output FROM test_cases WHERE problem_id = $1";
+    std::string problem_id_str = std::to_string(problem_id);
+    const char* paramValues[1] = {problem_id_str.c_str()};
+    PGresult *res = PQexecParams(db_conn, query.c_str(), 1, NULL, paramValues, NULL, NULL, 0);
+
+    if (PQresultStatus(res) == PGRES_TUPLES_OK) {
+        for (int i = 0; i < PQntuples(res); i++) {
+            test_cases.push_back({
+                PQgetvalue(res, i, 0),
+                PQgetvalue(res, i, 1)
+            });
+        }
+    }
+    PQclear(res);
+    return test_cases;
+}
 
 void process_submission(const std::string& submission_id, PGconn* db_conn) {
     std::cout << "Processing submission ID: " << submission_id << std::endl;
@@ -101,35 +137,52 @@ void process_submission(const std::string& submission_id, PGconn* db_conn) {
     std::string source_path = "/app/submissions/" + submission_id + ".cpp";
     std::string executable_path = "/app/submissions/" + submission_id;
 
-    std::string test_input = "5 10\n";
-    std::string expected_output = "15";
-
     if (!compile_code(source_path, executable_path)) {
         std::cout << "Verdict for " << submission_id << ": Compilation Error" << std::endl;
         update_verdict(db_conn, submission_id, "Compilation Error");
         return;
     }
 
-    std::string user_output_str = run_code(executable_path, test_input);
-
-    std::string verdict;
-    if (user_output_str == "TIME_LIMIT_EXCEEDED") {
-        verdict = "Time Limit Exceeded";
-    } else if (user_output_str == "RUNTIME_ERROR" || user_output_str == "JUDGE_ERROR") {
-        verdict = "Runtime Error";
-    } else {
-        size_t end = user_output_str.find_last_not_of(" \n\r\t");
-        std::string trimmed_output = (end == std::string::npos) ? "" : user_output_str.substr(0, end + 1);
-        
-        if (trimmed_output == expected_output) {
-            verdict = "Accepted";
-        } else {
-            verdict = "Wrong Answer";
-        }
+    int problem_id = get_problem_id(db_conn, submission_id);
+    if (problem_id == -1) {
+        update_verdict(db_conn, submission_id, "Judge Error: Problem not found");
+        return;
     }
 
-    std::cout << "Verdict for " << submission_id << ": " << verdict << std::endl;
-    update_verdict(db_conn, submission_id, verdict);
+    std::vector<TestCase> test_cases = get_test_cases(db_conn, problem_id);
+    if (test_cases.empty()) {
+        update_verdict(db_conn, submission_id, "Judge Error: No test cases");
+        return;
+    }
+    
+    std::string final_verdict = "Accepted";
+    for (const auto& tc : test_cases) {
+        std::string user_output_str = run_code(executable_path, tc.input);
+        
+        std::string verdict;
+        if (user_output_str == "TIME_LIMIT_EXCEEDED") {
+            verdict = "Time Limit Exceeded";
+        } else if (user_output_str == "RUNTIME_ERROR" || user_output_str == "JUDGE_ERROR") {
+            verdict = "Runtime Error";
+        } else {
+            size_t end = user_output_str.find_last_not_of(" \n\r\t");
+            std::string trimmed_output = (end == std::string::npos) ? "" : user_output_str.substr(0, end + 1);
+            
+            if (trimmed_output == tc.output) {
+                verdict = "Accepted";
+            } else {
+                verdict = "Wrong Answer";
+            }
+        }
+
+        if (verdict != "Accepted") {
+            final_verdict = verdict;
+            break; // Stop on first failed test case
+        }
+    }
+    
+    std::cout << "Verdict for " << submission_id << ": " << final_verdict << std::endl;
+    update_verdict(db_conn, submission_id, final_verdict);
     
     remove(executable_path.c_str());
 }
@@ -179,4 +232,3 @@ int main() {
     PQfinish(db_conn);
     return 0;
 }
-
