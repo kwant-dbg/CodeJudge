@@ -7,7 +7,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN g++ -std=c++17 main.cpp -o judge_service -lhiredis -lpq
+RUN g++ -std=c++17 -I/usr/include/postgresql/ main.cpp -o judge_service -lhiredis -lpq
 
 CMD ["./judge_service"]
 
