@@ -45,7 +45,7 @@ The system is built on a set of independent services that communicate asynchrono
 
 1.  **Clone the repository:**
     ```bash
-    git clone <your-github-repository-url>
+    git clone https://github.com/kwant-dbg/CodeJudge.git
     cd codejudge
     ```
 
