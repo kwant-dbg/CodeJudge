@@ -87,3 +87,6 @@ All requests are routed through the API Gateway.
 *   **`submissions-service-go`**: Handles incoming code submissions, persists them, and pushes jobs to the Redis queues.
 *   **`judge-service`**: The C++ core. It listens for jobs, compiles code, and executes it in a sandboxed environment to determine the verdict.
 *   **`plagiarism-service-go`**: A background service that listens for jobs and performs similarity analysis between code submissions.
+
+<img width="1024" height="1024" alt="Generated Image September 29, 2025 - 12_10PM" src="https://github.com/user-attachments/assets/9ab15fcd-070d-46b2-84ae-07ee72f3b07a" />
+
