@@ -1,44 +1,29 @@
-# CodeJudge: A High-Performance Online Judging System
+### CodeJudge: A High-Performance Online Judging System
 
-CodeJudge is a scalable, cloud-native backend designed to power competitive programming platforms, educational coding websites, and automated technical screening. It provides a secure, high-performance environment for compiling, executing, and evaluating user-submitted code against predefined test cases.
+CodeJudge is a scalable, cloud-native backend for competitive programming platforms and automated technical screening. It provides a secure, high-performance environment to compile, execute, and evaluate user-submitted code against predefined test cases. Its distributed microservices architecture, built with Go and C++, is designed for reliability and efficiency.
 
-Built with a distributed microservices architecture using Go and C++, CodeJudge is engineered for reliability, scalability, and efficient resource management.
+<img width="1024" height="1024" alt="29, 2025 - 12_10PM" src="https://github.com/user-attachments/assets/9ab15fcd-070d-46b2-84ae-07ee72f3b07a" />
 
-![System Architecture Diagram](https://github.com/user-attachments/assets/9ab15fcd-070d-46b2-84ae-07ee72f307a)
+### Core Features
 
-## Key Differentiators
+*   **Secure Sandboxing:** The C++ judge engine uses low-level Linux primitives (`fork`, `exec`, `setrlimit`) to securely isolate code execution.
+*   **Scalable Architecture:** A decoupled, message-driven design allows any component to be scaled independently to handle fluctuating loads.
+*   **Advanced Plagiarism Detection:** A fingerprinting pipeline (shingling and winnowing) detects algorithmic similarities between submissions.
+*   **Easy Deployment:** The entire system is containerized with Docker and managed via a single `docker-compose` file for a one-command setup.
 
-*   **Security-First Sandboxing:** The core C++ judge engine leverages low-level Linux primitives (`fork`, `exec`, `setrlimit`) to create a secure, isolated sandbox for code execution, preventing malicious submissions from affecting the host system.
-*   **Horizontally Scalable:** The decoupled, message-driven architecture allows any component (e.g., judge workers, plagiarism checkers) to be scaled independently to handle fluctuating loads.
-*   **Advanced Plagiarism Detection:** Goes beyond simple text matching by using a sophisticated fingerprinting pipeline (shingling and winnowing) to detect underlying algorithmic similarities between submissions.
-*   **Developer-Friendly & Extensible:** The entire system is containerized with Docker and managed via a single `docker-compose` file, allowing for a one-command setup. Its modular design makes it easy to extend or integrate with existing platforms.
+### Technology Stack
 
-## Core Features
-
-*   **Microservice Architecture**: Decoupled Go and C++ services communicate asynchronously via a Redis message queue for enhanced resilience and scalability.
-*   **High-Performance C++ Judge**: A lightweight, high-throughput C++ engine for low-overhead process control and sandboxing.
-*   **Asynchronous Job Queues**: Utilizes Redis to manage submission workloads, ensuring smooth processing during peak traffic and enabling easy retry logic.
-*   **Algorithmic Plagiarism Detection**: A background service dedicated to identifying logical similarities in submitted code.
-*   **Containerized Deployment**: Fully containerized with Docker for consistent, cross-platform deployments.
-
-## Technology Stack
-
-| Component             | Technology                               | Purpose                                          |
-| --------------------- | ---------------------------------------- | ------------------------------------------------ |
-| **Backend Services**  | Go (net/http, go-redis, pq)              | API endpoints, business logic, and service orchestration |
-| **Core Judge Engine** | C++17                                    | Secure code execution and sandboxing             |
-| **Database**          | PostgreSQL                               | Data persistence for submissions, problems, and reports |
-| **Message Queue**     | Redis                                    | Asynchronous job distribution between services   |
-| **Containerization**  | Docker, Docker Compose                   | Environment consistency and simplified deployment |
-
-## Getting Started
-
-### Prerequisites
-
-*   Docker Engine
-*   Docker Compose
+| Component | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Backend Services** | Go (net/http, go-redis, pq) | API, business logic, service orchestration |
+| **Core Judge Engine**| C++17 | Secure code execution and sandboxing |
+| **Database** | PostgreSQL | Data persistence |
+| **Message Queue** | Redis | Asynchronous job distribution |
+| **Containerization**| Docker, Docker Compose | Consistent and simple deployment |
 
 ### Quickstart
+
+**Prerequisites:** Docker and Docker Compose.
 
 1.  **Clone the repository:**
     ```bash
@@ -50,22 +35,18 @@ Built with a distributed microservices architecture using Go and C++, CodeJudge 
     ```bash
     docker-compose up --build -d
     ```
+    The API Gateway will be available at `http://localhost:8080`.
 
-The API Gateway is now available at `http://localhost:8080`.
-
-## API Endpoints
-
-All endpoints are consolidated under the API Gateway.
+### API Endpoints
 
 | Method | Path | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/problems/` | Retrieve a list of all programming problems. |
-| `POST` | `/api/problems/` | Add a new programming problem. |
-| `POST` | `/api/submissions` | Submit source code for evaluation against a problem. |
-| `GET` | `/api/plagiarism/reports` | Retrieve a dashboard of submissions with high similarity scores. |
+| `GET` | `/api/problems/` | Get all programming problems. |
+| `POST`| `/api/problems/` | Add a new programming problem. |
+| `POST`| `/api/submissions`| Submit code for evaluation. |
+| `GET` | `/api/plagiarism/reports` | Get a report of submissions with high similarity. |
 
-### Example Submission Request: `POST /api/submissions`
-
+**Example Submission:** `POST /api/submissions`
 ```json
 {
   "problem_id": 1,
