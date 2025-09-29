@@ -1,50 +1,50 @@
-### CodeJudge: A High-Performance Online Judging System
+### CodeJudge: High-Performance Online Judging System
 
-CodeJudge is a scalable, cloud-native backend for competitive programming platforms and automated technical screening. It provides a secure, high-performance environment to compile, execute, and evaluate user-submitted code against predefined test cases. Its distributed microservices architecture, built with Go and C++, is designed for reliability and efficiency.
+CodeJudge is a cloud-native backend for powering competitive programming and automated code evaluation platforms. It's built on a distributed microservices architecture using Go and C++ for high throughput and scalability.
 
 <img width="1024" height="1024" alt="29, 2025 - 12_10PM" src="https://github.com/user-attachments/assets/9ab15fcd-070d-46b2-84ae-07ee72f3b07a" />
 
-### Core Features
+### Key Features
 
-*   **Secure Sandboxing:** The C++ judge engine uses low-level Linux primitives (`fork`, `exec`, `setrlimit`) to securely isolate code execution.
-*   **Scalable Architecture:** A decoupled, message-driven design allows any component to be scaled independently to handle fluctuating loads.
-*   **Advanced Plagiarism Detection:** A fingerprinting pipeline (shingling and winnowing) detects algorithmic similarities between submissions.
-*   **Easy Deployment:** The entire system is containerized with Docker and managed via a single `docker-compose` file for a one-command setup.
+*   **Secure C++ Sandbox:** Leverages `fork`, `exec`, and `setrlimit` for low-level process isolation and resource management, preventing malicious code execution.
+*   **Horizontally Scalable:** Go and C++ services are decoupled via a Redis message bus, allowing for independent scaling of workers and other components.
+*   **Algorithmic Plagiarism Detection:** Implements a shingling and winnowing pipeline to detect structural code similarity, moving beyond simple token matching.
+*   **Dockerized Deployment:** Fully containerized with a `docker-compose.yml` for streamlined, single-command setup and environment consistency.
 
 ### Technology Stack
 
-| Component | Technology | Purpose |
+| Component | Technology | Role |
 | :--- | :--- | :--- |
-| **Backend Services** | Go (net/http, go-redis, pq) | API, business logic, service orchestration |
-| **Core Judge Engine**| C++17 | Secure code execution and sandboxing |
-| **Database** | PostgreSQL | Data persistence |
-| **Message Queue** | Redis | Asynchronous job distribution |
-| **Containerization**| Docker, Docker Compose | Consistent and simple deployment |
+| **Backend Services** | Go (net/http, go-redis, pq) | API Gateway & Service Orchestration |
+| **Judge Engine** | C++17 | Sandboxed Code Execution |
+| **Database** | PostgreSQL | Primary Datastore |
+| **Message Queue** | Redis | Job Queue & Message Bus |
+| **Containerization**| Docker, Docker Compose | Deployment & Environment Management |
 
 ### Quickstart
 
 **Prerequisites:** Docker and Docker Compose.
 
-1.  **Clone the repository:**
+1.  **Clone & CD:**
     ```bash
     git clone https://github.com/kwant-dbg/CodeJudge.git
     cd CodeJudge
     ```
 
-2.  **Launch the services:**
+2.  **Launch:**
     ```bash
     docker-compose up --build -d
     ```
-    The API Gateway will be available at `http://localhost:8080`.
+    The API Gateway is exposed at `http://localhost:8080`.
 
 ### API Endpoints
 
 | Method | Path | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/problems/` | Get all programming problems. |
-| `POST`| `/api/problems/` | Add a new programming problem. |
-| `POST`| `/api/submissions`| Submit code for evaluation. |
-| `GET` | `/api/plagiarism/reports` | Get a report of submissions with high similarity. |
+| `GET` | `/api/problems/` | Retrieve all problems. |
+| `POST`| `/api/problems/` | Create a new problem. |
+| `POST`| `/api/submissions`| Enqueue a new code submission for judging. |
+| `GET` | `/api/plagiarism/reports` | Get plagiarism analysis reports. |
 
 **Example Submission:** `POST /api/submissions`
 ```json
