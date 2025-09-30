@@ -38,6 +38,9 @@ func main() {
 		plagiarismProxy.ServeHTTP(w, r)
 	})
 
+	// Serve static files from the static directory
+	http.Handle("/", http.FileServer(http.Dir("./static/")))
+
 	log.Println("API Gateway starting on port 8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal("ListenAndServe: ", err)
