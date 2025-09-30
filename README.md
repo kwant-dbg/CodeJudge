@@ -1,43 +1,89 @@
-### CodeJudge: High-Performance Online Judging System
 
-CodeJudge is a cloud-native backend for powering competitive programming and automated code evaluation platforms. It's built on a distributed microservices architecture using Go and C++ for high throughput and scalability.
+# CodeJudge: High-Performance Online Judging System
+
+CodeJudge is a cloud-native backend for powering competitive programming and automated code evaluation platforms. It is built on a distributed microservices architecture using Go and C++ for high throughput, scalability, and security.
 
 <img width="1024" height="1024" alt="29, 2025 - 12_10PM" src="https://github.com/user-attachments/assets/9ab15fcd-070d-46b2-84ae-07ee72f3b07a" />
 
-### Key Features
+## Key Features
 
-*   **Secure C++ Sandbox:** Leverages `fork`, `exec`, and `setrlimit` for low-level process isolation and resource management, preventing malicious code execution.
-*   **Horizontally Scalable:** Go and C++ services are decoupled via a Redis message bus, allowing for independent scaling of workers and other components.
-*   **Algorithmic Plagiarism Detection:** Implements a shingling and winnowing pipeline to detect structural code similarity, moving beyond simple token matching.
-*   **Dockerized Deployment:** Fully containerized with a `docker-compose.yml` for streamlined, single-command setup and environment consistency.
+- **Secure C++ Sandbox:** Leverages `fork`, `exec`, and `setrlimit` for low-level process isolation and resource management, preventing malicious code execution.
+- **Horizontally Scalable:** Go and C++ services are decoupled via a Redis message bus, allowing for independent scaling of workers and other components.
+- **Algorithmic Plagiarism Detection:** Implements a shingling and winnowing pipeline to detect structural code similarity, moving beyond simple token matching.
+- **Dockerized & Cloud-Native:** Fully containerized with `docker-compose.yml` for local development, plus Kubernetes and Terraform manifests for cloud deployment.
 
-### Technology Stack
+## Microservices Overview
 
-| Component | Technology | Role |
-| :--- | :--- | :--- |
-| **Backend Services** | Go (net/http, go-redis, pq) | API Gateway & Service Orchestration |
-| **Judge Engine** | C++17 | Sandboxed Code Execution |
-| **Database** | PostgreSQL | Primary Datastore |
-| **Message Queue** | Redis | Job Queue & Message Bus |
-| **Containerization**| Docker, Docker Compose | Deployment & Environment Management |
+| Service                  | Language | Path                   | Role                                 |
+|--------------------------|----------|------------------------|--------------------------------------|
+| **API Gateway**          | Go       | `api-gateway/`         | HTTP API entrypoint, routing, static UI |
+| **Problems Service**     | Go       | `problems-service-go/` | Problem CRUD, metadata, DB access    |
+| **Submissions Service**  | Go       | `submissions-service-go/` | Handles code submissions, job queue |
+| **Plagiarism Service**   | Go       | `plagiarism-service-go/` | Plagiarism detection pipeline      |
+| **Judge Service**        | C++      | `judge-service/`       | Secure code execution, sandboxing    |
+| **Database**             | Postgres | Docker/K8s             | Primary datastore                    |
+| **Message Queue**        | Redis    | Docker/K8s             | Job queue & message bus              |
 
-### Quickstart
+## Technology Stack
 
-**Prerequisites:** Docker and Docker Compose.
+| Component         | Technology                | Role                                 |
+|-------------------|--------------------------|--------------------------------------|
+| Backend Services  | Go (net/http, go-redis)  | API, orchestration, business logic   |
+| Judge Engine      | C++17                    | Sandboxed code execution             |
+| Database          | PostgreSQL               | Persistent storage                   |
+| Message Queue     | Redis                    | Job queue, pub/sub                   |
+| Containerization  | Docker, Docker Compose   | Local deployment                     |
+| Infrastructure    | Kubernetes, Terraform    | Cloud deployment & provisioning      |
 
-1.  **Clone & CD:**
-    ```bash
-    git clone https://github.com/kwant-dbg/CodeJudge.git
-    cd CodeJudge
-    ```
+## Quickstart (Docker Compose)
 
-2.  **Launch:**
-    ```bash
-    docker-compose up --build -d
-    ```
-    The API Gateway is exposed at `http://localhost:8080`.
+**Prerequisites:** Docker and Docker Compose
 
-### API Endpoints
+1. **Clone & Enter Project:**
+   ```bash
+   git clone https://github.com/kwant-dbg/CodeJudge.git
+   cd CodeJudge
+   ```
+2. **Launch All Services:**
+   ```bash
+   docker-compose up --build -d
+   ```
+   The API Gateway is exposed at [http://localhost:8080](http://localhost:8080).
+
+## Advanced Deployment
+
+### Kubernetes
+
+Kubernetes manifests for core services are in `kubernetes/deploy/`.
+
+To deploy (example):
+```bash
+kubectl apply -f kubernetes/deploy/
+```
+
+### Terraform
+
+Infrastructure as Code (IaC) for cloud resources is in `terraform/`.
+Use the provided PowerShell script to configure environment variables and run Terraform:
+
+```powershell
+./run-terraform.ps1 init
+./run-terraform.ps1 apply
+```
+Edit the script to set your Azure credentials before running.
+
+## Local Development & Testing
+
+- All Go services are in their respective folders and can be run or tested independently.
+- The C++ judge service can be built and run in isolation for sandbox testing.
+- Use `docker-compose` for full integration testing.
+- Maven tasks (if present) can be run with:
+  ```powershell
+  mvn -B verify
+  mvn -B test
+  ```
+
+## API Endpoints
 
 | Method | Path | Description |
 | :--- | :--- | :--- |
@@ -45,6 +91,7 @@ CodeJudge is a cloud-native backend for powering competitive programming and aut
 | `POST`| `/api/problems/` | Create a new problem. |
 | `POST`| `/api/submissions`| Enqueue a new code submission for judging. |
 | `GET` | `/api/plagiarism/reports` | Get plagiarism analysis reports. |
+
 
 **Example Submission:** `POST /api/submissions`
 ```json
@@ -54,3 +101,10 @@ CodeJudge is a cloud-native backend for powering competitive programming and aut
   "source_code": "#include <iostream>\nint main() { int a, b; std::cin >> a >> b; std::cout << a + b << std::endl; return 0; }"
 }
 ```
+
+## Contributing
+
+Pull requests and issues are welcome! Please open an issue to discuss major changes.
+
+---
+© 2025 Harshit Sharma

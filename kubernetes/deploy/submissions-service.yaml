@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: submissions
+  namespace: codejudge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: submissions-service
+  template:
+    metadata:
+      labels:
+        app: submissions-service
+    spec:
+      containers:
+      - name: submissions-service
+        image: codejudgeacr64eyi7.azurecr.io/submissions-service:latest
+        ports:
+        - containerPort: 8001
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: codejudge-config
+              key: DATABASE_URL
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: codejudge-config
+              key: REDIS_URL
+        volumeMounts:
+        - name: submissions-storage
+          mountPath: /app/submissions
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8001
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: submissions-storage
+        persistentVolumeClaim:
+          claimName: submissions-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: submissions
+  namespace: codejudge
+spec:
+  selector:
+    app: submissions-service
+  ports:
+  - port: 8080
+    targetPort: 8001
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: submissions-pvc
+  namespace: codejudge
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
