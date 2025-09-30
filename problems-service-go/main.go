@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -11,7 +10,10 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 )
+
+var logger *zap.Logger
 
 type Problem struct {
 	ID          int    `json:"id"`
@@ -36,13 +38,13 @@ func connectDB() {
 		db, err = sql.Open("postgres", databaseURL)
 		if err == nil {
 			if err = db.Ping(); err == nil {
-				log.Println("Successfully connected to the database.")
+				logger.Info("Successfully connected to the database")
 				return
 			}
 		}
 		time.Sleep(2 * time.Second)
 	}
-	log.Fatalf("Failed to connect to the database: %v", err)
+	logger.Fatal("Failed to connect to the database", zap.Error(err))
 }
 
 func createTable() {
@@ -55,9 +57,9 @@ func createTable() {
     );`
 	_, err := db.Exec(createProblemsTableSQL)
 	if err != nil {
-		log.Fatalf("Failed to create 'problems' table: %v", err)
+		logger.Fatal("Failed to create 'problems' table", zap.Error(err))
 	}
-	log.Println("'problems' table is ready.")
+	logger.Info("'problems' table is ready")
 
 	createTestCasesTableSQL := `
 	CREATE TABLE IF NOT EXISTS test_cases (
@@ -69,9 +71,9 @@ func createTable() {
 	);`
 	_, err = db.Exec(createTestCasesTableSQL)
 	if err != nil {
-		log.Fatalf("Failed to create 'test_cases' table: %v", err)
+		logger.Fatal("Failed to create 'test_cases' table", zap.Error(err))
 	}
-	log.Println("'test_cases' table is ready.")
+	logger.Info("'test_cases' table is ready")
 }
 
 func problemsHandler(w http.ResponseWriter, r *http.Request) {
@@ -155,7 +157,7 @@ func testCaseHandler(w http.ResponseWriter, r *http.Request) {
 	err = db.QueryRow(query, tc.ProblemID, tc.Input, tc.Output).Scan(&tc.ID)
 	if err != nil {
 		http.Error(w, "Failed to create test case", http.StatusInternalServerError)
-		log.Printf("Error creating test case: %v", err)
+		logger.Error("Error creating test case", zap.Error(err))
 		return
 	}
 
@@ -165,6 +167,9 @@ func testCaseHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	logger, _ = zap.NewProduction()
+	defer logger.Sync()
+
 	connectDB()
 	createTable()
 	defer db.Close()
@@ -177,8 +182,8 @@ func main() {
 		}
 	})
 
-	log.Println("Problems Service starting on port 8000")
+	logger.Info("Problems Service starting on port 8000")
 	if err := http.ListenAndServe(":8000", nil); err != nil {
-		log.Fatalf("Server failed to start: %v", err)
+		logger.Fatal("Server failed to start", zap.Error(err))
 	}
 }

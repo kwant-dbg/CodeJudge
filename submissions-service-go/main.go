@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -13,7 +12,10 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 )
+
+var logger *zap.Logger
 
 type Submission struct {
 	ID         int    `json:"id"`
@@ -32,22 +34,22 @@ func connectDB() {
 		db, err = sql.Open("postgres", databaseURL)
 		if err == nil {
 			if err = db.Ping(); err == nil {
-				log.Println("Successfully connected to the database.")
+				logger.Info("Successfully connected to the database")
 				return
 			}
 		}
 		time.Sleep(2 * time.Second)
 	}
-	log.Fatalf("Failed to connect to the database: %v", err)
+	logger.Fatal("Failed to connect to the database", zap.Error(err))
 }
 
 func connectRedis() {
 	redisURL := os.Getenv("REDIS_URL")
 	rdb = redis.NewClient(&redis.Options{Addr: redisURL})
 	if _, err := rdb.Ping(ctx).Result(); err != nil {
-		log.Fatalf("Could not connect to Redis: %v", err)
+		logger.Fatal("Could not connect to Redis", zap.Error(err))
 	}
-	log.Println("Successfully connected to Redis.")
+	logger.Info("Successfully connected to Redis")
 }
 
 func createTable() {
@@ -60,9 +62,9 @@ func createTable() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );`
 	if _, err := db.Exec(createTableSQL); err != nil {
-		log.Fatalf("Failed to create 'submissions' table: %v", err)
+		logger.Fatal("Failed to create 'submissions' table", zap.Error(err))
 	}
-	log.Println("'submissions' table is ready.")
+	logger.Info("'submissions' table is ready")
 }
 
 func submissionHandler(w http.ResponseWriter, r *http.Request) {
@@ -87,13 +89,13 @@ func submissionHandler(w http.ResponseWriter, r *http.Request) {
 	submissionDir := "/app/submissions"
 	if err := os.MkdirAll(submissionDir, os.ModePerm); err != nil {
 		http.Error(w, "Failed to create submission directory", http.StatusInternalServerError)
-		log.Printf("Error creating directory: %v", err)
+		logger.Error("Error creating directory", zap.Error(err))
 		return
 	}
 	filePath := filepath.Join(submissionDir, fmt.Sprintf("%d.cpp", s.ID))
 	if err := os.WriteFile(filePath, []byte(s.SourceCode), 0644); err != nil {
 		http.Error(w, "Failed to write submission file", http.StatusInternalServerError)
-		log.Printf("Error writing file: %v", err)
+		logger.Error("Error writing file", zap.Error(err))
 		return
 	}
 
@@ -113,14 +115,17 @@ func submissionHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	logger, _ = zap.NewProduction()
+	defer logger.Sync()
+
 	connectDB()
 	connectRedis()
 	createTable()
 	defer db.Close()
 
 	http.HandleFunc("/submissions", submissionHandler)
-	log.Println("Submissions Service starting on port 8001")
+	logger.Info("Submissions Service starting on port 8001")
 	if err := http.ListenAndServe(":8001", nil); err != nil {
-		log.Fatalf("Server failed to start: %v", err)
+		logger.Fatal("Server failed to start", zap.Error(err))
 	}
 }

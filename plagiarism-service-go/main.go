@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -12,7 +11,10 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 )
+
+var logger *zap.Logger
 
 type Submission struct {
 	ID         int
@@ -41,22 +43,22 @@ func connectDB() {
 		db, err = sql.Open("postgres", databaseURL)
 		if err == nil {
 			if err = db.Ping(); err == nil {
-				log.Println("Successfully connected to the database.")
+				logger.Info("Successfully connected to the database")
 				return
 			}
 		}
 		time.Sleep(2 * time.Second)
 	}
-	log.Fatalf("Failed to connect to the database: %v", err)
+	logger.Fatal("Failed to connect to the database", zap.Error(err))
 }
 
 func connectRedis() {
 	redisURL := os.Getenv("REDIS_URL")
 	rdb = redis.NewClient(&redis.Options{Addr: redisURL})
 	if _, err := rdb.Ping(ctx).Result(); err != nil {
-		log.Fatalf("Could not connect to Redis: %v", err)
+		logger.Fatal("Could not connect to Redis", zap.Error(err))
 	}
-	log.Println("Successfully connected to Redis.")
+	logger.Info("Successfully connected to Redis")
 }
 
 func createTable() {
@@ -70,9 +72,9 @@ func createTable() {
         UNIQUE(submission_a, submission_b)
     );`
 	if _, err := db.Exec(createTableSQL); err != nil {
-		log.Fatalf("Failed to create 'plagiarism_reports' table: %v", err)
+		logger.Fatal("Failed to create 'plagiarism_reports' table", zap.Error(err))
 	}
-	log.Println("'plagiarism_reports' table is ready.")
+	logger.Info("'plagiarism_reports' table is ready")
 }
 
 func getSubmission(id int) (*Submission, error) {
@@ -101,7 +103,7 @@ func getSubmissionsForProblem(problemId, excludeId int) ([]Submission, error) {
 }
 
 func worker() {
-	log.Println("Plagiarism worker started...")
+	logger.Info("Plagiarism worker started")
 	for {
 		result, err := rdb.BLPop(ctx, 0, "plagiarism_queue").Result()
 		if err != nil {
@@ -125,7 +127,10 @@ func worker() {
 			similarity := CalculateJaccard(fpA, fpB)
 
 			if similarity >= similarityThreshold {
-				log.Printf("High similarity (%.2f) between submission %d and %d", similarity, newSub.ID, otherSub.ID)
+				logger.Info("High similarity detected",
+					zap.Float64("similarity", similarity),
+					zap.Int("submission_a", newSub.ID),
+					zap.Int("submission_b", otherSub.ID))
 				subA, subB := newSub.ID, otherSub.ID
 				if subA > subB {
 					subA, subB = subB, subA
@@ -160,6 +165,9 @@ func reportsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	logger, _ = zap.NewProduction()
+	defer logger.Sync()
+
 	connectDB()
 	connectRedis()
 	createTable()
@@ -168,8 +176,8 @@ func main() {
 	go worker()
 
 	http.HandleFunc("/plagiarism/reports", reportsHandler)
-	log.Println("Plagiarism Service starting on port 8002")
+	logger.Info("Plagiarism Service starting on port 8002")
 	if err := http.ListenAndServe(":8002", nil); err != nil {
-		log.Fatalf("Server failed to start: %v", err)
+		logger.Fatal("Server failed to start", zap.Error(err))
 	}
 }

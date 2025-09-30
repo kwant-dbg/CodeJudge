@@ -1,12 +1,15 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strings"
+
+	"go.uber.org/zap"
 )
+
+var logger *zap.Logger
 
 func newProxy(targetHost string) (*httputil.ReverseProxy, error) {
 	url, err := url.Parse(targetHost)
@@ -17,6 +20,9 @@ func newProxy(targetHost string) (*httputil.ReverseProxy, error) {
 }
 
 func main() {
+	logger, _ = zap.NewProduction()
+	defer logger.Sync()
+
 	problemsProxy, _ := newProxy("http://problems:8000")
 	submissionsProxy, _ := newProxy("http://submissions:8001")
 	plagiarismProxy, _ := newProxy("http://plagiarism:8002")
@@ -41,8 +47,8 @@ func main() {
 	// Serve static files from the static directory
 	http.Handle("/", http.FileServer(http.Dir("./static/")))
 
-	log.Println("API Gateway starting on port 8080")
+	logger.Info("API Gateway starting on port 8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatal("ListenAndServe: ", err)
+		logger.Fatal("ListenAndServe failed", zap.Error(err))
 	}
 }
