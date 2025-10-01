@@ -1,0 +1,74 @@
+name: CI / Build images and optional Terraform deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    name: Build and push Docker images to GHCR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push images
+        env:
+          IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/codejudge
+          TAG: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          services=(api-gateway problems-service-go submissions-service-go plagiarism-service-go judge-service)
+          for svc in "${services[@]}"; do
+            echo "Building $svc"
+            docker build -t "$IMAGE_PREFIX-$svc:$TAG" -f "$svc/Dockerfile" "$svc"
+            docker push "$IMAGE_PREFIX-$svc:$TAG"
+          done
+
+  deploy-with-terraform:
+    name: (Optional) Terraform apply to Azure
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Terraform init
+        working-directory: ./terraform
+        run: |
+          terraform init
+
+      - name: Terraform apply (non-interactive)
+        working-directory: ./terraform
+        env:
+          IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/codejudge
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          terraform apply -auto-approve -var="image_prefix=${IMAGE_PREFIX}" -var="image_tag=${IMAGE_TAG}"
+
+      - name: Post-deploy message
+        run: echo "Terraform apply finished. Verify the deployed endpoints and logs."
