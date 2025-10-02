@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: submissions-service
-  image: submissions-service:latest
+        image: submissions-service:latest
         ports:
         - containerPort: 8001
         env:
