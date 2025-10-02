@@ -10,7 +10,7 @@ CodeJudge is a cloud-native backend for powering competitive programming and aut
 - **Secure C++ Sandbox:** Leverages `fork`, `exec`, and `setrlimit` for low-level process isolation and resource management, preventing malicious code execution.
 - **Horizontally Scalable:** Go and C++ services are decoupled via a Redis message bus, allowing for independent scaling of workers and other components.
 - **Algorithmic Plagiarism Detection:** Implements a shingling and winnowing pipeline to detect structural code similarity, moving beyond simple token matching.
-- **Dockerized & Cloud-Native:** Fully containerized with `docker-compose.yml` for local development, plus Kubernetes and Terraform manifests for cloud deployment.
+- **Dockerized & Cloud-Native:** Fully containerized with `docker-compose.yml` for local development, plus Kubernetes manifests for cluster deployment.
 
 ## Microservices Overview
 
@@ -33,7 +33,7 @@ CodeJudge is a cloud-native backend for powering competitive programming and aut
 | Database          | PostgreSQL               | Persistent storage                   |
 | Message Queue     | Redis                    | Job queue, pub/sub                   |
 | Containerization  | Docker, Docker Compose   | Local deployment                     |
-| Infrastructure    | Kubernetes, Terraform    | Cloud deployment & provisioning      |
+| Infrastructure    | Kubernetes               | Cluster deployment & provisioning    |
 
 ## Quickstart (Docker Compose)
 
@@ -61,16 +61,14 @@ To deploy (example):
 kubectl apply -f kubernetes/deploy/
 ```
 
-### Terraform
+### Kubernetes
 
-Infrastructure as Code (IaC) for cloud resources is in `terraform/`.
-Use the provided PowerShell script to configure environment variables and run Terraform:
+Kubernetes manifests for core services are in `kubernetes/deploy/`.
+Apply them to any compatible cluster:
 
-```powershell
-./run-terraform.ps1 init
-./run-terraform.ps1 apply
+```bash
+kubectl apply -f kubernetes/deploy/
 ```
-Edit the script to set your Azure credentials before running.
 
 ## Local Development & Testing
 

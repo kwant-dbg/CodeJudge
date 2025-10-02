@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: plagiarism-service
-        image: codejudgeacr64eyi7.azurecr.io/plagiarism-service:latest
+  image: plagiarism-service:latest
         ports:
         - containerPort: 8002
         env:

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"net/http"
@@ -33,13 +34,23 @@ var db *sql.DB
 
 func connectDB() {
 	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		logger.Fatal("DATABASE_URL not set")
+	}
+
 	var err error
 	for i := 0; i < 5; i++ {
-		db, err = sql.Open("postgres", databaseURL)
-		if err == nil {
-			if err = db.Ping(); err == nil {
+		conn, openErr := sql.Open("postgres", databaseURL)
+		if openErr != nil {
+			err = openErr
+		} else {
+			if pingErr := conn.Ping(); pingErr == nil {
+				db = conn
 				logger.Info("Successfully connected to the database")
 				return
+			} else {
+				err = pingErr
+				conn.Close()
 			}
 		}
 		time.Sleep(2 * time.Second)
@@ -173,6 +184,20 @@ func main() {
 	connectDB()
 	createTable()
 	defer db.Close()
+
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	http.HandleFunc("/ready", func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+		defer cancel()
+		if err := db.PingContext(ctx); err != nil {
+			http.Error(w, "database not ready", http.StatusServiceUnavailable)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	})
 
 	http.HandleFunc("/problems/", func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "/testcases") {

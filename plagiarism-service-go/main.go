@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"database/sql"
 	"encoding/json"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -34,17 +36,51 @@ var db *sql.DB
 var rdb *redis.Client
 var ctx = context.Background()
 
+func buildRedisOptions(redisURL string) (*redis.Options, error) {
+	if !strings.Contains(redisURL, "://") {
+		redisURL = "redis://" + redisURL
+	}
+
+	opts, err := redis.ParseURL(redisURL)
+	if err != nil {
+		return nil, err
+	}
+
+	if opts.TLSConfig != nil {
+		host := opts.Addr
+		if idx := strings.Index(host, ":"); idx != -1 {
+			host = host[:idx]
+		}
+		opts.TLSConfig.MinVersion = tls.VersionTLS12
+		if opts.TLSConfig.ServerName == "" {
+			opts.TLSConfig.ServerName = host
+		}
+	}
+
+	return opts, nil
+}
+
 const similarityThreshold = 0.80
 
 func connectDB() {
 	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		logger.Fatal("DATABASE_URL not set")
+	}
+
 	var err error
 	for i := 0; i < 5; i++ {
-		db, err = sql.Open("postgres", databaseURL)
-		if err == nil {
-			if err = db.Ping(); err == nil {
+		conn, openErr := sql.Open("postgres", databaseURL)
+		if openErr != nil {
+			err = openErr
+		} else {
+			if pingErr := conn.Ping(); pingErr == nil {
+				db = conn
 				logger.Info("Successfully connected to the database")
 				return
+			} else {
+				err = pingErr
+				conn.Close()
 			}
 		}
 		time.Sleep(2 * time.Second)
@@ -54,11 +90,30 @@ func connectDB() {
 
 func connectRedis() {
 	redisURL := os.Getenv("REDIS_URL")
-	rdb = redis.NewClient(&redis.Options{Addr: redisURL})
-	if _, err := rdb.Ping(ctx).Result(); err != nil {
-		logger.Fatal("Could not connect to Redis", zap.Error(err))
+	if redisURL == "" {
+		logger.Fatal("REDIS_URL not set")
 	}
-	logger.Info("Successfully connected to Redis")
+
+	var err error
+	for i := 0; i < 5; i++ {
+		opts, parseErr := buildRedisOptions(redisURL)
+		if parseErr != nil {
+			err = parseErr
+			break
+		}
+
+		client := redis.NewClient(opts)
+		if pingErr := client.Ping(ctx).Err(); pingErr == nil {
+			rdb = client
+			logger.Info("Successfully connected to Redis")
+			return
+		} else {
+			err = pingErr
+			client.Close()
+		}
+		time.Sleep(2 * time.Second)
+	}
+	logger.Fatal("Could not connect to Redis", zap.Error(err))
 }
 
 func createTable() {
@@ -172,6 +227,27 @@ func main() {
 	connectRedis()
 	createTable()
 	defer db.Close()
+
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	http.HandleFunc("/ready", func(w http.ResponseWriter, r *http.Request) {
+		readyCtx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+		defer cancel()
+
+		if err := db.PingContext(readyCtx); err != nil {
+			http.Error(w, "database not ready", http.StatusServiceUnavailable)
+			return
+		}
+
+		if err := rdb.Ping(readyCtx).Err(); err != nil {
+			http.Error(w, "redis not ready", http.StatusServiceUnavailable)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+	})
 
 	go worker()
 
