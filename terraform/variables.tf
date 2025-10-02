@@ -1,0 +1,1 @@
+// Azure/Terraform variables removed intentionally.

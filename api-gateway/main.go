@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"strings"
 
 	"go.uber.org/zap"
@@ -20,12 +21,37 @@ func newProxy(targetHost string) (*httputil.ReverseProxy, error) {
 }
 
 func main() {
-	logger, _ = zap.NewProduction()
+	var err error
+	logger, err = zap.NewProduction()
+	if err != nil {
+		panic("failed to initialize logger: " + err.Error())
+	}
 	defer logger.Sync()
 
-	problemsProxy, _ := newProxy("http://problems:8000")
-	submissionsProxy, _ := newProxy("http://submissions:8001")
-	plagiarismProxy, _ := newProxy("http://plagiarism:8002")
+	problemsURL := os.Getenv("PROBLEMS_SERVICE_URL")
+	if problemsURL == "" {
+		problemsURL = "http://problems:8000"
+	}
+	problemsProxy, err := newProxy(problemsURL)
+	if err != nil {
+		logger.Fatal("failed to create problems proxy", zap.Error(err))
+	}
+	submissionsURL := os.Getenv("SUBMISSIONS_SERVICE_URL")
+	if submissionsURL == "" {
+		submissionsURL = "http://submissions:8001"
+	}
+	submissionsProxy, err := newProxy(submissionsURL)
+	if err != nil {
+		logger.Fatal("failed to create submissions proxy", zap.Error(err))
+	}
+	plagiarismURL := os.Getenv("PLAGIARISM_SERVICE_URL")
+	if plagiarismURL == "" {
+		plagiarismURL = "http://plagiarism:8002"
+	}
+	plagiarismProxy, err := newProxy(plagiarismURL)
+	if err != nil {
+		logger.Fatal("failed to create plagiarism proxy", zap.Error(err))
+	}
 
 	// This single handler correctly forwards all requests starting with /api/problems/
 	// to the problems-service. This includes /api/problems/ and /api/problems/1/testcases
@@ -46,6 +72,15 @@ func main() {
 
 	// Serve static files from the static directory
 	http.Handle("/", http.FileServer(http.Dir("./static/")))
+
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	http.HandleFunc("/ready", func(w http.ResponseWriter, r *http.Request) {
+		// Reverse proxies are created at startup; if we reached here we're ready.
+		w.WriteHeader(http.StatusOK)
+	})
 
 	logger.Info("API Gateway starting on port 8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {

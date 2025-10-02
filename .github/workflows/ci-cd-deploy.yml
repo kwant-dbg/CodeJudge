@@ -1,4 +1,4 @@
-name: CI / Build images and optional Terraform deploy
+name: CI / Build images
 
 on:
   push:
@@ -43,32 +43,4 @@ jobs:
             docker push "$IMAGE_PREFIX-$svc:$TAG"
           done
 
-  deploy-with-terraform:
-    name: (Optional) Terraform apply to Azure
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Azure login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Terraform init
-        working-directory: ./terraform
-        run: |
-          terraform init
-
-      - name: Terraform apply (non-interactive)
-        working-directory: ./terraform
-        env:
-          IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/codejudge
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          terraform apply -auto-approve -var="image_prefix=${IMAGE_PREFIX}" -var="image_tag=${IMAGE_TAG}"
-
-      - name: Post-deploy message
-        run: echo "Terraform apply finished. Verify the deployed endpoints and logs."
+  # Deployment stage removed; this workflow only builds and pushes images.

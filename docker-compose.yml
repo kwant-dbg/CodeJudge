@@ -25,6 +25,7 @@ services:
     environment:
       - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
       - REDIS_URL=redis:6379
+      - SUBMISSION_STORAGE_PATH=/app/submissions
 
   plagiarism:
     build: ./plagiarism-service-go
@@ -45,6 +46,7 @@ services:
     environment:
       - REDIS_URL=redis:6379
       - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
+      - SUBMISSION_WORKDIR=/app/submissions
 
   db:
     image: postgres:14-alpine
