@@ -1,0 +1,9 @@
+go 1.19
+
+use (
+	./api-gateway
+	./common-go
+	./plagiarism-service-go
+	./problems-service-go
+	./submissions-service-go
+)

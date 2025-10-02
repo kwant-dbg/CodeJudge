@@ -5,10 +5,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"codejudge/common/dbutil"
+	"codejudge/common/env"
+	"codejudge/common/health"
 
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
@@ -30,32 +33,14 @@ type TestCase struct {
 	Output    string `json:"output"`
 }
 
-var db *sql.DB
+var db = (*sql.DB)(nil)
 
 func connectDB() {
-	databaseURL := os.Getenv("DATABASE_URL")
+	databaseURL := env.Get("DATABASE_URL", "")
 	if databaseURL == "" {
 		logger.Fatal("DATABASE_URL not set")
 	}
-
-	var err error
-	for i := 0; i < 5; i++ {
-		conn, openErr := sql.Open("postgres", databaseURL)
-		if openErr != nil {
-			err = openErr
-		} else {
-			if pingErr := conn.Ping(); pingErr == nil {
-				db = conn
-				logger.Info("Successfully connected to the database")
-				return
-			} else {
-				err = pingErr
-				conn.Close()
-			}
-		}
-		time.Sleep(2 * time.Second)
-	}
-	logger.Fatal("Failed to connect to the database", zap.Error(err))
+	db = dbutil.ConnectWithRetry(logger, databaseURL, 5, 2*time.Second)
 }
 
 func createTable() {
@@ -185,19 +170,8 @@ func main() {
 	createTable()
 	defer db.Close()
 
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
-
-	http.HandleFunc("/ready", func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
-		defer cancel()
-		if err := db.PingContext(ctx); err != nil {
-			http.Error(w, "database not ready", http.StatusServiceUnavailable)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-	})
+	http.HandleFunc("/health", health.HealthHandler())
+	http.HandleFunc("/ready", health.ReadyHandler(func(ctx context.Context) error { return db.PingContext(ctx) }))
 
 	http.HandleFunc("/problems/", func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "/testcases") {

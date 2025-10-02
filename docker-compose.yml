@@ -1,6 +1,8 @@
 services:
   gateway:
-    build: ./api-gateway
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
     ports:
       - "8080:8080"
     depends_on:
@@ -9,14 +11,18 @@ services:
       - plagiarism
 
   problems:
-    build: ./problems-service-go
+    build:
+      context: .
+      dockerfile: problems-service-go/Dockerfile
     depends_on:
       - db
     environment:
       - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
 
   submissions:
-    build: ./submissions-service-go
+    build:
+      context: .
+      dockerfile: submissions-service-go/Dockerfile
     depends_on:
       - db
       - redis
@@ -28,7 +34,9 @@ services:
       - SUBMISSION_STORAGE_PATH=/app/submissions
 
   plagiarism:
-    build: ./plagiarism-service-go
+    build:
+      context: .
+      dockerfile: plagiarism-service-go/Dockerfile
     depends_on:
       - db
       - redis
