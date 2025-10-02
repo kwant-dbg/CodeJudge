@@ -27,6 +27,21 @@ struct RedisConfig
     bool use_tls = false;
 };
 
+static std::string rtrim_copy(const std::string &s)
+{
+    size_t end = s.find_last_not_of(" \n\r\t");
+    return (end == std::string::npos) ? "" : s.substr(0, end + 1);
+}
+
+static std::string verdict_from_output(const std::string &run_out, const std::string &expected)
+{
+    if (run_out == "TIME_LIMIT_EXCEEDED")
+        return "Time Limit Exceeded";
+    if (run_out == "RUNTIME_ERROR" || run_out == "JUDGE_ERROR")
+        return "Runtime Error";
+    return rtrim_copy(run_out) == rtrim_copy(expected) ? "Accepted" : "Wrong Answer";
+}
+
 RedisConfig parse_redis_url(const std::string &url)
 {
     RedisConfig config;
@@ -301,83 +316,54 @@ void process_submission(const std::string &submission_id, PGconn *db_conn)
         std::remove(executable_path.c_str());
     };
 
+    auto finish = [&](const std::string &v)
+    {
+        update_verdict(db_conn, submission_id, v);
+        cleanup_files();
+    };
+
     std::string source_code;
     if (!fetch_source_code(db_conn, submission_id, source_code))
     {
-        update_verdict(db_conn, submission_id, "Judge Error: Source not found");
-        cleanup_files();
+        finish("Judge Error: Source not found");
         return;
     }
 
     if (!write_source_to_disk(source_path, source_code))
     {
-        update_verdict(db_conn, submission_id, "Judge Error: Write failure");
-        cleanup_files();
+        finish("Judge Error: Write failure");
         return;
     }
 
     if (!compile_code(source_path, executable_path))
     {
         std::cout << "Verdict for " << submission_id << ": Compilation Error" << std::endl;
-        update_verdict(db_conn, submission_id, "Compilation Error");
-        cleanup_files();
+        finish("Compilation Error");
         return;
     }
 
     int problem_id = get_problem_id(db_conn, submission_id);
     if (problem_id == -1)
     {
-        update_verdict(db_conn, submission_id, "Judge Error: Problem not found");
-        cleanup_files();
+        finish("Judge Error: Problem not found");
         return;
     }
 
     std::vector<TestCase> test_cases = get_test_cases(db_conn, problem_id);
     if (test_cases.empty())
     {
-        update_verdict(db_conn, submission_id, "Judge Error: No test cases");
-        cleanup_files();
+        finish("Judge Error: No test cases");
         return;
     }
 
     std::string final_verdict = "Accepted";
     for (const auto &tc : test_cases)
     {
-        std::string user_output_str = run_code(executable_path, tc.input);
-
-        std::string verdict;
-        if (user_output_str == "TIME_LIMIT_EXCEEDED")
-        {
-            verdict = "Time Limit Exceeded";
-        }
-        else if (user_output_str == "RUNTIME_ERROR" || user_output_str == "JUDGE_ERROR")
-        {
-            verdict = "Runtime Error";
-        }
-        else
-        {
-            // Trim trailing whitespace from user output
-            size_t end = user_output_str.find_last_not_of(" \n\r\t");
-            std::string trimmed_output = (end == std::string::npos) ? "" : user_output_str.substr(0, end + 1);
-
-            // Trim trailing whitespace from expected output
-            end = tc.output.find_last_not_of(" \n\r\t");
-            std::string trimmed_expected = (end == std::string::npos) ? "" : tc.output.substr(0, end + 1);
-
-            if (trimmed_output == trimmed_expected)
-            {
-                verdict = "Accepted";
-            }
-            else
-            {
-                verdict = "Wrong Answer";
-            }
-        }
-
+        std::string verdict = verdict_from_output(run_code(executable_path, tc.input), tc.output);
         if (verdict != "Accepted")
         {
             final_verdict = verdict;
-            break; // Stop on first failed test case
+            break;
         }
     }
 
@@ -391,13 +377,7 @@ int main()
 {
     std::string redis_url_env = getenv("REDIS_URL") ? getenv("REDIS_URL") : "redis:6379";
     RedisConfig redis_cfg = parse_redis_url(redis_url_env);
-    std::string redis_host = "redis";
-    int redis_port = 6379;
-
-    redis_host = redis_cfg.host;
-    redis_port = redis_cfg.port;
-
-    redisContext *redis_c = redisConnect(redis_host.c_str(), redis_port);
+    redisContext *redis_c = redisConnect(redis_cfg.host.c_str(), redis_cfg.port);
     if (redis_c == NULL || redis_c->err)
     {
         if (redis_c)
@@ -414,7 +394,7 @@ int main()
 
     if (redis_cfg.use_tls)
     {
-        if (redisSecureConnection(redis_c, NULL, NULL, "/etc/ssl/certs", redis_host.c_str()) != REDIS_OK)
+        if (redisSecureConnection(redis_c, NULL, NULL, "/etc/ssl/certs", redis_cfg.host.c_str()) != REDIS_OK)
         {
             std::cerr << "Redis TLS handshake failed: " << redis_c->errstr << std::endl;
             redisFree(redis_c);
