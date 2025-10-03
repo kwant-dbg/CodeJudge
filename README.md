@@ -81,7 +81,17 @@ See `docs/azure-deployment.md` for resource planning and `.env.example` for conf
 
 ### Kubernetes
 
-Kubernetes manifests for core services are in `kubernetes/deploy/`.
+## Kubernetes Deployment
+
+Sample Kubernetes manifests for some services are in `kubernetes/deploy/`:
+- `plagiarism-service.yaml` - Plagiarism detection worker
+- `submissions-service.yaml` - Submission handling service
+
+For production Kubernetes deployment, you'll need to create manifests for all services and configure:
+- ConfigMaps for environment variables
+- Secrets for database and Redis credentials
+- Services for internal communication
+- Ingress for external access
 Apply them to any compatible cluster:
 
 ```bash
