@@ -8,6 +8,8 @@
 # Test binary, build artifacts
 *.test
 *.out
+
+# Docker volume data (if created locally)
 /submissions_volume/
 
 # Go vendor directory
@@ -15,12 +17,6 @@
 
 # Go workspace (keep go.work but ignore sync files)
 go.work.sum
-
-# Terraform
-terraform/.terraform/
-terraform/terraform.tfstate
-terraform/terraform.tfstate.backup
-*.tfvars
 
 # Environment files
 .env
@@ -45,34 +41,20 @@ Thumbs.db
 
 # Logs
 *.log
-logs/
 
 # Build artifacts
 target/
 build/
 dist/
 
-# Docker volumes and data
+# Docker volumes and data (if created locally)
 volumes/
 data/
-postgres_data/
-redis_data/
 
-# Backup files
-*.backup
-*.bak
-
-# Coverage reports
+# Coverage reports (if Go tests generate them)
 coverage.out
 coverage.html
-
-# Node.js (if any frontend components added later)
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # Temporary files
 tmp/
 temp/
-.tmp/
