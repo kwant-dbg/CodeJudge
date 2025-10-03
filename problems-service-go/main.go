@@ -84,25 +84,53 @@ func problemsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getProblems(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, title, description, difficulty FROM problems")
-	if err != nil {
-		http.Error(w, "Database query failed", http.StatusInternalServerError)
-		return
-	}
-	defer rows.Close()
+	path := strings.TrimPrefix(r.URL.Path, "/problems/")
+	path = strings.TrimSuffix(path, "/")
 
-	problems := []Problem{}
-	for rows.Next() {
-		var p Problem
-		if err := rows.Scan(&p.ID, &p.Title, &p.Description, &p.Difficulty); err != nil {
-			http.Error(w, "Failed to scan row", http.StatusInternalServerError)
+	if path == "" {
+		// Get all problems
+		rows, err := db.Query("SELECT id, title, description, difficulty FROM problems")
+		if err != nil {
+			http.Error(w, "Database query failed", http.StatusInternalServerError)
 			return
 		}
-		problems = append(problems, p)
-	}
+		defer rows.Close()
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(problems)
+		problems := []Problem{}
+		for rows.Next() {
+			var p Problem
+			if err := rows.Scan(&p.ID, &p.Title, &p.Description, &p.Difficulty); err != nil {
+				http.Error(w, "Failed to scan row", http.StatusInternalServerError)
+				return
+			}
+			problems = append(problems, p)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(problems)
+	} else {
+		// Get a single problem by ID
+		id, err := strconv.Atoi(path)
+		if err != nil {
+			http.Error(w, "Invalid problem ID", http.StatusBadRequest)
+			return
+		}
+
+		var p Problem
+		query := "SELECT id, title, description, difficulty FROM problems WHERE id = $1"
+		err = db.QueryRow(query, id).Scan(&p.ID, &p.Title, &p.Description, &p.Difficulty)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				http.Error(w, "Problem not found", http.StatusNotFound)
+			} else {
+				http.Error(w, "Database query failed", http.StatusInternalServerError)
+			}
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(p)
+	}
 }
 
 func createProblem(w http.ResponseWriter, r *http.Request) {
@@ -148,7 +176,6 @@ func testCaseHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	tc.ProblemID = problemID
-
 	query := "INSERT INTO test_cases (problem_id, input, output) VALUES ($1, $2, $3) RETURNING id"
 	err = db.QueryRow(query, tc.ProblemID, tc.Input, tc.Output).Scan(&tc.ID)
 	if err != nil {
@@ -156,7 +183,6 @@ func testCaseHandler(w http.ResponseWriter, r *http.Request) {
 		logger.Error("Error creating test case", zap.Error(err))
 		return
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(tc)
