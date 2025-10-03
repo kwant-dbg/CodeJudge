@@ -21,11 +21,11 @@ Write-Host ""
 
 # Services configuration
 $SERVICES = @{
-    "gateway" = @("api-gateway/Dockerfile", ".")
-    "problems" = @("problems-service-go/Dockerfile", ".")
-    "submissions" = @("submissions-service-go/Dockerfile", ".")
-    "plagiarism" = @("plagiarism-service-go/Dockerfile", ".")
-    "judge" = @("judge-service/Dockerfile", "judge-service")
+    "api-gateway" = @("api-gateway/Dockerfile", ".")
+    "problems-service-go" = @("problems-service-go/Dockerfile", ".")
+    "submissions-service-go" = @("submissions-service-go/Dockerfile", ".")
+    "plagiarism-service-go" = @("plagiarism-service-go/Dockerfile", ".")
+    "judge-service" = @("judge-service/Dockerfile", "judge-service")
 }
 
 # Build and push each service
@@ -33,7 +33,7 @@ foreach ($service in $SERVICES.Keys) {
     $dockerfile = $SERVICES[$service][0]
     $context = $SERVICES[$service][1]
     
-    $IMAGE_NAME = "$IMAGE_PREFIX/$service"
+    $IMAGE_NAME = "$IMAGE_PREFIX/codejudge-$service"
     
     Write-Host "📦 Building $service..." -ForegroundColor Yellow
     Write-Host "  Dockerfile: $dockerfile"
@@ -68,5 +68,5 @@ Write-Host "🎉 All images built and pushed successfully!" -ForegroundColor Gre
 Write-Host ""
 Write-Host "Images available at:" -ForegroundColor Cyan
 foreach ($service in $SERVICES.Keys) {
-    Write-Host "  $IMAGE_PREFIX/$service`:latest"
+    Write-Host "  $IMAGE_PREFIX/codejudge-$service`:latest"
 }

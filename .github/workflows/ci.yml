@@ -55,19 +55,19 @@ jobs:
     strategy:
       matrix:
         service:
-          - name: gateway
+          - name: api-gateway
             dockerfile: api-gateway/Dockerfile
             context: .
-          - name: problems
+          - name: problems-service-go
             dockerfile: problems-service-go/Dockerfile
             context: .
-          - name: submissions
+          - name: submissions-service-go
             dockerfile: submissions-service-go/Dockerfile
             context: .
-          - name: plagiarism
+          - name: plagiarism-service-go
             dockerfile: plagiarism-service-go/Dockerfile
             context: .
-          - name: judge
+          - name: judge-service
             dockerfile: judge-service/Dockerfile
             context: judge-service
     
@@ -86,7 +86,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service.name }}
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/codejudge-${{ matrix.service.name }}
         tags: |
           type=ref,event=branch
           type=ref,event=pr

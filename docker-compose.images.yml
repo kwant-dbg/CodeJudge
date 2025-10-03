@@ -1,0 +1,72 @@
+version: '3.8'
+
+# Docker compose using pre-built images from GitHub Container Registry
+# Use this instead of building locally for faster deployment
+
+services:
+  gateway:
+    image: ghcr.io/kwant-dbg/codejudge/codejudge-api-gateway:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - problems
+      - submissions
+      - plagiarism
+    environment:
+      - PROBLEMS_SERVICE_URL=http://problems:8000
+      - SUBMISSIONS_SERVICE_URL=http://submissions:8001
+      - PLAGIARISM_SERVICE_URL=http://plagiarism:8002
+
+  problems:
+    image: ghcr.io/kwant-dbg/codejudge/codejudge-problems-service-go:latest
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
+
+  submissions:
+    image: ghcr.io/kwant-dbg/codejudge/codejudge-submissions-service-go:latest
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - submissions_volume:/app/submissions
+    environment:
+      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
+      - REDIS_URL=redis:6379
+      - SUBMISSION_STORAGE_PATH=/app/submissions
+
+  plagiarism:
+    image: ghcr.io/kwant-dbg/codejudge/codejudge-plagiarism-service-go:latest
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
+      - REDIS_URL=redis:6379
+
+  judge:
+    image: ghcr.io/kwant-dbg/codejudge/codejudge-judge-service:latest
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis:6379
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=codejudgedb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:6
+    volumes:
+      - redis_data:/data
+
+volumes:
+  submissions_volume:
+  postgres_data:
+  redis_data:

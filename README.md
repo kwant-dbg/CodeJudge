@@ -42,11 +42,11 @@ Pre-built Docker images are available at GitHub Container Registry:
 
 ```bash
 # Pull latest images
-docker pull ghcr.io/kwant-dbg/codejudge/gateway:latest
-docker pull ghcr.io/kwant-dbg/codejudge/problems:latest
-docker pull ghcr.io/kwant-dbg/codejudge/submissions:latest
-docker pull ghcr.io/kwant-dbg/codejudge/plagiarism:latest
-docker pull ghcr.io/kwant-dbg/codejudge/judge:latest
+docker pull ghcr.io/kwant-dbg/codejudge/codejudge-api-gateway:latest
+docker pull ghcr.io/kwant-dbg/codejudge/codejudge-problems-service-go:latest
+docker pull ghcr.io/kwant-dbg/codejudge/codejudge-submissions-service-go:latest
+docker pull ghcr.io/kwant-dbg/codejudge/codejudge-plagiarism-service-go:latest
+docker pull ghcr.io/kwant-dbg/codejudge/codejudge-judge-service:latest
 ```
 
 ### Building Images Locally
@@ -56,6 +56,15 @@ docker-compose build
 
 # Build specific service
 docker-compose build gateway
+```
+
+### Using Pre-built Images
+```bash
+# Run using published images (faster)
+docker-compose -f docker-compose.images.yml up -d
+
+# Run with local builds
+docker-compose up --build -d
 ```
 
 ### Publishing Images

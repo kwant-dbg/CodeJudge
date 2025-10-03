@@ -22,17 +22,17 @@ echo ""
 
 # Services configuration
 declare -A SERVICES
-SERVICES[gateway]="api-gateway/Dockerfile ."
-SERVICES[problems]="problems-service-go/Dockerfile ."
-SERVICES[submissions]="submissions-service-go/Dockerfile ."
-SERVICES[plagiarism]="plagiarism-service-go/Dockerfile ."
-SERVICES[judge]="judge-service/Dockerfile judge-service"
+SERVICES[api-gateway]="api-gateway/Dockerfile ."
+SERVICES[problems-service-go]="problems-service-go/Dockerfile ."
+SERVICES[submissions-service-go]="submissions-service-go/Dockerfile ."
+SERVICES[plagiarism-service-go]="plagiarism-service-go/Dockerfile ."
+SERVICES[judge-service]="judge-service/Dockerfile judge-service"
 
 # Build and push each service
 for service in "${!SERVICES[@]}"; do
     IFS=' ' read -r dockerfile context <<< "${SERVICES[$service]}"
     
-    IMAGE_NAME="${IMAGE_PREFIX}/${service}"
+    IMAGE_NAME="${IMAGE_PREFIX}/codejudge-${service}"
     
     echo "📦 Building ${service}..."
     echo "  Dockerfile: ${dockerfile}"
@@ -59,5 +59,5 @@ echo "🎉 All images built and pushed successfully!"
 echo ""
 echo "Images available at:"
 for service in "${!SERVICES[@]}"; do
-    echo "  ${IMAGE_PREFIX}/${service}:latest"
+    echo "  ${IMAGE_PREFIX}/codejudge-${service}:latest"
 done
