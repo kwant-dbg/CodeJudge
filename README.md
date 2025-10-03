@@ -44,22 +44,40 @@ CodeJudge is a cloud-native backend for powering competitive programming and aut
    git clone https://github.com/kwant-dbg/CodeJudge.git
    cd CodeJudge
    ```
+
 2. **Launch All Services:**
    ```bash
+   # Development
    docker-compose up --build -d
+   
+   # Production-ready with health checks
+   docker-compose -f docker-compose.prod.yml up --build -d
    ```
    The API Gateway is exposed at [http://localhost:8080](http://localhost:8080).
 
+3. **Check Deployment Readiness (Optional):**
+   ```bash
+   # Run pre-deployment checks
+   bash scripts/check-deployment-readiness.sh
+   ```
+
 ## Advanced Deployment
 
-### Kubernetes
+### Azure Deployment Ready
 
-Kubernetes manifests for core services are in `kubernetes/deploy/`.
+This project is optimized for efficient cloud deployment with:
+- Resource-efficient Docker builds using Go workspaces
+- Standardized health endpoints for container orchestration
+- Production docker-compose with health checks and resource limits
+- Shared utilities to minimize deployment complexity
 
-To deploy (example):
-```bash
-kubectl apply -f kubernetes/deploy/
-```
+**Azure Prerequisites:**
+- Azure Container Registry
+- PostgreSQL Flexible Server 
+- Redis Cache
+- App Service Plan or Container Instances
+
+See `docs/azure-deployment.md` for resource planning and `.env.example` for configuration.
 
 ### Kubernetes
 
@@ -72,14 +90,42 @@ kubectl apply -f kubernetes/deploy/
 
 ## Local Development & Testing
 
-- All Go services are in their respective folders and can be run or tested independently.
-- The C++ judge service can be built and run in isolation for sandbox testing.
-- Use `docker-compose` for full integration testing.
-- Maven tasks (if present) can be run with:
-  ```powershell
-  mvn -B verify
-  mvn -B test
-  ```
+### Go Workspace Development
+This project uses Go workspaces for efficient multi-module development:
+
+```bash
+# Sync workspace
+go work sync
+
+# Run tests across all modules
+cd common-go && go test ./...
+
+# Build specific service
+cd problems-service-go && go build
+```
+
+### Independent Service Testing
+- All Go services can be run independently with their own `go.mod`
+- The C++ judge service can be built and tested in isolation
+- Shared utilities in `common-go/` provide consistent behavior
+
+### Integration Testing
+```bash
+# Full stack with development settings
+docker-compose up --build
+
+# Production-like with health checks
+docker-compose -f docker-compose.prod.yml up --build
+
+# Check deployment readiness
+bash scripts/check-deployment-readiness.sh
+```
+
+### Maven Tasks (if present)
+```powershell
+mvn -B verify
+mvn -B test
+```
 
 ## API Endpoints
 
