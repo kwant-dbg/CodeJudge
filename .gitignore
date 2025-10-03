@@ -58,3 +58,6 @@ coverage.html
 # Temporary files
 tmp/
 temp/
+
+# Local project summaries and notes
+PROJECT_SUMMARY.md
