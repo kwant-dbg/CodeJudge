@@ -35,7 +35,41 @@ CodeJudge is a cloud-native backend for powering competitive programming and aut
 | Containerization  | Docker, Docker Compose   | Local deployment                     |
 | Infrastructure    | Kubernetes               | Cluster deployment & provisioning    |
 
-## Quickstart (Docker Compose)
+## Docker Images
+
+### GitHub Container Registry
+Pre-built Docker images are available at GitHub Container Registry:
+
+```bash
+# Pull latest images
+docker pull ghcr.io/kwant-dbg/codejudge/gateway:latest
+docker pull ghcr.io/kwant-dbg/codejudge/problems:latest
+docker pull ghcr.io/kwant-dbg/codejudge/submissions:latest
+docker pull ghcr.io/kwant-dbg/codejudge/plagiarism:latest
+docker pull ghcr.io/kwant-dbg/codejudge/judge:latest
+```
+
+### Building Images Locally
+```bash
+# Build all services
+docker-compose build
+
+# Build specific service
+docker-compose build gateway
+```
+
+### Publishing Images
+```bash
+# Manual publish to GitHub Container Registry
+./scripts/build-and-push-ghcr.sh
+
+# Windows PowerShell
+.\scripts\build-and-push-ghcr.ps1
+```
+
+Images are automatically built and published via GitHub Actions on every push to main/master.
+
+## Quick Start
 
 **Prerequisites:** Docker and Docker Compose
 

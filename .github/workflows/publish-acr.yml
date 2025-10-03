@@ -1,0 +1,61 @@
+name: Build and Push to Azure Container Registry
+
+on:
+  workflow_dispatch:
+    inputs:
+      registry_name:
+        description: 'Azure Container Registry name (without .azurecr.io)'
+        required: true
+        type: string
+  
+env:
+  ACR_NAME: ${{ github.event.inputs.registry_name }}
+
+jobs:
+  build-and-push-acr:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+    
+    strategy:
+      matrix:
+        service:
+          - name: gateway
+            dockerfile: api-gateway/Dockerfile
+            context: .
+          - name: problems
+            dockerfile: problems-service-go/Dockerfile
+            context: .
+          - name: submissions
+            dockerfile: submissions-service-go/Dockerfile
+            context: .
+          - name: plagiarism
+            dockerfile: plagiarism-service-go/Dockerfile
+            context: .
+          - name: judge
+            dockerfile: judge-service/Dockerfile
+            context: judge-service
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Azure Container Registry Login
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ env.ACR_NAME }}.azurecr.io
+        username: ${{ secrets.AZURE_CLIENT_ID }}
+        password: ${{ secrets.AZURE_CLIENT_SECRET }}
+    
+    - name: Build and push to ACR
+      run: |
+        IMAGE_TAG=${{ env.ACR_NAME }}.azurecr.io/codejudge/${{ matrix.service.name }}:${{ github.sha }}
+        LATEST_TAG=${{ env.ACR_NAME }}.azurecr.io/codejudge/${{ matrix.service.name }}:latest
+        
+        docker build -t $IMAGE_TAG -t $LATEST_TAG -f ${{ matrix.service.dockerfile }} ${{ matrix.service.context }}
+        docker push $IMAGE_TAG
+        docker push $LATEST_TAG
+        
+        echo "Pushed: $IMAGE_TAG"
+        echo "Pushed: $LATEST_TAG"

@@ -1,0 +1,103 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.19'
+    
+    - name: Go workspace sync
+      run: go work sync
+    
+    - name: Run tests
+      run: |
+        cd common-go
+        go test ./...
+    
+    - name: Build all services
+      run: |
+        for service in api-gateway problems-service-go submissions-service-go plagiarism-service-go; do
+          echo "Building $service..."
+          cd $service
+          go build -o ../build-test-$service
+          cd ..
+        done
+    
+    - name: Build C++ judge service
+      run: |
+        cd judge-service
+        g++ -std=c++17 main.cpp -o ../build-test-judge -pthread
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    permissions:
+      contents: read
+      packages: write
+    
+    strategy:
+      matrix:
+        service:
+          - name: gateway
+            dockerfile: api-gateway/Dockerfile
+            context: .
+          - name: problems
+            dockerfile: problems-service-go/Dockerfile
+            context: .
+          - name: submissions
+            dockerfile: submissions-service-go/Dockerfile
+            context: .
+          - name: plagiarism
+            dockerfile: plagiarism-service-go/Dockerfile
+            context: .
+          - name: judge
+            dockerfile: judge-service/Dockerfile
+            context: judge-service
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service.name }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+    
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ${{ matrix.service.context }}
+        file: ${{ matrix.service.dockerfile }}
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
