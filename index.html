@@ -8,17 +8,20 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <!-- Fixed repo link in the top-right of the browser window -->
-    <a href="https://github.com/kwant-dbg/CodeJudge" class="fixed-repo-link" target="_blank" rel="noopener noreferrer" aria-label="kwant-dbg/CodeJudge on GitHub">
+    <!-- Fixed repo link in the top-left of the browser window -->
+    <a href="https://github.com/kwant-dbg/CodeJudge" class="fixed-repo-link fixed-left" target="_blank" rel="noopener noreferrer" aria-label="kwant-dbg/CodeJudge on GitHub">
       <img src="github.svg" alt="GitHub" class="github-icon"> <span class="repo-name">kwant-dbg/CodeJudge</span>
     </a>
-    <!-- Theme toggle (dark / light) -->
-    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode" aria-pressed="false">
-      <!-- moon (show when in light mode) -->
-      <svg class="icon icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-      <!-- sun (show when in dark mode) -->
-      <svg class="icon icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M6.76 4.84l-1.8-1.79L3.17 4.84 4.97 6.63 6.76 4.84zM1 13h3v-2H1v2zm10-9h2V1h-2v3zm7.03 2.03l1.79-1.79-1.79-1.79-1.79 1.79 1.79 1.79zM17 13h3v-2h-3v2zM12 7a5 5 0 100 10 5 5 0 000-10zm4.24 11.16l1.79 1.79 1.79-1.79-1.79-1.79-1.79 1.79zM11 23h2v-3h-2v3zM4.97 17.37L3.17 15.58l1.79-1.79 1.79 1.79-1.78 1.79z"/></svg>
-    </button>
+
+    <!-- Theme controls (top-right): explicit dark and light buttons -->
+    <div class="theme-controls" role="group" aria-label="Theme controls">
+      <button id="theme-dark" class="theme-btn" aria-pressed="false" title="Dark mode" aria-label="Enable dark mode">
+        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      </button>
+      <button id="theme-light" class="theme-btn" aria-pressed="false" title="Light mode" aria-label="Enable light mode">
+        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M6.76 4.84l-1.8-1.79L3.17 4.84 4.97 6.63 6.76 4.84zM1 13h3v-2H1v2zm10-9h2V1h-2v3zm7.03 2.03l1.79-1.79-1.79-1.79-1.79 1.79 1.79 1.79zM17 13h3v-2h-3v2zM12 7a5 5 0 100 10 5 5 0 000-10zm4.24 11.16l1.79 1.79 1.79-1.79-1.79-1.79-1.79 1.79zM11 23h2v-3h-2v3zM4.97 17.37L3.17 15.58l1.79-1.79 1.79 1.79-1.78 1.79z"/></svg>
+      </button>
+    </div>
     <main class="container">
       <div class="card">
         <header class="card-header">
@@ -55,7 +58,8 @@
     </main>
     <script>
       (function(){
-        const toggle = document.getElementById('theme-toggle');
+        const btnDark = document.getElementById('theme-dark');
+        const btnLight = document.getElementById('theme-light');
         const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
         const saved = localStorage.getItem('codejudge:theme');
         const isDark = saved ? saved === 'dark' : prefersDark;
@@ -63,16 +67,18 @@
         function apply(dark){
           document.documentElement.classList.toggle('dark', dark);
           document.body.classList.toggle('dark', dark);
-          toggle.setAttribute('aria-pressed', dark ? 'true' : 'false');
+          if (btnDark) btnDark.setAttribute('aria-pressed', dark ? 'true' : 'false');
+          if (btnLight) btnLight.setAttribute('aria-pressed', dark ? 'false' : 'true');
         }
 
         apply(isDark);
-
-        toggle.addEventListener('click', function(){
-          const now = document.documentElement.classList.toggle('dark');
-          document.body.classList.toggle('dark', now);
-          toggle.setAttribute('aria-pressed', now ? 'true' : 'false');
-          localStorage.setItem('codejudge:theme', now ? 'dark' : 'light');
+        if (btnDark) btnDark.addEventListener('click', function(){
+          apply(true);
+          localStorage.setItem('codejudge:theme', 'dark');
+        });
+        if (btnLight) btnLight.addEventListener('click', function(){
+          apply(false);
+          localStorage.setItem('codejudge:theme', 'light');
         });
       })();
     </script>
