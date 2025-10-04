@@ -120,16 +120,31 @@ Note: The main CI will not run for simple edits under `maintenance-page/` becaus
 ### Azure Deployment Ready
 
 This project is optimized for efficient cloud deployment with:
-- Resource-efficient Docker builds using Go workspaces
-- Standardized health endpoints for container orchestration
-- Production docker-compose with health checks and resource limits
-- Shared utilities to minimize deployment complexity
+
+   Resource-efficient Docker builds using Go workspaces
+   Standardized health endpoints for container orchestration
+   Production docker-compose with health checks and resource limits
+   Shared utilities to minimize deployment complexity
+
+For production Kubernetes deployment, you'll need to create manifests for all services and configure:
+
+   ConfigMaps for environment variables
+   Secrets for database and Redis credentials
+   Services for internal communication
+   Ingress for external access Apply them to any compatible cluster:
+
+Independent Service Testing
+
+   All Go services can be run independently with their own go.mod
+   The C++ judge service can be built and tested in isolation
+   Shared utilities in common-go/ provide consistent behavior
 
 **Azure Prerequisites:**
-- Azure Container Registry
-- PostgreSQL Flexible Server 
-- Redis Cache
-- App Service Plan or Container Instances
+
+   Azure Container Registry
+   PostgreSQL Flexible Server 
+   Redis Cache
+   App Service Plan or Container Instances
 
 See `docs/azure-deployment.md` for resource planning and `.env.example` for configuration.
 
