@@ -1,0 +1,51 @@
+name: Configure GitHub Pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  configure-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure Pages source
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            core.info(`Setting Pages source to gh-pages for ${owner}/${repo}`);
+            // Create or update the Pages site to use gh-pages root
+            const res = await github.request('PUT /repos/{owner}/{repo}/pages', {
+              owner,
+              repo,
+              source: { branch: 'gh-pages', path: '/' }
+            });
+            core.info('Pages update response: ' + JSON.stringify(res.data, null, 2));
+
+            // Poll the Pages endpoint until the site is built or timeout
+            let pages;
+            const maxAttempts = 20;
+            for (let i = 0; i < maxAttempts; i++) {
+              pages = await github.request('GET /repos/{owner}/{repo}/pages', { owner, repo });
+              core.info(`Attempt ${i+1}: pages state=${pages.data.state}`);
+              if (pages.data.state === 'built') {
+                core.info('Pages site built successfully');
+                break;
+              }
+              // wait 15s
+              await new Promise(r => setTimeout(r, 15000));
+            }
+
+            if (!pages || pages.data.state !== 'built') {
+              core.warning('Pages site not built yet. Check repository Settings -> Pages for details.');
+            }
+
+            core.setOutput('pages_url', pages && (pages.data.html_url || pages.data.url));
+
+      - name: Show Pages URL
+        run: echo "Pages URL: ${{ steps.configure-pages.outputs.pages_url }}"
