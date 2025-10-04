@@ -115,53 +115,11 @@ If you need to temporarily take the site offline to save resources, this reposit
 
 Note: The main CI will not run for simple edits under `maintenance-page/` because the deploy helper is narrowly scoped to those path changes.
 
-## Advanced Deployment
+## Advanced deployment
 
-### Azure Deployment Ready
+This project includes examples and is ready to be deployed to cloud or Kubernetes platforms. For production you should provide the usual runtime artifacts: ConfigMaps (non-sensitive config), Secrets (database and Redis credentials), Service objects for internal communication, and an Ingress for external access. Example manifests for a few services are in `kubernetes/deploy/` and detailed Azure guidance is in `docs/azure-deployment.md`.
 
-This project is optimized for efficient cloud deployment with:
-
-   Resource-efficient Docker builds using Go workspaces
-   Standardized health endpoints for container orchestration
-   Production docker-compose with health checks and resource limits
-   Shared utilities to minimize deployment complexity
-
-For production Kubernetes deployment, you'll need to create manifests for all services and configure:
-
-   ConfigMaps for environment variables
-   Secrets for database and Redis credentials
-   Services for internal communication
-   Ingress for external access Apply them to any compatible cluster:
-
-Independent Service Testing
-
-   All Go services can be run independently with their own go.mod
-   The C++ judge service can be built and tested in isolation
-   Shared utilities in common-go/ provide consistent behavior
-
-**Azure Prerequisites:**
-
-   Azure Container Registry
-   PostgreSQL Flexible Server 
-   Redis Cache
-   App Service Plan or Container Instances
-
-See `docs/azure-deployment.md` for resource planning and `.env.example` for configuration.
-
-### Kubernetes
-
-## Kubernetes Deployment
-
-Sample Kubernetes manifests for some services are in `kubernetes/deploy/`:
-- `plagiarism-service.yaml` - Plagiarism detection worker
-- `submissions-service.yaml` - Submission handling service
-
-For production Kubernetes deployment, you'll need to create manifests for all services and configure:
-- ConfigMaps for environment variables
-- Secrets for database and Redis credentials
-- Services for internal communication
-- Ingress for external access
-Apply them to any compatible cluster:
+Apply the sample manifests (modify for your environment):
 
 ```bash
 kubectl apply -f kubernetes/deploy/
