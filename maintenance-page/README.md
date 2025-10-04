@@ -46,6 +46,8 @@ How it works:
 
 If you prefer manual control, simply push to the existing `gh-pages` branch instead.
 
+Note: the copy in `index.html` was recently updated to say "cloud credits" instead of "Azure Student credits".
+
 
 
 
