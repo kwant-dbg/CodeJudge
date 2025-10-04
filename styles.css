@@ -28,6 +28,8 @@ body{
 }
 .card-header h1{margin:0;font-size:26px;color:var(--accent)}
 .subtitle{margin:8px 0 0;color:var(--muted);font-weight:600}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{border-radius:8px;box-shadow:0 6px 18px rgba(2,6,23,0.06)}
 .content{margin-top:18px}
 .notice{background: linear-gradient(90deg, rgba(37,99,235,0.06), rgba(37,99,235,0.03));
   border:1px solid rgba(37,99,235,0.08);
@@ -35,6 +37,10 @@ body{
 .contact-block{margin-top:14px;padding:12px;border-radius:8px;background:#f1f5f9;border:1px solid rgba(2,6,23,0.04)}
 .contact a{color:var(--accent);font-weight:700;text-decoration:none}
 .thanks{margin-top:14px;color:var(--muted);font-weight:600}
+
+.repo-link{margin-top:12px}
+.repo-link a{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-weight:600}
+.github-icon{width:20px;height:20px;filter:invert(0);opacity:0.9}
 
 @media (max-width:520px){
   .card{padding:18px}
