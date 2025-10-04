@@ -40,6 +40,17 @@ body{
   .card-header{padding-bottom:8px}
   .brand{flex-direction:row;align-items:center}
 }
+
+/* Fixed browser-corner repo link */
+.fixed-repo-link{
+  position:fixed;right:18px;top:18px;z-index:60;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,255,255,0.96);border-radius:999px;box-shadow:0 6px 18px rgba(2,6,23,0.08);color:var(--muted);text-decoration:none;font-weight:700}
+.fixed-repo-link .github-icon{width:18px;height:18px}
+.fixed-repo-link .repo-name{display:inline-block}
+
+@media (max-width:520px){
+  .fixed-repo-link{padding:8px;border-radius:10px}
+  .fixed-repo-link .repo-name{display:none}
+}
 .content{margin-top:18px}
 .notice{background: linear-gradient(90deg, rgba(37,99,235,0.06), rgba(37,99,235,0.03));
   border:1px solid rgba(37,99,235,0.08);
