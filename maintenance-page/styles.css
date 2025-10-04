@@ -8,11 +8,11 @@
 
 /* Dark theme variables */
 :root.dark{
-  --bg: #0b1220;
-  --card: #0f1724;
-  --accent: #7c3aed;
-  --muted: #cbd5e1;
-  --ring: rgba(124,58,237,0.16);
+  --bg: #36393e; /* user requested */
+  --card: #2f3235; /* slightly darker than bg for separation */
+  --accent: #8ab4f8; /* lighter blue accent for links */
+  --muted: #d0d4d7; /* readable muted text */
+  --ring: rgba(138,180,248,0.16);
 }
 
 *{box-sizing:border-box}
@@ -111,13 +111,14 @@ body{
 
 /* Dark mode page adjustments */
 body.dark, :root.dark body{
-  background: linear-gradient(180deg, #07080b 0%, #0b1220 100%);
+  background: var(--bg);
 }
-.dark .card{box-shadow:0 8px 30px rgba(2,6,23,0.6)}
-.dark .card{border:1px solid rgba(255,255,255,0.04)}
-.dark .notice{background: linear-gradient(90deg, rgba(124,58,237,0.06), rgba(124,58,237,0.03));}
-.dark .contact-block{background:#071022;border:1px solid rgba(255,255,255,0.02)}
+.dark .card{box-shadow:0 10px 30px rgba(2,6,23,0.45)}
+.dark .card{border:1px solid rgba(255,255,255,0.03)}
+.dark .notice{background: linear-gradient(90deg, rgba(138,180,248,0.06), rgba(138,180,248,0.03));}
+.dark .contact-block{background:#2a2c2f;border:1px solid rgba(255,255,255,0.02)}
 .dark .subtitle,.dark .thanks,.dark .contact-block strong{color:var(--muted)}
+.dark a{color:var(--accent)}
 
 .repo-link{margin-top:12px}
 .repo-link a{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-weight:600}
