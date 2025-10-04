@@ -6,6 +6,15 @@
   --ring: #bfdbfe;
 }
 
+/* Dark theme variables */
+:root.dark{
+  --bg: #0b1220;
+  --card: #0f1724;
+  --accent: #7c3aed;
+  --muted: #cbd5e1;
+  --ring: rgba(124,58,237,0.16);
+}
+
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -59,6 +68,24 @@ body{
 .contact-block{margin-top:14px;padding:12px;border-radius:8px;background:#f1f5f9;border:1px solid rgba(2,6,23,0.04)}
 .contact a{color:var(--accent);font-weight:700;text-decoration:none}
 .thanks{margin-top:14px;color:var(--muted);font-weight:600}
+
+/* Theme toggle button */
+.theme-toggle{position:fixed;right:18px;top:60px;z-index:10000;border:0;background:rgba(255,255,255,0.96);padding:8px;border-radius:999px;box-shadow:0 6px 18px rgba(2,6,23,0.06);cursor:pointer;color:var(--muted)}
+.theme-toggle .icon{display:inline-block}
+.theme-toggle .icon-sun{display:none}
+.theme-toggle[aria-pressed="true"]{background:var(--card)}
+.theme-toggle[aria-pressed="true"] .icon-sun{display:inline-block}
+.theme-toggle[aria-pressed="true"] .icon-moon{display:none}
+
+/* Dark mode page adjustments */
+body.dark, :root.dark body{
+  background: linear-gradient(180deg, #07080b 0%, #0b1220 100%);
+}
+.dark .card{box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+.dark .card{border:1px solid rgba(255,255,255,0.04)}
+.dark .notice{background: linear-gradient(90deg, rgba(124,58,237,0.06), rgba(124,58,237,0.03));}
+.dark .contact-block{background:#071022;border:1px solid rgba(255,255,255,0.02)}
+.dark .subtitle,.dark .thanks,.dark .contact-block strong{color:var(--muted)}
 
 .repo-link{margin-top:12px}
 .repo-link a{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-weight:600}
