@@ -117,7 +117,7 @@ Note: The main CI will not run for simple edits under `maintenance-page/` becaus
 
 ## Advanced deployment
 
-This project includes examples and is ready to be deployed to cloud or Kubernetes platforms. For production you should provide the usual runtime artifacts: ConfigMaps (non-sensitive config), Secrets (database and Redis credentials), Service objects for internal communication, and an Ingress for external access. Example manifests for a few services are in `kubernetes/deploy/` and detailed Azure guidance is in `docs/azure-deployment.md`.
+Example manifests for a few services are in `kubernetes/deploy/`. See `docs/azure-deployment.md` for detailed cloud deployment guidance.
 
 Apply the sample manifests (modify for your environment):
 
