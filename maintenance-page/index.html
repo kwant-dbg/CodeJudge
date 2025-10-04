@@ -60,10 +60,9 @@
       (function(){
         const btnDark = document.getElementById('theme-dark');
         const btnLight = document.getElementById('theme-light');
-  // default to light unless user has an explicit saved preference
-  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const saved = localStorage.getItem('codejudge:theme');
-  const isDark = saved ? saved === 'dark' : false;
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const saved = localStorage.getItem('codejudge:theme');
+        const isDark = saved ? saved === 'dark' : prefersDark;
 
         function apply(dark){
           document.documentElement.classList.toggle('dark', dark);

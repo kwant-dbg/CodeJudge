@@ -3,7 +3,6 @@
   --card: #ffffff;
   --accent: #2563eb;
   --muted: #475569;
-  --text: #0f1724;
   --ring: #bfdbfe;
 }
 
@@ -12,9 +11,14 @@
   --bg: #36393e; /* user requested */
   --card: #2f3235; /* slightly darker than bg for separation */
   --accent: #8ab4f8; /* lighter blue accent for links */
-  --muted: #cfcfcf; /* readable muted text */
-  --text: #eef1f3; /* lighter main text for dark mode */
+  --muted: #d0d4d7; /* readable muted text */
   --ring: rgba(138,180,248,0.16);
+}
+
+/* Smooth transition when toggling dark/light theme */
+html, body, .card, .notice, .contact-block, .fixed-repo-link, .theme-controls, .theme-btn, a, .logo {
+  transition: color 200ms ease, background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+  -webkit-transition: color 200ms ease, background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
 }
 
 *{box-sizing:border-box}
@@ -23,7 +27,7 @@ body{
   margin:0;
   font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
   background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 100%);
-  color:var(--text);
+  color: #0f1724;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -103,7 +107,7 @@ body{
 .content{margin-top:18px}
 .notice{background: linear-gradient(90deg, rgba(37,99,235,0.06), rgba(37,99,235,0.03));
   border:1px solid rgba(37,99,235,0.08);
-  padding:12px;border-radius:8px;color:var(--text)}
+  padding:12px;border-radius:8px;color:#0b1220}
 .contact-block{margin-top:14px;padding:12px;border-radius:8px;background:#f1f5f9;border:1px solid rgba(2,6,23,0.04)}
 .contact a{color:var(--accent);font-weight:700;text-decoration:none}
 .thanks{margin-top:14px;color:var(--muted);font-weight:600}
