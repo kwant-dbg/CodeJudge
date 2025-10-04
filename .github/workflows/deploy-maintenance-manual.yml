@@ -1,12 +1,7 @@
-name: Deploy maintenance page (on changes)
+name: Manual Deploy Maintenance Page
 
 on:
-  push:
-    paths:
-      - 'maintenance-page/**'
-    branches:
-      - main
-      - master
+  workflow_dispatch:
 
 permissions:
   contents: write

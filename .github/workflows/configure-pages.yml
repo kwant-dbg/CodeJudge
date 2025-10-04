@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Configure Pages source
+        id: configure-pages
         uses: actions/github-script@v6
         with:
           script: |
