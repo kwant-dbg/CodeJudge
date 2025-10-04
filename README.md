@@ -104,6 +104,17 @@ Images are automatically built and published via GitHub Actions on every push to
    bash scripts/check-deployment-readiness.sh
    ```
 
+## Maintenance page (GitHub Pages)
+
+If you need to temporarily take the site offline to save resources, this repository includes a small static maintenance page and a lightweight deploy helper.
+
+- Files: `maintenance-page/index.html`, `maintenance-page/styles.css`, `maintenance-page/CNAME`.
+- How to update: edit files under `maintenance-page/` and push to `main`/`master`. A small workflow (`.github/workflows/deploy-maintenance-on-change.yml`) will run only when `maintenance-page/**` changes and will publish the content to the `gh-pages` branch.
+- Manual publish: alternatively, commit directly to the `gh-pages` branch (it contains only the published page) if you prefer manual control.
+- DNS: the repository contains a `CNAME` set to `codejudge.live`. Configure DNS at Name.com (four GitHub Pages A records for the apex and a CNAME for `www`) to point the domain to GitHub Pages.
+
+Note: The main CI will not run for simple edits under `maintenance-page/` because the deploy helper is narrowly scoped to those path changes.
+
 ## Advanced Deployment
 
 ### Azure Deployment Ready
