@@ -66,3 +66,6 @@ PROJECT_SUMMARY.md
 .azure/plan.copilotmd
 docs/azure-deployment.md
 docs/deployment-checklist.md
+
+# Archived publish artifacts
+.wkt_publish/
