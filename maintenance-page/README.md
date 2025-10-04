@@ -33,3 +33,15 @@ Notes and tips
 - If you want automated deployment, use GitHub Actions to copy `maintenance-page/` to `gh-pages` on push to a selected branch.
 
 If you want, I can: create the `gh-pages` branch and open a PR that deploys this page, or add a GitHub Action that publishes to `gh-pages` automatically. Tell me which option you prefer and your repository's GitHub username (if different from the repo owner) and custom domain (if you want me to pre-fill `CNAME`).
+ 
+Automatic deployment helper
+---------------------------
+
+This repository includes a small GitHub Actions workflow `.github/workflows/deploy-maintenance-on-change.yml` that will automatically publish the contents of `maintenance-page/` to the `gh-pages` branch whenever files under that folder change on `main` or `master`. The workflow is lightweight and only runs on maintenance-page changes (so it won't trigger the full CI).
+
+How it works:
+- Edit files under `maintenance-page/` on `main` or `master` and push.
+- The workflow will run, copy `maintenance-page/` into an `out/` folder and deploy `out/` to `gh-pages` using `peaceiris/actions-gh-pages`.
+- The `gh-pages` branch will be overwritten with the deployed content (this is intentional to keep Pages content minimal).
+
+If you prefer manual control, simply push to the existing `gh-pages` branch instead.
