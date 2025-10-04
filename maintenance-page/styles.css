@@ -3,6 +3,7 @@
   --card: #ffffff;
   --accent: #2563eb;
   --muted: #475569;
+  --text: #0f1724;
   --ring: #bfdbfe;
 }
 
@@ -11,7 +12,8 @@
   --bg: #36393e; /* user requested */
   --card: #2f3235; /* slightly darker than bg for separation */
   --accent: #8ab4f8; /* lighter blue accent for links */
-  --muted: #d0d4d7; /* readable muted text */
+  --muted: #cfcfcf; /* readable muted text */
+  --text: #eef1f3; /* lighter main text for dark mode */
   --ring: rgba(138,180,248,0.16);
 }
 
@@ -21,7 +23,7 @@ body{
   margin:0;
   font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
   background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 100%);
-  color: #0f1724;
+  color:var(--text);
   display:flex;
   align-items:center;
   justify-content:center;
@@ -101,7 +103,7 @@ body{
 .content{margin-top:18px}
 .notice{background: linear-gradient(90deg, rgba(37,99,235,0.06), rgba(37,99,235,0.03));
   border:1px solid rgba(37,99,235,0.08);
-  padding:12px;border-radius:8px;color:#0b1220}
+  padding:12px;border-radius:8px;color:var(--text)}
 .contact-block{margin-top:14px;padding:12px;border-radius:8px;background:#f1f5f9;border:1px solid rgba(2,6,23,0.04)}
 .contact a{color:var(--accent);font-weight:700;text-decoration:none}
 .thanks{margin-top:14px;color:var(--muted);font-weight:600}
