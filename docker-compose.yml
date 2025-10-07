@@ -9,6 +9,7 @@ services:
       - problems
       - submissions
       - plagiarism
+      - auth
 
   problems:
     build:
@@ -43,6 +44,16 @@ services:
     environment:
       - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
       - REDIS_URL=redis:6379
+
+  auth:
+    build:
+      context: .
+      dockerfile: auth-service-go/Dockerfile
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
+      - JWT_SECRET=your-jwt-secret-key-change-in-production
 
   judge:
     build: ./judge-service

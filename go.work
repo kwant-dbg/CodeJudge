@@ -2,6 +2,7 @@ go 1.19
 
 use (
 	./api-gateway
+	./auth-service-go
 	./common-go
 	./plagiarism-service-go
 	./problems-service-go

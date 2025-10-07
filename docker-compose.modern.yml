@@ -1,0 +1,174 @@
+# Docker Compose for CodeJudge - Using Consolidated Dockerfiles
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: codejudge
+      POSTGRES_USER: codejudge
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U codejudge"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  problems:
+    build:
+      context: .
+      dockerfile: Dockerfile.go-service
+      args:
+        SERVICE_NAME: problems-service-go
+        SERVICE_PORT: 8000
+    environment:
+      DATABASE_URL: "postgresql://codejudge:password@postgres:5432/codejudge?sslmode=disable"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  submissions:
+    build:
+      context: .
+      dockerfile: Dockerfile.go-service
+      args:
+        SERVICE_NAME: submissions-service-go
+        SERVICE_PORT: 8001
+    environment:
+      DATABASE_URL: "postgresql://codejudge:password@postgres:5432/codejudge?sslmode=disable"
+      REDIS_URL: "redis://redis:6379"
+      SUBMISSION_STORAGE_PATH: "/app/submissions"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8001:8001"
+    volumes:
+      - submission_storage:/app/submissions
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  plagiarism:
+    build:
+      context: .
+      dockerfile: Dockerfile.go-service
+      args:
+        SERVICE_NAME: plagiarism-service-go
+        SERVICE_PORT: 8002
+    environment:
+      DATABASE_URL: "postgresql://codejudge:password@postgres:5432/codejudge?sslmode=disable"
+      REDIS_URL: "redis://redis:6379"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8002:8002"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  judge:
+    build:
+      context: judge-service
+      dockerfile: Dockerfile.modern
+    environment:
+      DATABASE_URL: "postgresql://codejudge:password@postgres:5432/codejudge?sslmode=disable"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - submission_storage:/app/submissions
+    # Run with additional security capabilities for sandboxing
+    privileged: true
+    # In production, use specific capabilities instead of privileged mode:
+    # cap_add:
+    #   - SYS_ADMIN
+    #   - SYS_CHROOT
+
+  auth:
+    build:
+      context: .
+      dockerfile: Dockerfile.go-service
+      args:
+        SERVICE_NAME: auth-service-go
+        SERVICE_PORT: 8003
+    environment:
+      DATABASE_URL: "postgresql://codejudge:password@postgres:5432/codejudge?sslmode=disable"
+      JWT_SECRET: "your-jwt-secret-key-change-in-production"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8003:8003"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.go-service
+      args:
+        SERVICE_NAME: api-gateway
+        SERVICE_PORT: 8080
+    environment:
+      PROBLEMS_SERVICE_URL: "http://problems:8000"
+      SUBMISSIONS_SERVICE_URL: "http://submissions:8001"
+      PLAGIARISM_SERVICE_URL: "http://plagiarism:8002"
+      AUTH_SERVICE_URL: "http://auth:8003"
+    depends_on:
+      problems:
+        condition: service_healthy
+      submissions:
+        condition: service_healthy
+      plagiarism:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+  submission_storage:

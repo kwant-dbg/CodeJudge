@@ -1,0 +1,41 @@
+# Use Ubuntu as base for better toolchain support
+FROM ubuntu:22.04
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    pkg-config \
+    libpq-dev \
+    libhiredis-dev \
+    libseccomp-dev \
+    nlohmann-json3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-privileged user for running submitted code
+RUN useradd -r -s /bin/false -M -d /nonexistent sandbox_user
+
+# Create working directory
+WORKDIR /app
+
+# Copy source files
+COPY *.cpp *.h CMakeLists.txt ./
+
+# Build the application
+RUN cmake . && make
+
+# Create necessary directories with proper permissions
+RUN mkdir -p /tmp/sandbox && \
+    chmod 755 /tmp/sandbox && \
+    mkdir -p /sys/fs/cgroup/memory && \
+    chmod 755 /sys/fs/cgroup/memory
+
+# Set capabilities for proper sandboxing (requires privileged container)
+# In production, this should be done with proper capability management
+RUN setcap cap_sys_admin,cap_sys_chroot+ep /app/judge-service-modern
+
+# Expose health check endpoint (if implemented)
+EXPOSE 8080
+
+# Use the modern judge service by default
+CMD ["./judge-service-modern"]

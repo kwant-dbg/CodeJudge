@@ -45,6 +45,11 @@ func main() {
 	if err != nil {
 		logger.Fatal("failed to create plagiarism proxy", zap.Error(err))
 	}
+	authURL := env.Get("AUTH_SERVICE_URL", "http://auth:8003")
+	authProxy, err := newProxy(authURL)
+	if err != nil {
+		logger.Fatal("failed to create auth proxy", zap.Error(err))
+	}
 
 	stripAPI := func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -56,6 +61,7 @@ func main() {
 	http.Handle("/api/problems/", stripAPI(problemsProxy))
 	http.Handle("/api/submissions", stripAPI(submissionsProxy))
 	http.Handle("/api/plagiarism/", stripAPI(plagiarismProxy))
+	http.Handle("/api/auth/", stripAPI(authProxy))
 
 	// Serve static files from the static directory
 	http.Handle("/", http.FileServer(http.Dir("./static/")))

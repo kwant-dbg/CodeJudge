@@ -5,50 +5,289 @@
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <title>CodeJudge - Online Coding Judge Platform</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        h1 { color: #333; text-align: center; }
-        form { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
-        input, textarea, select { width: 100%; padding: 8px; margin: 5px 0; }
-        button { background: #007bff; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; }
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        h1 { color: #333; margin: 0; }
+        .auth-section { display: flex; gap: 10px; align-items: center; }
+        .auth-form { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .hidden { display: none; }
+        input, textarea, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { background: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
         button:hover { background: #0056b3; }
+        button.secondary { background: #6c757d; }
+        button.secondary:hover { background: #545b62; }
+        .user-info { color: #333; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .status.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .tab-buttons { display: flex; margin-bottom: 20px; }
+        .tab-button { background: #e9ecef; border: none; padding: 10px 20px; cursor: pointer; }
+        .tab-button.active { background: #007bff; color: white; }
     </style>
 </head>
 <body>
     <div class='container'>
-        <h1> CodeJudge</h1>
-        <p>Online Coding Judge Platform</p>
-        
-        <h2>Create Problem</h2>
-        <form id='problemForm'>
-            <input type='text' id='title' placeholder='Problem Title' required><br>
-            <textarea id='description' placeholder='Description' required></textarea><br>
-            <select id='difficulty' required>
-                <option value=''>Select Difficulty</option>
-                <option value='easy'>Easy</option>
-                <option value='medium'>Medium</option>
-                <option value='hard'>Hard</option>
-            </select><br>
-            <button type='submit'>Create Problem</button>
-        </form>
-        
-        <h2>Submit Solution</h2>
-        <form id='submissionForm'>
-            <input type='number' id='problemId' placeholder='Problem ID' required><br>
-            <select id='language' required>
-                <option value=''>Select Language</option>
-                <option value='cpp'>C++</option>
-                <option value='python'>Python</option>
-                <option value='java'>Java</option>
-            </select><br>
-            <textarea id='code' placeholder='Your code here...' required></textarea><br>
-            <button type='submit'>Submit Solution</button>
-        </form>
-        
+        <div class='header'>
+            <h1>🏆 CodeJudge</h1>
+            <div class='auth-section'>
+                <div id='userInfo' class='user-info hidden'></div>
+                <button id='loginBtn' onclick='showLogin()'>Login</button>
+                <button id='registerBtn' onclick='showRegister()'>Register</button>
+                <button id='logoutBtn' class='hidden' onclick='logout()'>Logout</button>
+            </div>
+        </div>
+
+        <!-- Authentication Forms -->
+        <div id='authForm' class='auth-form hidden'>
+            <div class='tab-buttons'>
+                <button id='loginTab' class='tab-button active' onclick='switchTab("login")'>Login</button>
+                <button id='registerTab' class='tab-button' onclick='switchTab("register")'>Register</button>
+            </div>
+            
+            <form id='loginForm'>
+                <input type='text' id='loginUsername' placeholder='Username' required>
+                <input type='password' id='loginPassword' placeholder='Password' required>
+                <button type='submit'>Login</button>
+                <button type='button' class='secondary' onclick='hideAuth()'>Cancel</button>
+            </form>
+            
+            <form id='registerForm' class='hidden'>
+                <input type='text' id='registerUsername' placeholder='Username' required>
+                <input type='email' id='registerEmail' placeholder='Email' required>
+                <input type='password' id='registerPassword' placeholder='Password (min 6 chars)' required>
+                <button type='submit'>Register</button>
+                <button type='button' class='secondary' onclick='hideAuth()'>Cancel</button>
+            </form>
+        </div>
+
+        <!-- Main Content -->
+        <div id='mainContent' class='main-content'>
+            <div class='section'>
+                <h2>📝 Create Problem</h2>
+                <form id='problemForm'>
+                    <input type='text' id='title' placeholder='Problem Title' required>
+                    <textarea id='description' placeholder='Problem Description' rows='4' required></textarea>
+                    <select id='difficulty' required>
+                        <option value=''>Select Difficulty</option>
+                        <option value='easy'>Easy</option>
+                        <option value='medium'>Medium</option>
+                        <option value='hard'>Hard</option>
+                    </select>
+                    <button type='submit'>Create Problem</button>
+                </form>
+            </div>
+            
+            <div class='section'>
+                <h2>💻 Submit Solution</h2>
+                <form id='submissionForm'>
+                    <input type='number' id='problemId' placeholder='Problem ID' required>
+                    <select id='language' required>
+                        <option value=''>Select Language</option>
+                        <option value='cpp'>C++</option>
+                        <option value='python'>Python</option>
+                        <option value='java'>Java</option>
+                    </select>
+                    <textarea id='code' placeholder='Your code here...' rows='8' required></textarea>
+                    <button type='submit'>Submit Solution</button>
+                </form>
+            </div>
+        </div>
+
         <div id='status'></div>
+        <div id='loginRequired' class='status error hidden'>
+            Please login to access CodeJudge features.
+        </div>
     </div>
 
     <script>
+        // Authentication state
+        let currentUser = null;
+        let authToken = localStorage.getItem('authToken');
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            if (authToken) {
+                validateToken();
+            } else {
+                showLoginRequired();
+            }
+        });
+
+        // Auth functions
+        function showLogin() {
+            document.getElementById('authForm').classList.remove('hidden');
+            switchTab('login');
+        }
+
+        function showRegister() {
+            document.getElementById('authForm').classList.remove('hidden');
+            switchTab('register');
+        }
+
+        function hideAuth() {
+            document.getElementById('authForm').classList.add('hidden');
+        }
+
+        function switchTab(tab) {
+            const loginTab = document.getElementById('loginTab');
+            const registerTab = document.getElementById('registerTab');
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+
+            if (tab === 'login') {
+                loginTab.classList.add('active');
+                registerTab.classList.remove('active');
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+            } else {
+                registerTab.classList.add('active');
+                loginTab.classList.remove('active');
+                registerForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+            }
+        }
+
+        function showLoggedIn(user) {
+            currentUser = user;
+            document.getElementById('userInfo').textContent = `Welcome, ${user.username}!`;
+            document.getElementById('userInfo').classList.remove('hidden');
+            document.getElementById('loginBtn').classList.add('hidden');
+            document.getElementById('registerBtn').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+            document.getElementById('loginRequired').classList.add('hidden');
+            hideAuth();
+        }
+
+        function showLoginRequired() {
+            document.getElementById('userInfo').classList.add('hidden');
+            document.getElementById('loginBtn').classList.remove('hidden');
+            document.getElementById('registerBtn').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            document.getElementById('mainContent').classList.add('hidden');
+            document.getElementById('loginRequired').classList.remove('hidden');
+        }
+
+        function logout() {
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('authToken');
+            showLoginRequired();
+        }
+
+        async function validateToken() {
+            try {
+                const response = await fetch('/api/auth/validate', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const claims = await response.json();
+                    showLoggedIn({
+                        id: claims.user_id,
+                        username: claims.username,
+                        role: claims.role
+                    });
+                } else {
+                    logout();
+                }
+            } catch (err) {
+                console.error('Token validation failed:', err);
+                logout();
+            }
+        }
+
+        // API request helper
+        async function apiRequest(url, options = {}) {
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            };
+
+            if (authToken) {
+                defaultOptions.headers['Authorization'] = `Bearer ${authToken}`;
+            }
+
+            const finalOptions = {
+                ...defaultOptions,
+                ...options,
+                headers: {
+                    ...defaultOptions.headers,
+                    ...options.headers,
+                },
+            };
+
+            return fetch(url, finalOptions);
+        }
+
+        // Form handlers
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                username: document.getElementById('loginUsername').value,
+                password: document.getElementById('loginPassword').value
+            };
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    authToken = result.token;
+                    localStorage.setItem('authToken', authToken);
+                    showLoggedIn(result.user);
+                    showStatus('Login successful!', 'success');
+                } else {
+                    const error = await response.json();
+                    showStatus(error.error || 'Login failed', 'error');
+                }
+            } catch (err) {
+                showStatus('Network error: ' + err.message, 'error');
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                username: document.getElementById('registerUsername').value,
+                email: document.getElementById('registerEmail').value,
+                password: document.getElementById('registerPassword').value
+            };
+
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    authToken = result.token;
+                    localStorage.setItem('authToken', authToken);
+                    showLoggedIn(result.user);
+                    showStatus('Registration successful!', 'success');
+                } else {
+                    const error = await response.json();
+                    showStatus(error.error || 'Registration failed', 'error');
+                }
+            } catch (err) {
+                showStatus('Network error: ' + err.message, 'error');
+            }
+        });
+
         document.getElementById('problemForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const data = {
@@ -56,15 +295,22 @@
                 description: document.getElementById('description').value,
                 difficulty: document.getElementById('difficulty').value
             };
+
             try {
-                const response = await fetch('/api/problems/', {
+                const response = await apiRequest('/api/problems/', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                document.getElementById('status').innerHTML = response.ok ? 'Problem created!' : 'Error creating problem';
+
+                if (response.ok) {
+                    showStatus('Problem created successfully!', 'success');
+                    document.getElementById('problemForm').reset();
+                } else {
+                    const error = await response.json();
+                    showStatus(error.error || 'Error creating problem', 'error');
+                }
             } catch (err) {
-                document.getElementById('status').innerHTML = 'Error: ' + err.message;
+                showStatus('Network error: ' + err.message, 'error');
             }
         });
 
@@ -73,19 +319,36 @@
             const data = {
                 problem_id: parseInt(document.getElementById('problemId').value),
                 language: document.getElementById('language').value,
-                code: document.getElementById('code').value
+                source_code: document.getElementById('code').value
             };
+
             try {
-                const response = await fetch('/api/submissions', {
+                const response = await apiRequest('/api/submissions', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                document.getElementById('status').innerHTML = response.ok ? 'Solution submitted!' : 'Error submitting solution';
+
+                if (response.ok) {
+                    showStatus('Solution submitted successfully!', 'success');
+                    document.getElementById('submissionForm').reset();
+                } else {
+                    const error = await response.json();
+                    showStatus(error.error || 'Error submitting solution', 'error');
+                }
             } catch (err) {
-                document.getElementById('status').innerHTML = 'Error: ' + err.message;
+                showStatus('Network error: ' + err.message, 'error');
             }
         });
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            setTimeout(() => {
+                statusDiv.textContent = '';
+                statusDiv.className = '';
+            }, 5000);
+        }
     </script>
 </body>
 </html>

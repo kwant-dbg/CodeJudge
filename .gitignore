@@ -47,11 +47,9 @@ target/
 build/
 dist/
 
-# Docker volumes and data (if created locally)
 volumes/
 data/
 
-# Coverage reports (if Go tests generate them)
 coverage.out
 coverage.html
 
@@ -61,6 +59,7 @@ temp/
 
 # Local project summaries and notes
 PROJECT_SUMMARY.md
+IMPROVEMENTS.md
 
 # Local-only files: development notes, deployment checklists, and Copilot plan
 .azure/plan.copilotmd
