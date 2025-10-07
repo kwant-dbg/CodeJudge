@@ -183,4 +183,4 @@ mvn -B test
 }
 ```
 ---
-© 2025 Harshit Sharma
+2025 Harshit Sharma
