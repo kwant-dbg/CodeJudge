@@ -161,25 +161,25 @@ func generateToken(user User) (string, error) {
 func registerHandler(w http.ResponseWriter, r *http.Request) {
 	var req AuthRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.Error(w, "Invalid request body", http.StatusBadRequest, err, logger)
+		httpx.Error(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	// Validate input
 	if req.Username == "" || req.Email == "" || req.Password == "" {
-		httpx.Error(w, "Username, email, and password are required", http.StatusBadRequest, nil, logger)
+		httpx.Error(w, http.StatusBadRequest, "Username, email, and password are required")
 		return
 	}
 
 	if len(req.Password) < 6 {
-		httpx.Error(w, "Password must be at least 6 characters", http.StatusBadRequest, nil, logger)
+		httpx.Error(w, http.StatusBadRequest, "Password must be at least 6 characters")
 		return
 	}
 
 	// Hash password
 	hashedPassword, err := hashPassword(req.Password)
 	if err != nil {
-		httpx.Error(w, "Failed to process password", http.StatusInternalServerError, err, logger)
+		httpx.Error(w, http.StatusInternalServerError, "Failed to process password")
 		return
 	}
 
@@ -195,9 +195,9 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key") {
-			httpx.Error(w, "Username or email already exists", http.StatusConflict, err, logger)
+			httpx.Error(w, http.StatusConflict, "Username or email already exists")
 		} else {
-			httpx.Error(w, "Failed to create user", http.StatusInternalServerError, err, logger)
+			httpx.Error(w, http.StatusInternalServerError, "Failed to create user")
 		}
 		return
 	}
@@ -205,7 +205,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	// Generate token
 	token, err := generateToken(user)
 	if err != nil {
-		httpx.Error(w, "Failed to generate token", http.StatusInternalServerError, err, logger)
+		httpx.Error(w, http.StatusInternalServerError, "Failed to generate token")
 		return
 	}
 
@@ -221,13 +221,13 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	var req AuthRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.Error(w, "Invalid request body", http.StatusBadRequest, err, logger)
+		httpx.Error(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	// Validate input
 	if req.Username == "" || req.Password == "" {
-		httpx.Error(w, "Username and password are required", http.StatusBadRequest, nil, logger)
+		httpx.Error(w, http.StatusBadRequest, "Username and password are required")
 		return
 	}
 
@@ -244,23 +244,23 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			httpx.Error(w, "Invalid username or password", http.StatusUnauthorized, nil, logger)
+			httpx.Error(w, http.StatusUnauthorized, "Invalid username or password")
 		} else {
-			httpx.Error(w, "Database error", http.StatusInternalServerError, err, logger)
+			httpx.Error(w, http.StatusInternalServerError, "Database error")
 		}
 		return
 	}
 
 	// Check password
 	if !checkPassword(req.Password, passwordHash) {
-		httpx.Error(w, "Invalid username or password", http.StatusUnauthorized, nil, logger)
+		httpx.Error(w, http.StatusUnauthorized, "Invalid username or password")
 		return
 	}
 
 	// Generate token
 	token, err := generateToken(user)
 	if err != nil {
-		httpx.Error(w, "Failed to generate token", http.StatusInternalServerError, err, logger)
+		httpx.Error(w, http.StatusInternalServerError, "Failed to generate token")
 		return
 	}
 
@@ -288,9 +288,9 @@ func meHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			httpx.Error(w, "User not found", http.StatusNotFound, nil, logger)
+			httpx.Error(w, http.StatusNotFound, "User not found")
 		} else {
-			httpx.Error(w, "Database error", http.StatusInternalServerError, err, logger)
+			httpx.Error(w, http.StatusInternalServerError, "Database error")
 		}
 		return
 	}
@@ -302,13 +302,13 @@ func validateTokenHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract token from header
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
-		httpx.Error(w, "Authorization header required", http.StatusUnauthorized, nil, logger)
+		httpx.Error(w, http.StatusUnauthorized, "Authorization header required")
 		return
 	}
 
 	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 	if tokenString == authHeader {
-		httpx.Error(w, "Bearer token required", http.StatusUnauthorized, nil, logger)
+		httpx.Error(w, http.StatusUnauthorized, "Bearer token required")
 		return
 	}
 
@@ -319,7 +319,7 @@ func validateTokenHandler(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil || !token.Valid {
-		httpx.Error(w, "Invalid token", http.StatusUnauthorized, err, logger)
+		httpx.Error(w, http.StatusUnauthorized, "Invalid token")
 		return
 	}
 
