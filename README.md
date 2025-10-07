@@ -14,13 +14,14 @@ CodeJudge is a cloud-native backend for powering competitive programming and aut
 
 ## Performance & Reliability
 
-CodeJudge implements enterprise-grade patterns for production environments:
 
-- **Advanced Connection Management:** Production-ready database connection pooling with lifecycle management, prepared statements, and automatic retry logic for optimal performance under load.
-- **Distributed Transaction Integrity:** Saga pattern implementation with compensation logic ensures data consistency across microservices, featuring serializable isolation levels and deadlock handling.
-- **Optimized Plagiarism Engine:** AST-based code analysis with Locality-Sensitive Hashing (LSH) enables O(1) similarity search across entire submission history while maintaining accuracy. Single-pass similarity calculations reduce computational overhead by ~60%.
-- **Memory-Efficient Caching:** LRU-based fingerprint cache with TTL prevents memory leaks and ensures bounded resource usage in long-running deployments.
-- **Enhanced Security Sandbox:** Multi-layered containment using namespaces, seccomp filters, and cgroups provides comprehensive protection against malicious code execution.
+CodeJudge is designed with reliability and performance in mind:
+
+- **Connection Management:** Database connection pooling with lifecycle management, prepared statements, and automatic retry logic for good performance under load.
+- **Transaction Integrity:** Distributed transaction logic with compensation ensures data consistency across microservices.
+- **Optimized Plagiarism Engine:** AST-based code analysis with Locality-Sensitive Hashing (LSH) enables fast similarity search across submission history while maintaining accuracy. Single-pass similarity calculations reduce computational overhead by ~60%.
+- **Memory-Efficient Caching:** LRU-based fingerprint cache with TTL prevents memory leaks and ensures bounded resource usage.
+- **Enhanced Security Sandbox:** Multi-layered containment using namespaces, seccomp filters, and cgroups provides protection against malicious code execution.
 
 ## Microservices Overview
 
@@ -48,10 +49,10 @@ CodeJudge implements enterprise-grade patterns for production environments:
 ### Architecture Highlights
 
 - **Connection Pooling:** Configurable pool management (max 25 connections, 30min rotation) with health monitoring
-- **Transaction Management:** Distributed SAGA pattern with automatic retry and exponential backoff
+- **Transaction Management:** Distributed transaction logic with automatic retry and exponential backoff
 - **Plagiarism Detection:** LSH indexing with FNV-1a hashing for sub-linear similarity search performance
-- **Resource Isolation:** Comprehensive sandboxing with memory/CPU limits, filesystem quotas, and network isolation
-- **Fault Tolerance:** Circuit breaker patterns, graceful degradation, and structured error propagation
+- **Resource Isolation:** Sandboxing with memory/CPU limits, filesystem quotas, and network isolation
+- **Fault Tolerance:** Graceful degradation and structured error propagation
 
 ## Docker Images
 
@@ -94,6 +95,7 @@ docker-compose up --build -d
 .\scripts\build-and-push-ghcr.ps1
 ```
 
+
 Images are automatically built and published via GitHub Actions on every push to main/master.
 
 ## Quick Start
@@ -111,7 +113,7 @@ Images are automatically built and published via GitHub Actions on every push to
    # Development
    docker-compose up --build -d
    
-   # Production-ready with health checks
+   # With health checks
    docker-compose -f docker-compose.prod.yml up --build -d
    ```
    The API Gateway is exposed at [http://localhost:8080](http://localhost:8080).
@@ -133,11 +135,10 @@ If you need to temporarily take the site offline to save resources, this reposit
 
 Note: The main CI will not run for simple edits under `maintenance-page/` because the deploy helper is narrowly scoped to those path changes.
 
-## Advanced deployment
 
-Example manifests for a few services are in `kubernetes/deploy/`. See `docs/azure-deployment.md` for detailed cloud deployment guidance.
+## Kubernetes deployment (optional)
 
-Apply the sample manifests (modify for your environment):
+Example manifests for a few services are in `kubernetes/deploy/`. You can use these as a starting point for running the project in a Kubernetes cluster:
 
 ```bash
 kubectl apply -f kubernetes/deploy/
@@ -169,12 +170,13 @@ cd problems-service-go && go build
 # Full stack with development settings
 docker-compose up --build
 
-# Production-like with health checks
+# With health checks
 docker-compose -f docker-compose.prod.yml up --build
 
 # Check deployment readiness
 bash scripts/check-deployment-readiness.sh
 ```
+
 
 ### Maven Tasks (if present)
 ```powershell
