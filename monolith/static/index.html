@@ -47,7 +47,7 @@
             background: var(--card-bg); 
             color: var(--text-primary);
             border: none;
-            padding: 40px 40px; 
+            padding: 24px 32px; 
             margin: 0;
             min-height: 80vh;
             transition: background-color 0.3s ease;
@@ -58,25 +58,25 @@
             align-items: center; 
             background: var(--card-bg);
             color: var(--text-primary);
-            padding: 12px 40px;
+            padding: 10px 32px;
             border-bottom: 1px solid var(--border-color);
             transition: background-color 0.3s ease, border-color 0.3s ease;
         }
-        .header-left { display: flex; align-items: center; gap: 20px; }
+        .header-left { display: flex; align-items: center; gap: 16px; }
         h1 { 
             color: var(--text-primary); 
-            font-size: 36px; 
+            font-size: 26px; 
             font-weight: 700; 
-            letter-spacing: -1.5px;
+            letter-spacing: -1px;
             line-height: 1;
             transition: color 0.3s ease;
         }
         .subtitle { 
             color: var(--text-secondary); 
-            font-size: 12px; 
+            font-size: 11px; 
             font-weight: 400;
-            letter-spacing: 0.5px;
-            margin-top: 6px;
+            letter-spacing: 0.3px;
+            margin-top: 4px;
             transition: color 0.3s ease;
         }
         .theme-toggle {
@@ -85,14 +85,14 @@
             border: 1px solid var(--border-color);
             padding: 0;
             cursor: pointer;
-            font-size: 20px;
+            font-size: 18px;
             border-radius: 4px;
             transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             flex-shrink: 0;
         }
         .theme-toggle:hover {
@@ -103,7 +103,7 @@
             color: var(--bg-primary); 
             font-weight: 600; 
             background: var(--accent); 
-            padding: 10px 20px; 
+            padding: 8px 16px; 
             border: none;
             font-size: 13px;
             letter-spacing: 0.3px;
@@ -112,10 +112,10 @@
         button { 
             background: var(--accent); 
             color: var(--bg-primary); 
-            padding: 16px 32px; 
+            padding: 10px 20px; 
             border: 1px solid var(--accent); 
             cursor: pointer; 
-            font-size: 14px; 
+            font-size: 13px; 
             font-weight: 600; 
             letter-spacing: 0.5px;
             font-family: inherit;
@@ -141,10 +141,10 @@
         .hidden { display: none !important; }
         input, textarea, select { 
             width: 100%; 
-            padding: 16px 20px; 
-            margin: 8px 0; 
+            padding: 10px 14px; 
+            margin: 6px 0; 
             border: 1px solid var(--border-color); 
-            font-size: 15px;
+            font-size: 14px;
             font-family: inherit;
             background: var(--bg-secondary);
             color: var(--text-primary);
@@ -155,34 +155,34 @@
             border-color: var(--accent); 
             background: var(--card-bg);
         }
-        .form-group { margin-bottom: 24px; }
+        .form-group { margin-bottom: 16px; }
         .form-group label { 
             display: block; 
-            margin-bottom: 10px; 
+            margin-bottom: 6px; 
             font-weight: 600; 
             color: var(--text-primary);
-            font-size: 13px;
+            font-size: 12px;
             letter-spacing: 0.5px;
             transition: color 0.3s ease;
         }
         .status { 
-            padding: 24px 32px; 
+            padding: 12px 20px; 
             margin: 0; 
             position: fixed; 
-            top: 40px; 
-            right: 40px; 
-            max-width: 400px; 
+            top: 20px; 
+            right: 20px; 
+            max-width: 350px; 
             z-index: 1000;
             border: 1px solid var(--border-color);
             font-weight: 500;
-            font-size: 14px;
+            font-size: 13px;
             transition: all 0.3s ease;
         }
         .status.success { background: var(--accent); color: var(--bg-primary); }
         .status.error { background: #d00; color: #fff; border-color: #d00; }
         .problem-item { 
             background: var(--card-bg); 
-            padding: 40px 0; 
+            padding: 16px 0; 
             margin: 0; 
             border-bottom: 1px solid var(--border-color); 
             cursor: pointer; 
@@ -190,22 +190,22 @@
         }
         .problem-item:hover { 
             background: var(--bg-secondary); 
-            padding-left: 20px;
+            padding-left: 12px;
         }
         .problem-title { 
             font-weight: 600; 
-            font-size: 28px; 
+            font-size: 16px; 
             color: var(--text-primary);
-            letter-spacing: -1px;
-            margin-bottom: 12px;
+            letter-spacing: -0.3px;
+            margin-bottom: 6px;
             transition: color 0.3s ease;
         }
         .problem-meta { 
-            font-size: 14px; 
+            font-size: 13px; 
             color: var(--text-secondary); 
-            margin-top: 8px;
+            margin-top: 4px;
             font-weight: 400;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.2px;
             transition: color 0.3s ease;
         }
         .badge { 
@@ -223,24 +223,26 @@
         .badge-hard { background: var(--bg-primary); color: #ef4743; border-color: #ef4743; }
         .workflow-steps { 
             background: var(--bg-secondary); 
-            padding: 40px;
+            padding: 24px;
             transition: background-color 0.3s ease;
-            margin: 30px 0;
-            border: 1px solid #e0e0e0;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
         }
         .workflow-steps h3 { 
-            color: #000; 
-            margin-bottom: 24px;
+            color: var(--text-primary); 
+            margin-bottom: 16px;
             font-weight: 600;
-            font-size: 20px;
+            font-size: 18px;
             letter-spacing: -0.5px;
+            transition: color 0.3s ease;
         }
-        .workflow-steps ol { margin-left: 24px; }
+        .workflow-steps ol { margin-left: 20px; }
         .workflow-steps li { 
-            margin: 12px 0; 
-            color: #333;
+            margin: 8px 0; 
+            color: var(--text-primary);
             font-weight: 400;
-            line-height: 1.6;
+            line-height: 1.5;
+            transition: color 0.3s ease;
         }
         code { 
             background: var(--bg-secondary); 
@@ -275,7 +277,7 @@
 
         <!-- Welcome Screen -->
         <div id="welcomeScreen" class="card">
-            <h2 style="margin-bottom: 50px; font-size: 48px; font-weight: 600; letter-spacing: -2px;">Welcome to CodeJudge</h2>
+            <h2 style="margin-bottom: 24px; font-size: 32px; font-weight: 600; letter-spacing: -1.5px;">Welcome to CodeJudge</h2>
             <div class="workflow-steps">
                 <h3>How it works</h3>
                 <ol>
@@ -286,8 +288,8 @@
                     <li><strong>View Results</strong> — Get instant feedback on your submissions</li>
                 </ol>
             </div>
-            <p style="margin: 40px 0; color: #666; font-weight: 500; padding: 24px; background: #fafafa; border: 1px solid #e0e0e0;">Authentication required to access problems and submit solutions</p>
-            <div style="display: flex; gap: 12px;">
+            <p style="margin: 20px 0; color: var(--text-secondary); font-weight: 500; padding: 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); transition: all 0.3s ease;">Authentication required to access problems and submit solutions</p>
+            <div style="display: flex; gap: 10px;">
                 <button onclick="showRegister()" style="flex: 1;">Register</button>
                 <button class="secondary" onclick="showLogin()" style="flex: 1;">Login</button>
             </div>
@@ -295,7 +297,7 @@
 
         <!-- Auth Form -->
         <div id="authForm" class="card hidden">
-            <h2 id="authTitle" style="margin-bottom: 50px; font-size: 48px; font-weight: 600; letter-spacing: -2px;">Login</h2>
+            <h2 id="authTitle" style="margin-bottom: 24px; font-size: 32px; font-weight: 600; letter-spacing: -1.5px;">Login</h2>
             <form id="loginForm" style="max-width: 500px;">
                 <div class="form-group">
                     <label>Username</label>
@@ -336,16 +338,16 @@
         <!-- Main Content -->
         <div id="mainContent" class="card hidden">
             <!-- Quick Action Links -->
-            <div style="margin-bottom: 60px;">
-                <a href="/create-problem.html" style="display: inline-block; background: #000; color: #fff; padding: 16px 32px; text-decoration: none; font-weight: 600; font-size: 14px; letter-spacing: 0.5px; border: 1px solid #000; transition: all 0.2s ease;" onmouseover="this.style.background='#fff'; this.style.color='#000';" onmouseout="this.style.background='#000'; this.style.color='#fff';">
+            <div style="margin-bottom: 24px;">
+                <a href="/create-problem.html" style="display: inline-block; background: var(--accent); color: var(--bg-primary); padding: 10px 20px; text-decoration: none; font-weight: 600; font-size: 13px; letter-spacing: 0.5px; border: 1px solid var(--accent); transition: all 0.2s ease;" onmouseover="this.style.background='var(--bg-primary)'; this.style.color='var(--accent)';" onmouseout="this.style.background='var(--accent)'; this.style.color='var(--bg-primary)';">
                     Create New Problem
                 </a>
             </div>
 
             <!-- Problems Tab -->
             <div id="problemsTab" class="tab-content">
-                <h2 style="margin-bottom: 40px; font-size: 48px; font-weight: 600; letter-spacing: -2px;">Problems</h2>
-                <div id="problemsList" style="padding: 0 0 60px 0;"></div>
+                <h2 style="margin-bottom: 16px; font-size: 24px; font-weight: 600; letter-spacing: -1px;">Problems</h2>
+                <div id="problemsList" style="padding: 0 0 24px 0;"></div>
             </div>
 
         </div>
