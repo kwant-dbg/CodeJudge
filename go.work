@@ -4,6 +4,7 @@ use (
 	./api-gateway
 	./auth-service-go
 	./common-go
+	./monolith-service
 	./plagiarism-service-go
 	./problems-service-go
 	./submissions-service-go

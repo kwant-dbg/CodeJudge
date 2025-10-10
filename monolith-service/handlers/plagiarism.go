@@ -86,6 +86,10 @@ func (h *PlagiarismHandler) startWorker() {
 	}()
 }
 
+func (h *PlagiarismHandler) StartWorker() {
+	h.startWorker()
+}
+
 func (h *PlagiarismHandler) GetReports(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.dbManager.GetDB().Query("SELECT id, submission_a, submission_b, similarity, created_at FROM plagiarism_reports ORDER BY similarity DESC")
 	if err != nil {

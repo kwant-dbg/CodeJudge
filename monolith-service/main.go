@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
 	"flag"
 	"fmt"
 	"net/http"
@@ -57,6 +58,24 @@ func performHealthCheck() {
 	os.Exit(0)
 }
 
+func initJWTSecret() error {
+	// In production, use environment variable or Azure Key Vault
+	secretEnv := env.Get("JWT_SECRET", "")
+	if secretEnv != "" {
+		jwtSecret = []byte(secretEnv)
+		logger.Info("JWT secret loaded from environment")
+		return nil
+	} else {
+		// Generate random secret for development
+		jwtSecret = make([]byte, 32)
+		if _, err := rand.Read(jwtSecret); err != nil {
+			return fmt.Errorf("failed to generate JWT secret: %w", err)
+		}
+		logger.Info("Generated random JWT secret for development")
+		return nil
+	}
+}
+
 func main() {
 	// Handle health check flag for Docker health checks
 	healthCheck := flag.Bool("health-check", false, "Perform health check and exit")
@@ -78,7 +97,7 @@ func main() {
 	logger.Info("Starting CodeJudge Monolith Service")
 
 	// Load JWT secret
-	jwtSecret, err = commonauth.LoadOrCreateJWTSecret(logger)
+	err = initJWTSecret()
 	if err != nil {
 		logger.Fatal("Failed to load JWT secret", zap.Error(err))
 	}
@@ -102,6 +121,9 @@ func main() {
 	problemsHandler.PrepareStatements()
 	submissionsHandler.CreateTables()
 	plagiarismHandler.CreateTables()
+
+	// Start background workers
+	plagiarismHandler.StartWorker()
 
 	// Setup router
 	r := chi.NewRouter()
