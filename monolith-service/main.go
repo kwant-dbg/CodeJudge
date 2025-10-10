@@ -37,23 +37,23 @@ var (
 func performHealthCheck() {
 	port := env.Get("PORT", "8080")
 	healthURL := fmt.Sprintf("http://localhost:%s/health", port)
-	
+
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
-	
+
 	resp, err := client.Get(healthURL)
 	if err != nil {
 		fmt.Printf("Health check failed: %v\n", err)
 		os.Exit(1)
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		fmt.Printf("Health check failed with status: %d\n", resp.StatusCode)
 		os.Exit(1)
 	}
-	
+
 	fmt.Println("Health check passed")
 	os.Exit(0)
 }
@@ -163,7 +163,7 @@ func main() {
 		authRouter.Post("/register", authHandler.Register)
 		authRouter.Post("/login", authHandler.Login)
 		authRouter.Post("/validate", authHandler.ValidateToken)
-		
+
 		// Protected auth endpoints
 		authRouter.Group(func(protected chi.Router) {
 			protected.Use(commonauth.RequireAuth(jwtSecret, logger))
@@ -197,7 +197,7 @@ func main() {
 
 	// Get port from environment or use default
 	port := env.Get("PORT", "8080")
-	
+
 	// Create server
 	server := &http.Server{
 		Addr:    ":" + port,
@@ -205,7 +205,7 @@ func main() {
 	}
 
 	logger.Info("CodeJudge Monolith starting", zap.String("port", port))
-	
+
 	// Start server with graceful shutdown
 	httpx.StartServerWithGracefulShutdown(server, logger, 30*time.Second)
 }
