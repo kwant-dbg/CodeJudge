@@ -1,0 +1,145 @@
+name: Deploy Monolith to Azure
+
+on:
+  push:
+    branches: [ mono ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+        - development
+        - staging
+        - production
+
+env:
+  AZURE_RESOURCE_GROUP: rg-codejudge-${{ github.event.inputs.environment || 'development' }}
+  AZURE_CONTAINER_REGISTRY: crcodejudge${{ github.event.inputs.environment || 'dev' }}
+  AZURE_CONTAINER_GROUP: aci-codejudge-${{ github.event.inputs.environment || 'development' }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Log in to Azure Container Registry
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./monolith-service/Dockerfile
+        push: true
+        tags: |
+          ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/codejudge-monolith:latest
+          ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/codejudge-monolith:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64
+
+    - name: Deploy to Azure Container Instances
+      uses: azure/arm-deploy@v1
+      with:
+        subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        resourceGroupName: ${{ env.AZURE_RESOURCE_GROUP }}
+        template: ./azure-deployment/azure-container-instances.json
+        parameters: |
+          containerGroupName=${{ env.AZURE_CONTAINER_GROUP }}
+          containerImage=${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/codejudge-monolith:${{ github.sha }}
+          postgresPassword=${{ secrets.POSTGRES_PASSWORD }}
+          jwtSecret=${{ secrets.JWT_SECRET }}
+
+    - name: Wait for deployment to be ready
+      run: |
+        echo "Waiting for deployment to be ready..."
+        sleep 60
+        
+        # Get the FQDN from the ARM deployment output
+        FQDN=$(az container show \
+          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+          --name ${{ env.AZURE_CONTAINER_GROUP }} \
+          --query ipAddress.fqdn \
+          --output tsv)
+        
+        echo "Application URL: http://${FQDN}:8080"
+        
+        # Wait for health check to pass
+        for i in {1..30}; do
+          if curl -f "http://${FQDN}:8080/health"; then
+            echo "Application is healthy!"
+            break
+          fi
+          echo "Waiting for application to be ready... (attempt $i/30)"
+          sleep 10
+        done
+
+    - name: Run basic API tests
+      run: |
+        FQDN=$(az container show \
+          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+          --name ${{ env.AZURE_CONTAINER_GROUP }} \
+          --query ipAddress.fqdn \
+          --output tsv)
+        
+        BASE_URL="http://${FQDN}:8080"
+        
+        echo "Testing health endpoint..."
+        curl -f "${BASE_URL}/health" || exit 1
+        
+        echo "Testing ready endpoint..."
+        curl -f "${BASE_URL}/ready" || exit 1
+        
+        echo "Testing static file serving..."
+        curl -f "${BASE_URL}/" || exit 1
+        
+        echo "All basic tests passed!"
+
+    - name: Clean up old images
+      run: |
+        # Keep only the last 5 images to save storage costs
+        az acr repository show-tags \
+          --name ${{ env.AZURE_CONTAINER_REGISTRY }} \
+          --repository codejudge-monolith \
+          --orderby time_desc \
+          --output tsv \
+          | tail -n +6 \
+          | xargs -I {} az acr repository delete \
+            --name ${{ env.AZURE_CONTAINER_REGISTRY }} \
+            --image codejudge-monolith:{} \
+            --yes || true
+
+  notify:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Notify deployment status
+      run: |
+        if [ "${{ needs.build-and-deploy.result }}" == "success" ]; then
+          echo "✅ Deployment successful!"
+          echo "Environment: ${{ github.event.inputs.environment || 'development' }}"
+          echo "Commit: ${{ github.sha }}"
+        else
+          echo "❌ Deployment failed!"
+          echo "Please check the logs for details."
+        fi
