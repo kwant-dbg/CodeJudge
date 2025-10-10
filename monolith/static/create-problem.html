@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Problem - CodeJudge</title>
+    <!-- KaTeX for LaTeX rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #fafafa;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --border-color: #e0e0e0;
+            --accent: #1a1a1a;
+            --accent-hover: #333333;
+            --card-bg: #ffffff;
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #282828;
+            --text-primary: #eff1f6;
+            --text-secondary: #a0a0a0;
+            --border-color: #3a3a3a;
+            --accent: #eff1f6;
+            --accent-hover: #d0d0d0;
+            --card-bg: #262626;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif; background: var(--bg-primary); transition: background-color 0.3s ease; }
+        
+        /* Header */
+        .header { background: var(--card-bg); color: var(--text-primary); padding: 12px 0; border-bottom: 1px solid var(--border-color); transition: all 0.3s ease; }
+        .header-content { max-width: 100%; margin: 0 auto; padding: 0 40px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 24px; font-weight: 600; text-decoration: none; color: var(--text-primary); letter-spacing: -1.5px; transition: color 0.3s ease; }
+        .nav-links { display: flex; gap: 20px; align-items: center; }
+        .nav-links a { color: var(--text-primary); text-decoration: none; padding: 0; font-weight: 500; font-size: 14px; letter-spacing: 0.3px; transition: opacity 0.2s; }
+        .nav-links a:hover { opacity: 0.6; }
+        .theme-toggle {
+            background: var(--accent);
+            color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            padding: 0;
+            cursor: pointer;
+            font-size: 20px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+        }
+        .theme-toggle:hover {
+            background: var(--accent-hover);
+            transform: scale(1.05);
+        }
+        
+        /* Container */
+        .container { max-width: 900px; margin: 0 auto; padding: 0; }
+        .breadcrumb { color: var(--text-secondary); margin-bottom: 0; font-size: 13px; padding: 12px 40px; background: var(--card-bg); border-bottom: 1px solid var(--border-color); transition: all 0.3s ease; }
+        .breadcrumb a { color: var(--text-primary); text-decoration: none; font-weight: 500; transition: color 0.3s ease; }
+        .breadcrumb a:hover { opacity: 0.6; }
+        
+        /* Form Container */
+        .form-container { background: var(--card-bg); color: var(--text-primary); padding: 40px 40px; min-height: calc(100vh - 200px); transition: all 0.3s ease; }
+        .form-container h1 { margin-bottom: 10px; color: var(--text-primary); font-size: 36px; font-weight: 600; letter-spacing: -1.5px; transition: color 0.3s ease; }
+        .form-container p { color: var(--text-secondary); margin-bottom: 32px; font-size: 15px; transition: color 0.3s ease; }
+        
+        /* Form Elements */
+        .form-group { margin-bottom: 24px; }
+        .form-group label { display: block; margin-bottom: 10px; font-weight: 600; color: var(--text-primary); font-size: 13px; letter-spacing: 0.5px; transition: color 0.3s ease; }
+        .form-group input, .form-group select, .form-group textarea { 
+            width: 100%; 
+            padding: 16px 20px; 
+            border: 1px solid var(--border-color); 
+            font-size: 15px; 
+            font-family: inherit;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+        .form-group textarea { font-family: inherit; resize: vertical; min-height: 200px; line-height: 1.6; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--accent); background: var(--card-bg); }
+        .form-group small { color: var(--text-secondary); font-size: 13px; margin-top: 8px; display: block; line-height: 1.5; transition: color 0.3s ease; }
+        
+        /* Test Cases */
+        .test-cases-section { margin-top: 50px; padding-top: 50px; border-top: 1px solid var(--border-color); transition: border-color 0.3s ease; }
+        .test-cases-section h3 { margin-bottom: 12px; color: var(--text-primary); font-size: 28px; font-weight: 600; letter-spacing: -1px; transition: color 0.3s ease; }
+        .test-cases-section > p { color: var(--text-secondary); margin-bottom: 30px; font-size: 15px; transition: color 0.3s ease; }
+        
+        .test-case-add { background: var(--bg-secondary); padding: 30px; border: 1px solid var(--border-color); margin-bottom: 30px; transition: all 0.3s ease; }
+        .test-case-add h4 { margin-bottom: 20px; color: var(--text-primary); font-size: 18px; font-weight: 600; letter-spacing: -0.5px; transition: color 0.3s ease; }
+        
+        .test-case-item { background: var(--card-bg); border: 1px solid var(--border-color); padding: 24px; margin-bottom: 16px; transition: all 0.3s ease; }
+        .test-case-item strong { color: var(--text-primary); font-weight: 600; transition: color 0.3s ease; }
+        .test-case-item button { float: right; background: #d00; color: #fff; border: 1px solid #d00; padding: 8px 16px; cursor: pointer; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; transition: all 0.2s; }
+        .test-case-item button:hover { background: var(--card-bg); color: #d00; }
+        .test-case-item > div { margin-top: 12px; color: var(--text-secondary); font-size: 14px; transition: color 0.3s ease; }
+        .test-case-item pre { background: var(--bg-secondary); color: var(--text-primary); padding: 12px; border: 1px solid var(--border-color); margin-top: 8px; overflow-x: auto; font-size: 13px; font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace; line-height: 1.5; transition: all 0.3s ease; }
+        
+        /* Buttons */
+        button { 
+            padding: 16px 32px; 
+            border: 1px solid var(--accent); 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: 600; 
+            letter-spacing: 0.5px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+        button:hover { background: var(--bg-primary); color: var(--accent); }
+        button:disabled { background: var(--text-secondary); cursor: not-allowed; opacity: 0.5; }
+        
+        .btn-primary { background: #000; color: #fff; }
+        .btn-primary:hover { background: #fff; color: #000; border-color: #000; }
+        .btn-success { background: #000; color: #fff; }
+        .btn-success:hover { background: #fff; color: #000; border-color: #000; }
+        .btn-submit { background: #000; color: #fff; width: 100%; margin-top: 40px; padding: 20px; font-size: 15px; }
+        .btn-submit:hover { background: #fff; color: #000; }
+        
+        /* Status Messages */
+        .status { padding: 20px; border: 1px solid #000; margin-top: 24px; display: none; font-size: 14px; font-weight: 500; }
+        .status.success { background: #000; color: #fff; display: block; }
+        .status.error { background: #d00; color: #fff; border-color: #d00; display: block; }
+        
+        .hidden { display: none !important; }
+        .required { color: #d00; }
+        
+        @media (max-width: 768px) {
+            .header-content, .breadcrumb, .form-container { padding-left: 30px; padding-right: 30px; }
+            .form-container h1 { font-size: 36px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <a href="/" class="logo">CodeJudge</a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/#problemsTab">Problems</a>
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                    <span id="themeIcon">🌙</span>
+                </button>
+                <span id="userInfo" style="background: var(--accent); color: var(--bg-primary); padding: 12px 24px; font-weight: 600; font-size: 14px; letter-spacing: 0.3px;"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="/">Home</a> / Create Problem
+        </div>
+
+        <div class="form-container">
+            <h1>Create New Problem</h1>
+            <p>Design a coding challenge for the community. Make sure to add test cases to validate submissions.</p>
+
+            <div id="loginRequired" class="hidden">
+                <div style="text-align: center; padding: 40px; color: #666;">
+                    <h3>Authentication Required</h3>
+                    <p style="margin: 15px 0;">Please <a href="/" style="color: #007bff;">login</a> to create problems.</p>
+                </div>
+            </div>
+
+            <form id="problemForm" class="hidden">
+                <div class="form-group">
+                    <label>Problem Title <span class="required">*</span></label>
+                    <input type="text" id="title" placeholder="e.g., Two Sum, Reverse String, Binary Search" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Description <span class="required">*</span></label>
+                    <textarea id="description" placeholder="Describe the problem in detail... Use $ for inline math like $x^2$ and $$ for display math like $$\sum_{i=1}^{n} i$$" rows="10" required></textarea>
+                    <small>Supports LaTeX math notation. Example: Find $x$ such that $x^2 = 4$</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Difficulty <span class="required">*</span></label>
+                    <select id="difficulty" required>
+                        <option value="">Select Difficulty</option>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+
+                <div class="test-cases-section">
+                    <h3>Test Cases <span class="required">*</span></h3>
+                    <p>Add at least one test case to validate submissions. The judge will run submitted code against these test cases.</p>
+
+                    <div id="testCasesList"></div>
+
+                    <div class="test-case-add">
+                        <h4>Add New Test Case</h4>
+                        <div class="form-group">
+                            <label>Input</label>
+                            <textarea id="testInput" placeholder="Input data for this test case..." rows="3"></textarea>
+                            <small>What the program should read from stdin</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Expected Output</label>
+                            <textarea id="testOutput" placeholder="Expected output for this test case..." rows="3"></textarea>
+                            <small>What the program should print to stdout</small>
+                        </div>
+                        <button type="button" class="btn-success" onclick="addTestCase()">+ Add Test Case</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">Create Problem with Test Cases</button>
+            </form>
+        </div>
+
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        let authToken = localStorage.getItem('authToken');
+        let currentUser = null;
+        let testCases = [];
+
+        // Check authentication
+        async function validateToken() {
+            try {
+                const response = await fetch('/api/auth/validate', {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    currentUser = { username: data.username, user_id: data.user_id, role: data.role };
+                    document.getElementById('userInfo').textContent = `👤 ${currentUser.username}`;
+                    document.getElementById('problemForm').classList.remove('hidden');
+                    document.getElementById('loginRequired').classList.add('hidden');
+                } else {
+                    showLoginRequired();
+                }
+            } catch (err) {
+                console.error('Token validation error:', err);
+                showLoginRequired();
+            }
+        }
+
+        function showLoginRequired() {
+            document.getElementById('userInfo').textContent = 'Guest';
+            document.getElementById('problemForm').classList.add('hidden');
+            document.getElementById('loginRequired').classList.remove('hidden');
+        }
+
+        // Test case management
+        function addTestCase() {
+            const input = document.getElementById('testInput').value;
+            const output = document.getElementById('testOutput').value;
+            
+            if (!input.trim() && !output.trim()) {
+                showStatus('Please provide input or output for the test case', 'error');
+                return;
+            }
+            
+            testCases.push({ input, output });
+            document.getElementById('testInput').value = '';
+            document.getElementById('testOutput').value = '';
+            
+            displayTestCases();
+            showStatus('Test case added! Total: ' + testCases.length, 'success');
+        }
+
+        function displayTestCases() {
+            const container = document.getElementById('testCasesList');
+            if (testCases.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            container.innerHTML = `
+                <h4 style="margin-bottom: 15px; color: #28a745;">✓ Added Test Cases (${testCases.length})</h4>
+                ${testCases.map((tc, idx) => `
+                    <div class="test-case-item">
+                        <strong>Test Case ${idx + 1}</strong>
+                        <button type="button" onclick="removeTestCase(${idx})">Remove</button>
+                        <div>
+                            <div><strong>Input:</strong></div>
+                            <pre>${tc.input || '(empty)'}</pre>
+                            <div style="margin-top: 10px;"><strong>Expected Output:</strong></div>
+                            <pre>${tc.output || '(empty)'}</pre>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function removeTestCase(index) {
+            testCases.splice(index, 1);
+            displayTestCases();
+            showStatus('Test case removed', 'success');
+        }
+
+        // Form submission
+        document.getElementById('problemForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (testCases.length === 0) {
+                showStatus('Please add at least one test case before creating the problem!', 'error');
+                return;
+            }
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating...';
+            
+            try {
+                const response = await fetch('/api/problems', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        title: document.getElementById('title').value,
+                        description: document.getElementById('description').value,
+                        difficulty: document.getElementById('difficulty').value,
+                        test_cases: testCases
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    showStatus(`Problem created successfully! Problem ID: ${result.id}. You can view it at /problem.html?id=${result.id}`, 'success');
+                    document.getElementById('problemForm').reset();
+                    testCases = [];
+                    displayTestCases();
+                    
+                    // Redirect after 3 seconds
+                    setTimeout(() => {
+                        window.location.href = `/problem.html?id=${result.id}`;
+                    }, 3000);
+                } else {
+                    const error = await response.json();
+                    showStatus(error.error || 'Error creating problem', 'error');
+                }
+            } catch (err) {
+                showStatus('Network error: ' + err.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Problem with Test Cases';
+            }
+        });
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = 'status ' + type;
+            setTimeout(() => {
+                if (type === 'success') {
+                    statusDiv.style.display = 'none';
+                }
+            }, 5000);
+        }
+
+        // Theme toggle functionality
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            const themeIcon = document.getElementById('themeIcon');
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeIcon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // Initialize theme from localStorage
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const themeIcon = document.getElementById('themeIcon');
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            if (themeIcon) themeIcon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        })();
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            if (authToken) {
+                validateToken();
+            } else {
+                showLoginRequired();
+            }
+        });
+    </script>
+</body>
+</html>

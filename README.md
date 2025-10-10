@@ -5,6 +5,24 @@ CodeJudge is a cloud-native backend for powering competitive programming and aut
 
 <img width="1024" height="1024" alt="29, 2025 - 12_10PM" src="https://github.com/user-attachments/assets/9ab15fcd-070d-46b2-84ae-07ee72f3b07a" />
 
+## ✨ Quick Start
+
+### Local Development
+```powershell
+# Start all services
+docker-compose -f docker-compose.monolith.yml up -d --build
+
+# Access at http://localhost:8080
+```
+
+### Deploy to Azure (Student Account Ready!)
+```powershell
+# One command deployment
+.\deploy-azure.ps1
+
+# See AZURE_QUICKSTART.md for details
+```
+
 ## Key Features
 
 - **Secure C++ Sandbox:** Leverages `fork`, `exec`, and `setrlimit` for low-level process isolation and resource management, preventing malicious code execution.
@@ -204,3 +222,26 @@ mvn -B test
 ```
 ---
 2025 Harshit Sharma
+
+##  Mono Branch Structure
+
+```
+codejudge/
+ docs/              # Documentation
+ monolith/          # Main application service
+ judge/             # C++ judge service
+ common/            # Shared Go libraries
+ deploy/            # Deployment scripts
+ docker-compose.yml # Main compose file
+```
+
+## Quick Start
+
+```powershell
+# Start services
+docker-compose up -d --build
+
+# Access at http://localhost:8080
+```
+
+See `docs/DEPLOYMENT.md` for detailed instructions.

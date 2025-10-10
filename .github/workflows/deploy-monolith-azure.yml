@@ -1,5 +1,4 @@
 name: Deploy Monolith to Azure
-
 on:
   push:
     branches: [ mono ]

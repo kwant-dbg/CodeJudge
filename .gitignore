@@ -48,6 +48,10 @@ build/
 dist/
 
 volumes/
+
+# Azure deployment configuration (contains sensitive credentials)
+azure-deployment-config.txt
+.azure/
 data/
 
 coverage.out
@@ -68,3 +72,4 @@ docs/deployment-checklist.md
 
 # Archived publish artifacts
 .wkt_publish/
+PROJECT_SUMMARY.md

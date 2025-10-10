@@ -1,71 +1,28 @@
+version: '3.8'
+
 services:
-  gateway:
+  monolith:
     build:
       context: .
-      dockerfile: api-gateway/Dockerfile
+      dockerfile: monolith/Dockerfile.standalone
     ports:
       - "8080:8080"
     depends_on:
-      - problems
-      - submissions
-      - plagiarism
-      - auth
-
-  problems:
-    build:
-      context: .
-      dockerfile: problems-service-go/Dockerfile
-    depends_on:
-      - db
-    environment:
-      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
-
-  submissions:
-    build:
-      context: .
-      dockerfile: submissions-service-go/Dockerfile
-    depends_on:
-      - db
-      - redis
-    volumes:
-      - submissions_volume:/app/submissions
-    environment:
-      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
-      - REDIS_URL=redis:6379
-      - SUBMISSION_STORAGE_PATH=/app/submissions
-
-  plagiarism:
-    build:
-      context: .
-      dockerfile: plagiarism-service-go/Dockerfile
-    depends_on:
       - db
       - redis
     environment:
       - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
-      - REDIS_URL=redis:6379
-
-  auth:
-    build:
-      context: .
-      dockerfile: auth-service-go/Dockerfile
-    depends_on:
-      - db
-    environment:
-      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
+      - REDIS_URL=redis://redis:6379
       - JWT_SECRET=your-jwt-secret-key-change-in-production
-
-  judge:
-    build: ./judge-service
-    depends_on:
-      - redis
-      - db
-    volumes:
-        - submissions_volume:/app/submissions
-    environment:
-      - REDIS_URL=redis:6379
-      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
-      - SUBMISSION_WORKDIR=/app/submissions
+      - PORT=8080
+      - GIN_MODE=release
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/app/codejudge-monolith", "-health-check"]
+      interval: 30s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
 
   db:
     image: postgres:14-alpine
@@ -77,12 +34,57 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d codejudgedb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  judge:
+    build:
+      context: ./judge
+      dockerfile: Dockerfile.modern
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - TIME_LIMIT=5
+      - MEMORY_LIMIT=256
+      - SANDBOX_USER=sandbox_user
+      - ENABLE_SANDBOX=true
+    restart: unless-stopped
+    # Need privileged mode for proper sandboxing with namespaces/cgroups
+    privileged: true
+    cap_add:
+      - SYS_ADMIN
+      - SYS_CHROOT
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+    volumes:
+      - judge_submissions:/app/submissions
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
 
 volumes:
   postgres_data:
-  submissions_volume:
+  redis_data:
+  judge_submissions:
+

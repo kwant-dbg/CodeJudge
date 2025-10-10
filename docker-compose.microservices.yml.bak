@@ -1,0 +1,88 @@
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - problems
+      - submissions
+      - plagiarism
+      - auth
+
+  problems:
+    build:
+      context: .
+      dockerfile: problems-service-go/Dockerfile
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
+
+  submissions:
+    build:
+      context: .
+      dockerfile: submissions-service-go/Dockerfile
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - submissions_volume:/app/submissions
+    environment:
+      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
+      - REDIS_URL=redis:6379
+      - SUBMISSION_STORAGE_PATH=/app/submissions
+
+  plagiarism:
+    build:
+      context: .
+      dockerfile: plagiarism-service-go/Dockerfile
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
+      - REDIS_URL=redis:6379
+
+  auth:
+    build:
+      context: .
+      dockerfile: auth-service-go/Dockerfile
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
+      - JWT_SECRET=your-jwt-secret-key-change-in-production
+
+  judge:
+    build: ./judge-service
+    depends_on:
+      - redis
+      - db
+    volumes:
+        - submissions_volume:/app/submissions
+    environment:
+      - REDIS_URL=redis:6379
+      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
+      - SUBMISSION_WORKDIR=/app/submissions
+
+  db:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: codejudgedb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
+  submissions_volume:

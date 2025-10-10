@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem - CodeJudge</title>
+    <!-- KaTeX for LaTeX rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #fafafa;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --border-color: #e0e0e0;
+            --accent: #1a1a1a;
+            --accent-hover: #333333;
+            --card-bg: #ffffff;
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #282828;
+            --text-primary: #eff1f6;
+            --text-secondary: #a0a0a0;
+            --border-color: #3a3a3a;
+            --accent: #eff1f6;
+            --accent-hover: #d0d0d0;
+            --card-bg: #262626;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif; 
+            background: var(--bg-primary); 
+            color: var(--text-primary); 
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* Header */
+        .header { background: var(--card-bg); color: var(--text-primary); padding: 12px 0; border-bottom: 1px solid var(--border-color); transition: all 0.3s ease; }
+        .header-content { max-width: 100%; margin: 0 auto; padding: 0 40px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 24px; font-weight: 600; text-decoration: none; color: var(--text-primary); letter-spacing: -1.5px; transition: color 0.3s ease; }
+        .nav-links { display: flex; gap: 20px; align-items: center; }
+        .nav-links a { color: var(--text-primary); text-decoration: none; padding: 0; font-weight: 500; font-size: 14px; letter-spacing: 0.3px; transition: opacity 0.2s; }
+        .nav-links a:hover { opacity: 0.6; }
+        .theme-toggle {
+            background: var(--accent);
+            color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            padding: 0;
+            cursor: pointer;
+            font-size: 20px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+        }
+        .theme-toggle:hover {
+            background: var(--accent-hover);
+            transform: scale(1.05);
+        }
+        #userInfo {
+            background: var(--accent); 
+            color: var(--bg-primary); 
+            padding: 8px 16px; 
+            font-weight: 600; 
+            font-size: 14px; 
+            letter-spacing: 0.3px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        
+        /* Main content */
+        .container { max-width: 100%; margin: 0; padding: 0; }
+        .breadcrumb { color: var(--text-secondary); margin-bottom: 0; font-size: 13px; padding: 12px 40px; background: var(--card-bg); border-bottom: 1px solid var(--border-color); transition: all 0.3s ease; }
+        .breadcrumb a { color: var(--text-primary); text-decoration: none; font-weight: 500; transition: color 0.3s ease; }
+        .breadcrumb a:hover { opacity: 0.6; }
+        
+        .main-content { display: grid; grid-template-columns: 1fr 500px; gap: 0; }
+        
+        /* Problem Section */
+        .problem-section { background: var(--card-bg); color: var(--text-primary); padding: 40px 40px; border-right: 1px solid var(--border-color); min-height: calc(100vh - 200px); transition: all 0.3s ease; }
+        .problem-header { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border-color); transition: border-color 0.3s ease; }
+        .problem-title { font-size: 36px; font-weight: 600; color: var(--text-primary); margin-bottom: 16px; letter-spacing: -1.5px; line-height: 1.1; transition: color 0.3s ease; }
+        .problem-meta { display: flex; gap: 20px; align-items: center; }
+        .badge { display: inline-block; padding: 3px 10px; font-size: 10px; font-weight: 600; border: 1px solid var(--accent); letter-spacing: 0.3px; border-radius: 3px; transition: all 0.3s ease; }
+        .badge-easy { background: var(--bg-primary); color: #00b8a3; border-color: #00b8a3; }
+        .badge-medium { background: var(--bg-primary); color: #ffa116; border-color: #ffa116; }
+        .badge-hard { background: var(--bg-primary); color: #ef4743; border-color: #ef4743; }
+        .problem-id { color: var(--text-secondary); font-size: 13px; font-weight: 400; transition: color 0.3s ease; }
+        
+        .problem-description { line-height: 1.8; color: var(--text-primary); font-size: 16px; transition: color 0.3s ease; }
+        .problem-description h3 { margin-top: 40px; margin-bottom: 20px; color: var(--text-primary); font-weight: 600; font-size: 24px; letter-spacing: -1px; transition: color 0.3s ease; }
+        .problem-description p { margin-bottom: 20px; }
+        .problem-description ul, .problem-description ol { margin-left: 24px; margin-bottom: 20px; }
+        .problem-description code { background: var(--bg-secondary); color: var(--text-primary); padding: 3px 8px; font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace; font-size: 14px; border: 1px solid var(--border-color); transition: all 0.3s ease; }
+        .problem-description strong { color: var(--text-primary); font-weight: 600; transition: color 0.3s ease; }
+        
+        /* Submission Panel */
+        .submission-panel { background: var(--card-bg); color: var(--text-primary); padding: 40px 40px; height: fit-content; position: sticky; top: 0; transition: all 0.3s ease; }
+        .submission-panel h3 { margin-bottom: 24px; color: var(--text-primary); font-size: 24px; font-weight: 600; letter-spacing: -1px; transition: color 0.3s ease; }
+        .form-group { margin-bottom: 24px; }
+        .form-group label { display: block; margin-bottom: 10px; font-weight: 600; color: var(--text-primary); font-size: 13px; letter-spacing: 0.5px; transition: color 0.3s ease; }
+        select, textarea { width: 100%; padding: 16px 20px; border: 1px solid var(--border-color); font-size: 15px; font-family: inherit; background: var(--bg-secondary); color: var(--text-primary); transition: all 0.3s ease; }
+        textarea { font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace; resize: vertical; min-height: 300px; line-height: 1.6; }
+        select:focus, textarea:focus { outline: none; border-color: var(--accent); background: var(--card-bg); }
+        button { width: 100%; background: var(--accent); color: var(--bg-primary); padding: 18px; border: 1px solid var(--accent); cursor: pointer; font-size: 14px; font-weight: 600; letter-spacing: 0.5px; font-family: inherit; transition: all 0.3s ease; }
+        button:hover { background: var(--bg-primary); color: var(--accent); }
+        button:disabled { background: var(--text-secondary); cursor: not-allowed; opacity: 0.5; }
+        
+        .submission-result { margin-top: 24px; padding: 20px; border: 1px solid #000; display: none; font-size: 14px; }
+        .submission-result.success { background: #000; color: #fff; }
+        .submission-result.error { background: #d00; color: #fff; border-color: #d00; }
+        .submission-result.pending { background: var(--bg-secondary); color: var(--text-primary); transition: all 0.3s ease; }
+        
+        .verdict { font-size: 16px; font-weight: 600; margin-top: 16px; padding: 16px; text-align: center; border: 1px solid var(--accent); transition: all 0.3s ease; }
+        .verdict-accepted { background: var(--accent); color: var(--bg-primary); }
+        .verdict-rejected { background: #d00; color: #fff; border-color: #d00; }
+        .verdict-pending { background: var(--bg-secondary); color: var(--text-primary); }
+        
+        .login-required { text-align: center; padding: 60px 40px; color: var(--text-secondary); transition: color 0.3s ease; }
+        .login-required a { color: var(--text-primary); text-decoration: none; font-weight: 600; border-bottom: 1px solid var(--accent); transition: all 0.3s ease; }
+        .login-required a:hover { opacity: 0.6; }
+        
+        .hidden { display: none !important; }
+        
+        @media (max-width: 968px) {
+            .main-content { grid-template-columns: 1fr; }
+            .submission-panel { position: relative; top: 0; }
+            .header-content, .breadcrumb, .problem-section, .submission-panel { padding-left: 30px; padding-right: 30px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <a href="/" class="logo">CodeJudge</a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/#problemsTab">Problems</a>
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                    <span id="themeIcon">🌙</span>
+                </button>
+                <span id="userInfo"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="/">Home</a> / <a href="/#problemsTab">Problems</a> / <span id="breadcrumbTitle">Loading...</span>
+        </div>
+
+        <div class="main-content">
+            <!-- Problem Description -->
+            <div class="problem-section">
+                <div id="problemContent">
+                    <div style="text-align: center; padding: 60px 20px; color: #999;">
+                        <div style="font-size: 48px; margin-bottom: 20px;">⏳</div>
+                        <p>Loading problem...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submission Panel -->
+            <div class="submission-panel">
+                <h3>Submit Solution</h3>
+                <div id="submissionForm" class="hidden">
+                    <div class="form-group">
+                        <label>Language</label>
+                        <select id="language">
+                            <option value="cpp">C++</option>
+                            <option value="python">Python</option>
+                            <option value="java">Java</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Your Code</label>
+                        <textarea id="code" placeholder="Write your solution here..."></textarea>
+                    </div>
+                    <button id="submitBtn" onclick="submitSolution()">Submit Solution</button>
+                    <div id="submissionResult" class="submission-result"></div>
+                </div>
+                <div id="loginRequired" class="login-required">
+                    <p>Please <a href="/">login</a> to submit solutions</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = localStorage.getItem('authToken');
+        let currentUser = null;
+        let problemId = null;
+
+        // Debug logging
+        console.log('Auth Token from localStorage:', authToken);
+        console.log('Token exists?', !!authToken);
+
+        // Get problem ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        problemId = urlParams.get('id');
+
+        if (!problemId) {
+            document.getElementById('problemContent').innerHTML = `
+                <div style="text-align: center; padding: 60px 20px; color: #dc3545;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">❌</div>
+                    <h2>Problem not found</h2>
+                    <p style="margin-top: 10px;">The problem ID is missing from the URL.</p>
+                    <a href="/" style="color: #007bff; text-decoration: none; font-weight: 600;">← Back to Home</a>
+                </div>
+            `;
+        }
+
+        async function loadProblem() {
+            if (!problemId) return;
+
+            try {
+                const response = await fetch(`/api/problems/${problemId}`);
+                if (!response.ok) {
+                    throw new Error('Problem not found');
+                }
+                const problem = await response.json();
+                
+                document.title = `${problem.title} - CodeJudge`;
+                document.getElementById('breadcrumbTitle').textContent = problem.title;
+                
+                const difficultyClass = problem.difficulty === 'easy' ? 'badge-easy' : 
+                                       problem.difficulty === 'medium' ? 'badge-medium' : 'badge-hard';
+                
+                // Process description with basic Markdown support
+                let desc = problem.description || 'No description provided.';
+                
+                document.getElementById('problemContent').innerHTML = `
+                    <div class="problem-header">
+                        <h1 class="problem-title">${problem.title}</h1>
+                        <div class="problem-meta">
+                            <span class="badge ${difficultyClass}">${problem.difficulty.toUpperCase()}</span>
+                            <span class="problem-id">Problem #${problem.id}</span>
+                        </div>
+                    </div>
+                    <div class="problem-description" id="problemDesc">
+                        ${desc}
+                    </div>
+                `;
+                
+                // Apply basic Markdown formatting (before LaTeX rendering to avoid conflicts)
+                const descElement = document.getElementById('problemDesc');
+                let html = descElement.innerHTML;
+                
+                // Process bold text **text** but avoid LaTeX content
+                // We need to be careful not to touch math expressions
+                html = html.replace(/\*\*(?!\$)([^\*]+?)\*\*/g, '<strong>$1</strong>');
+                
+                // Process italic text *text* (single asterisk)
+                html = html.replace(/(?<!\*)\*(?!\*)(?!\$)([^\*]+?)\*(?!\*)/g, '<em>$1</em>');
+                
+                descElement.innerHTML = html;
+                
+                // Render LaTeX after Markdown
+                setTimeout(() => {
+                    if (typeof renderMathInElement !== 'undefined') {
+                        renderMathInElement(descElement, {
+                            delimiters: [
+                                {left: '$$', right: '$$', display: true},
+                                {left: '$', right: '$', display: false}
+                            ]
+                        });
+                    }
+                }, 100);
+                
+            } catch (err) {
+                document.getElementById('problemContent').innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; color: #dc3545;">
+                        <div style="font-size: 48px; margin-bottom: 20px;">❌</div>
+                        <h2>Problem not found</h2>
+                        <p style="margin-top: 10px;">${err.message}</p>
+                        <a href="/" style="display: inline-block; margin-top: 20px; color: #007bff; text-decoration: none; font-weight: 600;">← Back to Home</a>
+                    </div>
+                `;
+            }
+        }
+
+        async function validateToken() {
+            console.log('validateToken() called');
+            try {
+                console.log('Sending validation request with token:', authToken?.substring(0, 20) + '...');
+                const response = await fetch('/api/auth/validate', {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                console.log('Validation response status:', response.status);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Validation successful, data:', data);
+                    // The API returns claims directly, not wrapped in { user: {...} }
+                    currentUser = { username: data.username, user_id: data.user_id, role: data.role };
+                    document.getElementById('userInfo').textContent = `👤 ${currentUser.username}`;
+                    document.getElementById('submissionForm').classList.remove('hidden');
+                    document.getElementById('loginRequired').classList.add('hidden');
+                } else {
+                    // Token invalid, but don't remove it - user might have just logged out elsewhere
+                    console.log('Token validation failed:', response.status);
+                    showLoginRequired();
+                }
+            } catch (err) {
+                console.error('Token validation error:', err);
+                showLoginRequired();
+            }
+        }
+
+        function showLoginRequired() {
+            console.log('showLoginRequired() called');
+            document.getElementById('userInfo').textContent = 'Guest';
+            document.getElementById('submissionForm').classList.add('hidden');
+            document.getElementById('loginRequired').classList.remove('hidden');
+        }
+
+        async function submitSolution() {
+            const code = document.getElementById('code').value.trim();
+            const language = document.getElementById('language').value;
+            const resultDiv = document.getElementById('submissionResult');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (!code) {
+                resultDiv.className = 'submission-result error';
+                resultDiv.style.display = 'block';
+                resultDiv.textContent = 'Please write some code before submitting!';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            resultDiv.className = 'submission-result pending';
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '⏳ Submitting your solution...';
+
+            try {
+                const response = await fetch('/api/submissions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        problem_id: parseInt(problemId),
+                        language: language,
+                        source_code: code
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    resultDiv.className = 'submission-result success';
+                    resultDiv.innerHTML = `
+                        <h3 style="color: #28a745; margin-bottom: 10px;">✓ Submission Received</h3>
+                        <p><strong>Submission ID:</strong> ${result.id}</p>
+                        <p><strong>Problem ID:</strong> ${result.problem_id}</p>
+                        <p><strong>Language:</strong> ${result.language || 'cpp'}</p>
+                        <p><strong>Status:</strong> <span id="submissionStatus">Pending</span></p>
+                        <p id="verdictText" style="margin-top: 10px; color: #666;">Your solution is being evaluated...</p>
+                        <button onclick="checkSubmissionStatus(${result.id})" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Check Status</button>
+                    `;
+                    document.getElementById('code').value = '';
+                    
+                    // Auto-poll for status every 2 seconds
+                    pollSubmissionStatus(result.id);
+                } else {
+                    const error = await response.json();
+                    resultDiv.className = 'submission-result error';
+                    resultDiv.textContent = `❌ ${error.error || 'Submission failed'}`;
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Solution';
+                }
+            } catch (err) {
+                resultDiv.className = 'submission-result error';
+                resultDiv.textContent = `❌ Network error: ${err.message}`;
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Solution';
+            }
+        }
+
+        let pollInterval = null;
+
+        async function checkSubmissionStatus(submissionId) {
+            try {
+                const response = await fetch(`/api/submissions/${submissionId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    const statusEl = document.getElementById('submissionStatus');
+                    const verdictEl = document.getElementById('verdictText');
+                    const submitBtn = document.getElementById('submitBtn');
+                    
+                    if (result.status === 'Completed' && result.verdict) {
+                        statusEl.textContent = result.status;
+                        const verdictColor = result.verdict === 'Accepted' ? '#28a745' : 
+                                            result.verdict.includes('Error') ? '#dc3545' : '#ffc107';
+                        verdictEl.innerHTML = `<strong style="color: ${verdictColor};">Verdict: ${result.verdict}</strong>`;
+                        
+                        // Stop polling once we have a verdict
+                        if (pollInterval) {
+                            clearInterval(pollInterval);
+                            pollInterval = null;
+                        }
+                        
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Submit Solution';
+                    } else {
+                        statusEl.textContent = 'Pending';
+                        verdictEl.textContent = 'Your solution is being evaluated...';
+                    }
+                }
+            } catch (err) {
+                console.error('Error checking status:', err);
+            }
+        }
+
+        function pollSubmissionStatus(submissionId) {
+            // Clear any existing polling
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+            
+            // Check immediately
+            checkSubmissionStatus(submissionId);
+            
+            // Then poll every 2 seconds for up to 30 seconds
+            let attempts = 0;
+            pollInterval = setInterval(() => {
+                attempts++;
+                if (attempts > 15) { // Stop after 30 seconds
+                    clearInterval(pollInterval);
+                    pollInterval = null;
+                    const submitBtn = document.getElementById('submitBtn');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Solution';
+                }
+                checkSubmissionStatus(submissionId);
+            }, 2000);
+        }
+
+        // Theme toggle functionality
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            const themeIcon = document.getElementById('themeIcon');
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeIcon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // Initialize theme from localStorage
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const themeIcon = document.getElementById('themeIcon');
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            if (themeIcon) themeIcon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        })();
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOMContentLoaded - Starting initialization');
+            console.log('authToken:', authToken);
+            loadProblem();
+            
+            if (authToken) {
+                console.log('Token found, calling validateToken()');
+                validateToken();
+            } else {
+                console.log('No token found, showing login required');
+                showLoginRequired();
+            }
+        });
+    </script>
+</body>
+</html>
