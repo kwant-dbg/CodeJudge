@@ -86,7 +86,7 @@ if ($LASTEXITCODE -ne 0) {
 
 # Build and Push Docker Image
 Write-ColorOutput Yellow "`n🏗️  Building Docker image..."
-docker-compose -f docker-compose.monolith.yml build monolith
+docker-compose build monolith
 if ($LASTEXITCODE -ne 0) {
     Write-ColorOutput Red "❌ Failed to build Docker image"
     exit 1

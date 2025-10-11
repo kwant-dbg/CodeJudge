@@ -228,7 +228,10 @@ func connectDB() {
 func connectRedis() {
 	redisURL := env.Get("REDIS_URL", "")
 	if redisURL == "" {
-		logger.Fatal("REDIS_URL not set")
+		logger.Warn("REDIS_URL not set - running without Redis (some features may be disabled)")
+		// Create a nil client - handlers will need to handle this gracefully
+		rdb = nil
+		return
 	}
 	rdb = redisutil.ConnectWithRetry(ctx, logger, redisURL, 5, 2*time.Second)
 	logger.Info("Redis connected successfully")
