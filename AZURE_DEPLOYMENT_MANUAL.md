@@ -154,7 +154,6 @@ az group delete --name $resourceGroup --yes --no-wait
 
 ## Cost Management
 - B1 App Service Plan: ~$13/month
-- With $100 Azure Student credits, you get 7+ months free
 - Stop/start app service plan to save costs:
 ```powershell
 # Stop (saves money)
