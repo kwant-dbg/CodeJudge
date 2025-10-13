@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"codejudge/common/env"
-
 	_ "github.com/lib/pq"
 )
 
@@ -17,10 +15,9 @@ func main() {
 	}
 	username := os.Args[1]
 
-	databaseURL := env.Get("DATABASE_URL", "")
+	databaseURL := os.Getenv("DATABASE_URL")
 	if databaseURL == "" {
-		fmt.Println("DATABASE_URL not set")
-		os.Exit(1)
+		databaseURL = "postgres://user:password@localhost:5432/codejudgedb?sslmode=disable"
 	}
 
 	db, err := sql.Open("postgres", databaseURL)

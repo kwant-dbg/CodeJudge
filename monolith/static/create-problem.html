@@ -135,7 +135,34 @@
         
         .hidden { display: none !important; }
         .required { color: #d00; }
-        
+
+
+        .sample-case-container {
+            display: flex;
+            gap: 16px;
+            margin-top: 10px;
+        }
+        .sample-case {
+            flex: 1;
+        }
+        .sample-case-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        .sample-case-content {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+            font-size: 12px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            line-height: 1.4;
+            min-height: 50px;
+        }
+
         @media (max-width: 768px) {
             .header-content, .breadcrumb, .form-container { padding-left: 20px; padding-right: 20px; }
             .form-container h1 { font-size: 22px; }
@@ -196,6 +223,16 @@
                     </select>
                 </div>
 
+                <div class="form-group">
+                    <label>Input Format</label>
+                    <textarea id="input_format" placeholder="Describe the input format..." rows="5"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Output Format</label>
+                    <textarea id="output_format" placeholder="Describe the output format..." rows="5"></textarea>
+                </div>
+
                 <div class="test-cases-section">
                     <h3>Test Cases <span class="required">*</span></h3>
                     <p>Add at least one test case to validate submissions. The judge will run submitted code against these test cases.</p>
@@ -213,6 +250,11 @@
                             <label>Expected Output</label>
                             <textarea id="testOutput" placeholder="Expected output for this test case..." rows="3"></textarea>
                             <small>What the program should print to stdout</small>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="isSample" style="width: auto;">
+                            <label for="isSample" style="margin-bottom: 0;">Is this a sample test case?</label>
+                            <small>Sample test cases are visible to users.</small>
                         </div>
                         <button type="button" class="btn-success" onclick="addTestCase()">+ Add Test Case</button>
                     </div>
@@ -265,15 +307,17 @@
         function addTestCase() {
             const input = document.getElementById('testInput').value;
             const output = document.getElementById('testOutput').value;
+            const isSample = document.getElementById('isSample').checked;
             
             if (!input.trim() && !output.trim()) {
                 showStatus('Please provide input or output for the test case', 'error');
                 return;
             }
             
-            testCases.push({ input, output });
+            testCases.push({ input, output, sample: isSample });
             document.getElementById('testInput').value = '';
             document.getElementById('testOutput').value = '';
+            document.getElementById('isSample').checked = false;
             
             displayTestCases();
             showStatus('Test case added! Total: ' + testCases.length, 'success');
@@ -290,13 +334,17 @@
                 <h4 style="margin-bottom: 15px; color: #28a745;">✓ Added Test Cases (${testCases.length})</h4>
                 ${testCases.map((tc, idx) => `
                     <div class="test-case-item">
-                        <strong>Test Case ${idx + 1}</strong>
+                        <strong>Test Case ${idx + 1} ${tc.sample ? '(Sample)' : ''}</strong>
                         <button type="button" onclick="removeTestCase(${idx})">Remove</button>
-                        <div>
-                            <div><strong>Input:</strong></div>
-                            <pre>${tc.input || '(empty)'}</pre>
-                            <div style="margin-top: 10px;"><strong>Expected Output:</strong></div>
-                            <pre>${tc.output || '(empty)'}</pre>
+                        <div class="sample-case-container">
+                            <div class="sample-case">
+                                <div class="sample-case-title">Input</div>
+                                <pre class="sample-case-content">${tc.input || '(empty)'}</pre>
+                            </div>
+                            <div class="sample-case">
+                                <div class="sample-case-title">Expected Output</div>
+                                <pre class="sample-case-content">${tc.output || '(empty)'}</pre>
+                            </div>
                         </div>
                     </div>
                 `).join('')}
@@ -333,6 +381,8 @@
                         title: document.getElementById('title').value,
                         description: document.getElementById('description').value,
                         difficulty: document.getElementById('difficulty').value,
+                        input_format: document.getElementById('input_format').value,
+                        output_format: document.getElementById('output_format').value,
                         test_cases: testCases
                     })
                 });

@@ -459,6 +459,13 @@
             return result;
         }
 
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         // Get problem ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         problemId = urlParams.get('id');
@@ -496,6 +503,35 @@
                 // Parse structured format
                 const parsed = parseStructuredDescription(desc);
                 
+                // Generate sample test cases HTML
+                let sampleTestsHtml = '';
+                console.log('Problem test_cases:', problem.test_cases);
+                if (problem.test_cases && problem.test_cases.length > 0) {
+                    const sampleTests = problem.test_cases.filter(tc => tc.sample === true);
+                    console.log('Filtered sample tests:', sampleTests);
+                    if (sampleTests.length > 0) {
+                        sampleTestsHtml = '<div class="sample-tests"><div class="section-title">Sample Tests</div>';
+                        sampleTests.forEach((test, index) => {
+                            sampleTestsHtml += `
+                                <div class="sample-test">
+                                    <div class="sample-test-header">Example ${index + 1}</div>
+                                    <div class="sample-test-body">
+                                        <div class="sample-io">
+                                            <div class="sample-io-label">INPUT</div>
+                                            <div class="sample-io-content">${escapeHtml(test.input)}</div>
+                                        </div>
+                                        <div class="sample-io">
+                                            <div class="sample-io-label">OUTPUT</div>
+                                            <div class="sample-io-content">${escapeHtml(test.output)}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        sampleTestsHtml += '</div>';
+                    }
+                }
+                
                 document.getElementById('problemContent').innerHTML = `
                     <div class="problem-header">
                         <h1 class="problem-title">${problem.title}</h1>
@@ -509,6 +545,7 @@
                     </div>
                     ${parsed.inputSection}
                     ${parsed.outputSection}
+                    ${sampleTestsHtml}
                     ${parsed.examplesSection}
                 `;
                 
@@ -542,8 +579,33 @@
                     });
                     
                     // Now safely process markdown
+                    // Convert headings (### h3, ## h2, # h1)
+                    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+                    html = html.replace(/^## (.+)$/gm, '<h3>$1</h3>'); // Use h3 for consistency
+                    html = html.replace(/^# (.+)$/gm, '<h3>$1</h3>');
+                    
+                    // Convert unordered lists (lines starting with - or *)
+                    html = html.replace(/^[\-\*] (.+)$/gm, '<li>$1</li>');
+                    // Wrap consecutive list items in <ul>
+                    html = html.replace(/(<li>.*<\/li>\n?)+/g, (match) => '<ul>' + match + '</ul>');
+                    
+                    // Convert bold and italic
                     html = html.replace(/\*\*([^\*]+?)\*\*/g, '<strong>$1</strong>');
                     html = html.replace(/(?<!\*)\*(?!\*)([^\*]+?)\*(?!\*)/g, '<em>$1</em>');
+                    
+                    // Convert backticks to code
+                    html = html.replace(/`([^`]+?)`/g, '<code>$1</code>');
+                    
+                    // Convert line breaks to paragraphs (double newline)
+                    html = html.replace(/\n\n+/g, '</p><p>');
+                    html = '<p>' + html + '</p>';
+                    // Clean up empty paragraphs and misplaced tags
+                    html = html.replace(/<p>\s*<\/p>/g, '');
+                    html = html.replace(/<p>\s*<h3>/g, '<h3>');
+                    html = html.replace(/<\/h3>\s*<\/p>/g, '</h3>');
+                    html = html.replace(/<p>\s*<ul>/g, '<ul>');
+                    html = html.replace(/<\/ul>\s*<\/p>/g, '</ul>');
+                    html = html.replace(/<br>\s*<br>/g, '</p><p>');
                     
                     // Restore LaTeX expressions
                     protectIndex = 0;

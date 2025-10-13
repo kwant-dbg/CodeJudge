@@ -180,6 +180,7 @@ func (h *PlagiarismHandler) startWorker() {
 				}
 				submissionShingles[submission.ID] = getShingles(nodes, 5)
 			}
+			h.logger.Info("Found submissions to compare against", zap.Int("count", len(submissionShingles)))
 
 			// 3. Create MinHash for each submission
 			minhashes := make(map[int]*minhash.MinWise)
@@ -203,6 +204,7 @@ func (h *PlagiarismHandler) startWorker() {
 			// 5. For each submission, query for candidates
 			for id, mh := range minhashes {
 				candidates := l.Query(mh.Signature())
+				h.logger.Info("Found candidates for submission", zap.Int("submission_id", id), zap.Int("candidate_count", len(candidates)))
 				for _, candidate := range candidates {
 					candidateID, _ := strconv.Atoi(candidate.(string))
 					if id >= candidateID {
@@ -211,6 +213,7 @@ func (h *PlagiarismHandler) startWorker() {
 
 					// 6. Calculate Jaccard similarity for candidate pairs
 					jaccard := minhashes[id].Similarity(minhashes[candidateID])
+					h.logger.Info("Calculated similarity", zap.Int("submission_a", id), zap.Int("submission_b", candidateID), zap.Float64("jaccard_similarity", jaccard))
 
 					if jaccard > 0.8 { // Threshold
 						_, err := h.dbManager.GetDB().Exec("INSERT INTO plagiarism_reports (submission_a, submission_b, similarity) VALUES ($1, $2, $3) ON CONFLICT (submission_a, submission_b) DO NOTHING", id, candidateID, jaccard)

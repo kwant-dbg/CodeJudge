@@ -14,10 +14,12 @@ import (
 )
 
 type Problem struct {
-	ID          int    `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Difficulty  string `json:"difficulty"`
+	ID           int    `json:"id"`
+	Title        string `json:"title"`
+	Description  string `json:"description"`
+	Difficulty   string `json:"difficulty"`
+	InputFormat  string `json:"input_format"`
+	OutputFormat string `json:"output_format"`
 }
 
 type TestCase struct {
@@ -25,6 +27,12 @@ type TestCase struct {
 	ProblemID int    `json:"problem_id"`
 	Input     string `json:"input"`
 	Output    string `json:"output"`
+	Sample    bool   `json:"sample"`
+}
+
+type ProblemWithTestCases struct {
+	Problem
+	TestCases []TestCase `json:"test_cases"`
 }
 
 type ProblemsHandler struct {
@@ -41,11 +49,11 @@ func NewProblemsHandler(logger *zap.Logger, dbManager *dbutil.ConnectionManager)
 
 func (h *ProblemsHandler) PrepareStatements() {
 	statements := map[string]string{
-		"list_problems":    `SELECT id, title, description, difficulty FROM problems ORDER BY id`,
-		"get_problem":      `SELECT id, title, description, difficulty FROM problems WHERE id = $1`,
-		"create_problem":   `INSERT INTO problems (title, description, difficulty) VALUES ($1, $2, $3) RETURNING id`,
-		"get_test_cases":   `SELECT id, problem_id, input, output FROM test_cases WHERE problem_id = $1 ORDER BY id`,
-		"create_test_case": `INSERT INTO test_cases (problem_id, input, output) VALUES ($1, $2, $3) RETURNING id`,
+		"list_problems":    `SELECT id, title, description, difficulty, input_format, output_format FROM problems ORDER BY id`,
+		"get_problem":      `SELECT id, title, description, difficulty, input_format, output_format FROM problems WHERE id = $1`,
+		"create_problem":   `INSERT INTO problems (title, description, difficulty, input_format, output_format) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+		"get_test_cases":   `SELECT id, problem_id, input, output, sample FROM test_cases WHERE problem_id = $1 ORDER BY id`,
+		"create_test_case": `INSERT INTO test_cases (problem_id, input, output, sample) VALUES ($1, $2, $3, $4) RETURNING id`,
 	}
 
 	for name, query := range statements {
@@ -63,7 +71,9 @@ func (h *ProblemsHandler) CreateTables() {
         id SERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         description TEXT,
-        difficulty VARCHAR(50)
+        difficulty VARCHAR(50),
+        input_format TEXT,
+        output_format TEXT
     );`
 	_, err := h.dbManager.GetDB().Exec(createProblemsTableSQL)
 	if err != nil {
@@ -77,6 +87,7 @@ func (h *ProblemsHandler) CreateTables() {
 		problem_id INTEGER NOT NULL,
 		input TEXT NOT NULL,
 		output TEXT NOT NULL,
+		sample BOOLEAN NOT NULL DEFAULT FALSE,
 		FOREIGN KEY (problem_id) REFERENCES problems(id) ON DELETE CASCADE
 	);`
 	_, err = h.dbManager.GetDB().Exec(createTestCasesTableSQL)
@@ -104,7 +115,7 @@ func (h *ProblemsHandler) GetProblems(w http.ResponseWriter, r *http.Request) {
 	problems := []Problem{}
 	for rows.Next() {
 		var p Problem
-		if err := rows.Scan(&p.ID, &p.Title, &p.Description, &p.Difficulty); err != nil {
+		if err := rows.Scan(&p.ID, &p.Title, &p.Description, &p.Difficulty, &p.InputFormat, &p.OutputFormat); err != nil {
 			serviceErr := httpx.NewServiceError(
 				"Failed to process problem data",
 				"DATA_PROCESSING_ERROR",
@@ -137,7 +148,7 @@ func (h *ProblemsHandler) GetProblem(w http.ResponseWriter, r *http.Request) {
 	var p Problem
 	ctx := r.Context()
 	row := h.dbManager.QueryRowPrepared(ctx, "get_problem", id)
-	err = row.Scan(&p.ID, &p.Title, &p.Description, &p.Difficulty)
+	err = row.Scan(&p.ID, &p.Title, &p.Description, &p.Difficulty, &p.InputFormat, &p.OutputFormat)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			serviceErr := httpx.NewServiceError(
@@ -159,15 +170,52 @@ func (h *ProblemsHandler) GetProblem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.JSON(w, http.StatusOK, p)
+	// Fetch test cases for the problem
+	rows, err := h.dbManager.QueryPrepared(ctx, "get_test_cases", id)
+	if err != nil {
+		serviceErr := httpx.NewServiceError(
+			"Failed to retrieve test cases",
+			"DATABASE_ERROR",
+			http.StatusInternalServerError,
+			err,
+		)
+		httpx.ErrorWithDetails(w, serviceErr, h.logger)
+		return
+	}
+	defer rows.Close()
+
+	testCases := []TestCase{}
+	for rows.Next() {
+		var tc TestCase
+		if err := rows.Scan(&tc.ID, &tc.ProblemID, &tc.Input, &tc.Output, &tc.Sample); err != nil {
+			serviceErr := httpx.NewServiceError(
+				"Failed to process test case data",
+				"DATA_PROCESSING_ERROR",
+				http.StatusInternalServerError,
+				err,
+			)
+			httpx.ErrorWithDetails(w, serviceErr, h.logger)
+			return
+		}
+		testCases = append(testCases, tc)
+	}
+
+	response := ProblemWithTestCases{
+		Problem:   p,
+		TestCases: testCases,
+	}
+
+	httpx.JSON(w, http.StatusOK, response)
 }
 
 func (h *ProblemsHandler) CreateProblem(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Title       string     `json:"title"`
-		Description string     `json:"description"`
-		Difficulty  string     `json:"difficulty"`
-		TestCases   []TestCase `json:"test_cases"`
+		Title        string     `json:"title"`
+		Description  string     `json:"description"`
+		Difficulty   string     `json:"difficulty"`
+		InputFormat  string     `json:"input_format"`
+		OutputFormat string     `json:"output_format"`
+		TestCases    []TestCase `json:"test_cases"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -208,7 +256,7 @@ func (h *ProblemsHandler) CreateProblem(w http.ResponseWriter, r *http.Request) 
 
 	// Create the problem
 	var problemID int
-	row := h.dbManager.QueryRowPrepared(ctx, "create_problem", req.Title, req.Description, req.Difficulty)
+	row := h.dbManager.QueryRowPrepared(ctx, "create_problem", req.Title, req.Description, req.Difficulty, req.InputFormat, req.OutputFormat)
 	err := row.Scan(&problemID)
 	if err != nil {
 		serviceErr := httpx.NewServiceError(
@@ -224,7 +272,7 @@ func (h *ProblemsHandler) CreateProblem(w http.ResponseWriter, r *http.Request) 
 	// Create all test cases
 	for _, tc := range req.TestCases {
 		var testCaseID int
-		tcRow := h.dbManager.QueryRowPrepared(ctx, "create_test_case", problemID, tc.Input, tc.Output)
+		tcRow := h.dbManager.QueryRowPrepared(ctx, "create_test_case", problemID, tc.Input, tc.Output, tc.Sample)
 		if err := tcRow.Scan(&testCaseID); err != nil {
 			h.logger.Error("Failed to create test case", zap.Error(err), zap.Int("problemID", problemID))
 			// Continue creating other test cases even if one fails
@@ -236,10 +284,12 @@ func (h *ProblemsHandler) CreateProblem(w http.ResponseWriter, r *http.Request) 
 		zap.Int("testCaseCount", len(req.TestCases)))
 
 	response := Problem{
-		ID:          problemID,
-		Title:       req.Title,
-		Description: req.Description,
-		Difficulty:  req.Difficulty,
+		ID:           problemID,
+		Title:        req.Title,
+		Description:  req.Description,
+		Difficulty:   req.Difficulty,
+		InputFormat:  req.InputFormat,
+		OutputFormat: req.OutputFormat,
 	}
 
 	httpx.JSON(w, http.StatusCreated, response)
@@ -261,7 +311,7 @@ func (h *ProblemsHandler) CreateTestCase(w http.ResponseWriter, r *http.Request)
 	tc.ProblemID = problemID
 
 	ctx := r.Context()
-	row := h.dbManager.QueryRowPrepared(ctx, "create_test_case", tc.ProblemID, tc.Input, tc.Output)
+	row := h.dbManager.QueryRowPrepared(ctx, "create_test_case", tc.ProblemID, tc.Input, tc.Output, tc.Sample)
 	err = row.Scan(&tc.ID)
 	if err != nil {
 		h.logger.Error("Error creating test case", zap.Error(err))
@@ -273,4 +323,3 @@ func (h *ProblemsHandler) CreateTestCase(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(tc)
 }
-

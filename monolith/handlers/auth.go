@@ -167,6 +167,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(err.Error(), "duplicate key") {
 			httpx.Error(w, http.StatusConflict, "Username or email already exists")
 		} else {
+			h.logger.Error("Failed to create user", zap.Error(err))
 			httpx.Error(w, http.StatusInternalServerError, "Failed to create user")
 		}
 		return

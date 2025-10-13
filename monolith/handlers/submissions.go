@@ -51,6 +51,7 @@ func (h *SubmissionsHandler) CreateTables() {
         id SERIAL PRIMARY KEY,
         problem_id INTEGER NOT NULL,
         source_code TEXT NOT NULL,
+        language VARCHAR(50) NOT NULL,
         verdict VARCHAR(50) DEFAULT 'Pending',
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );`
@@ -82,8 +83,8 @@ func (h *SubmissionsHandler) createSubmissionTransactional(s *Submission) error 
 	// Step 1: Insert into database with direct connection
 	db := h.dbManager.GetDB()
 
-	query := "INSERT INTO submissions (problem_id, source_code) VALUES ($1, $2) RETURNING id"
-	err := db.QueryRowContext(ctx, query, s.ProblemID, s.SourceCode).Scan(&s.ID)
+	query := "INSERT INTO submissions (problem_id, source_code, language) VALUES ($1, $2, $3) RETURNING id"
+	err := db.QueryRowContext(ctx, query, s.ProblemID, s.SourceCode, s.Language).Scan(&s.ID)
 	if err != nil {
 		return &SubmissionError{
 			Message: "Failed to insert submission into database",

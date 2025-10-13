@@ -1,32 +1,18 @@
 # Multi-stage Dockerfile optimized for Azure deployment
 # Build stage
-FROM golang:1.19-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 # Install build dependencies
 RUN apk --no-cache add git ca-certificates tzdata
 
 WORKDIR /src
 
-# Copy workspace files first for better layer caching
-COPY go.work ./
-COPY go.work.sum* ./
-
-# Copy go.mod files for all modules to leverage Docker layer caching
-COPY common-go/go.mod common-go/go.sum ./common-go/
-COPY monolith-service/go.mod monolith-service/go.sum ./monolith-service/
-
-# Download dependencies
-RUN go work sync
-
-# Copy common-go source code
-COPY common-go/ ./common-go/
-
-# Copy monolith service source code
-COPY monolith-service/ ./monolith-service/
+# Copy all source files
+COPY . .
 
 # Build the monolith service
-WORKDIR /src/monolith-service
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+WORKDIR /src
+RUN cd monolith && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -trimpath \
     -ldflags="-s -w -X main.version=$(date -u +%Y%m%d-%H%M%S)" \
     -o /out/codejudge-monolith \

@@ -200,9 +200,13 @@ func main() {
 	})
 
 	// Admin routes
-	r.Route("/admin", func(adminRouter chi.Router) {
+	// First, a public route to serve the admin page itself.
+	r.Get("/admin", adminHandler.ShowAdminDashboard)
+
+	// Then, a protected group for all admin API calls.
+	r.Route("/api/admin", func(adminRouter chi.Router) {
 		adminRouter.Use(commonauth.RequireRole(jwtSecret, []string{"admin"}, logger))
-		adminRouter.Get("/", adminHandler.ShowAdminDashboard)
+		// adminRouter.Get("/users", adminHandler.GetUsers) // Example for a future API endpoint
 	})
 
 	// Serve static files (for the frontend)
