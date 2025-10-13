@@ -1,247 +1,118 @@
 
-# CodeJudge: High-Performance Online Judging System
 
-CodeJudge is a cloud-native backend for powering competitive programming and automated code evaluation platforms. It is built on a distributed microservices architecture using Go and C++ for high throughput, scalability, and security.
+# CodeJudge (Mono Branch)
 
-<img width="1024" height="1024" alt="29, 2025 - 12_10PM" src="https://github.com/user-attachments/assets/9ab15fcd-070d-46b2-84ae-07ee72f3b07a" />
+CodeJudge is a high-performance online judge system. The **mono branch** uses a monolithic Go application (with C++ judge) instead of a distributed microservices architecture.
 
-## ✨ Quick Start
+---
 
-### Local Development
-```powershell
-# Start all services
-docker-compose -f docker-compose.monolith.yml up -d --build
+## Mono Branch Highlights
 
-# Access at http://localhost:8080
-```
+- **Monolith-first:** All backend logic is in a single Go service (`monolith/`), simplifying deployment and development.
+- **C++ Judge:** Secure sandboxed code execution using a C++ engine (`judge/`).
+- **PostgreSQL & Redis:** Used for persistence and job queueing.
+- **Dockerized:** One `docker-compose.yml` to run everything locally or in the cloud.
 
-### Deploy to Azure (Student Account Ready!)
-```powershell
-# One command deployment
-.\deploy-azure.ps1
-
-# See AZURE_QUICKSTART.md for details
-```
-
-## Key Features
-
-- **Secure C++ Sandbox:** Leverages `fork`, `exec`, and `setrlimit` for low-level process isolation and resource management, preventing malicious code execution.
-- **Horizontally Scalable:** Go and C++ services are decoupled via a Redis message bus, allowing for independent scaling of workers and other components.
-- **Algorithmic Plagiarism Detection:** Implements a shingling and winnowing pipeline to detect structural code similarity, moving beyond simple token matching.
-- **Dockerized & Cloud-Native:** Fully containerized with `docker-compose.yml` for local development, plus Kubernetes manifests for cluster deployment.
-
-## Performance & Reliability
-
-
-CodeJudge is designed with reliability and performance in mind:
-
-- **Connection Management:** Database connection pooling with lifecycle management, prepared statements, and automatic retry logic for good performance under load.
-- **Transaction Integrity:** Distributed transaction logic with compensation ensures data consistency across microservices.
-- **Optimized Plagiarism Engine:** AST-based code analysis with Locality-Sensitive Hashing (LSH) enables fast similarity search across submission history while maintaining accuracy. Single-pass similarity calculations reduce computational overhead by ~60%.
-- **Memory-Efficient Caching:** LRU-based fingerprint cache with TTL prevents memory leaks and ensures bounded resource usage.
-- **Enhanced Security Sandbox:** Multi-layered containment using namespaces, seccomp filters, and cgroups provides protection against malicious code execution.
-
-## Microservices Overview
-
-| Service                  | Language | Path                   | Role                                 |
-|--------------------------|----------|------------------------|--------------------------------------|
-| **API Gateway**          | Go       | `api-gateway/`         | HTTP API entrypoint, routing, static UI |
-| **Problems Service**     | Go       | `problems-service-go/` | Problem CRUD, metadata, DB access    |
-| **Submissions Service**  | Go       | `submissions-service-go/` | Handles code submissions, job queue |
-| **Plagiarism Service**   | Go       | `plagiarism-service-go/` | Plagiarism detection pipeline      |
-| **Judge Service**        | C++      | `judge-service/`       | Secure code execution, sandboxing    |
-| **Database**             | Postgres | Docker/K8s             | Primary datastore                    |
-| **Message Queue**        | Redis    | Docker/K8s             | Job queue & message bus              |
-
-## Technology Stack
-
-| Component         | Technology                | Role                                 |
-|-------------------|--------------------------|--------------------------------------|
-| Backend Services  | Go (net/http, go-redis)  | API, orchestration, business logic   |
-| Judge Engine      | C++17                    | Sandboxed code execution             |
-| Database          | PostgreSQL               | Persistent storage                   |
-| Message Queue     | Redis                    | Job queue, pub/sub                   |
-| Containerization  | Docker, Docker Compose   | Local deployment                     |
-| Infrastructure    | Kubernetes               | Cluster deployment & provisioning    |
-
-### Architecture Highlights
-
-- **Connection Pooling:** Configurable pool management (max 25 connections, 30min rotation) with health monitoring
-- **Transaction Management:** Distributed transaction logic with automatic retry and exponential backoff
-- **Plagiarism Detection:** LSH indexing with FNV-1a hashing for sub-linear similarity search performance
-- **Resource Isolation:** Sandboxing with memory/CPU limits, filesystem quotas, and network isolation
-- **Fault Tolerance:** Graceful degradation and structured error propagation
-
-## Docker Images
-
-### GitHub Container Registry
-Pre-built Docker images are available at GitHub Container Registry:
-
-```bash
-# Pull latest images
-docker pull ghcr.io/kwant-dbg/codejudge/codejudge-api-gateway:latest
-docker pull ghcr.io/kwant-dbg/codejudge/codejudge-problems-service-go:latest
-docker pull ghcr.io/kwant-dbg/codejudge/codejudge-submissions-service-go:latest
-docker pull ghcr.io/kwant-dbg/codejudge/codejudge-plagiarism-service-go:latest
-docker pull ghcr.io/kwant-dbg/codejudge/codejudge-judge-service:latest
-```
-
-### Building Images Locally
-```bash
-# Build all services
-docker-compose build
-
-# Build specific service
-docker-compose build gateway
-```
-
-### Using Pre-built Images
-```bash
-# Run using published images (faster)
-docker-compose -f docker-compose.images.yml up -d
-
-# Run with local builds
-docker-compose up --build -d
-```
-
-### Publishing Images
-```bash
-# Manual publish to GitHub Container Registry
-./scripts/build-and-push-ghcr.sh
-
-# Windows PowerShell
-.\scripts\build-and-push-ghcr.ps1
-```
-
-
-Images are automatically built and published via GitHub Actions on every push to main/master.
+---
 
 ## Quick Start
 
-**Prerequisites:** Docker and Docker Compose
+**Prerequisites:** Docker, Docker Compose
 
-1. **Clone & Enter Project:**
-   ```bash
-   git clone https://github.com/kwant-dbg/CodeJudge.git
-   cd CodeJudge
-   ```
+```powershell
+# Start all services (monolith, judge, db, redis)
+docker-compose up -d --build
 
-2. **Launch All Services:**
-   ```bash
-   # Development
-   docker-compose up --build -d
-   
-   # With health checks
-   docker-compose -f docker-compose.prod.yml up --build -d
-   ```
-   The API Gateway is exposed at [http://localhost:8080](http://localhost:8080).
-
-3. **Check Deployment Readiness (Optional):**
-   ```bash
-   # Run pre-deployment checks
-   bash scripts/check-deployment-readiness.sh
-   ```
-
-## Maintenance page (GitHub Pages)
-
-If you need to temporarily take the site offline to save resources, this repository includes a small static maintenance page and a lightweight deploy helper.
-
-- Files: `maintenance-page/index.html`, `maintenance-page/styles.css`, `maintenance-page/CNAME`.
-- How to update: edit files under `maintenance-page/` and push to `main`/`master`. A small workflow (`.github/workflows/deploy-maintenance-on-change.yml`) will run only when `maintenance-page/**` changes and will publish the content to the `gh-pages` branch.
-- Manual publish: alternatively, commit directly to the `gh-pages` branch (it contains only the published page) if you prefer manual control.
-- DNS: the repository contains a `CNAME` set to `codejudge.live`. Configure DNS at Name.com (four GitHub Pages A records for the apex and a CNAME for `www`) to point the domain to GitHub Pages.
-
-Note: The main CI will not run for simple edits under `maintenance-page/` because the deploy helper is narrowly scoped to those path changes.
-
-
-## Kubernetes deployment (optional)
-
-Example manifests for a few services are in `kubernetes/deploy/`. You can use these as a starting point for running the project in a Kubernetes cluster:
-
-```bash
-kubectl apply -f kubernetes/deploy/
+# Access the web UI at http://localhost:8080
 ```
 
-## Local Development & Testing
+---
 
-### Go Workspace Development
-This project uses Go workspaces for efficient multi-module development:
+## Project Structure (Mono Branch)
 
-```bash
-# Sync workspace
-go work sync
-
-# Run tests across all modules
-cd common-go && go test ./...
-
-# Build specific service
-cd problems-service-go && go build
+```
+codejudge/
+   monolith/          # Main Go application (all API logic)
+   judge/             # C++ judge service (sandboxed execution)
+   common/            # Shared Go libraries/utilities
+   deploy/            # Deployment scripts
+   docs/              # Documentation
+   docker-compose.yml # Main compose file
 ```
 
-### Independent Service Testing
-- All Go services can be run independently with their own `go.mod`
-- The C++ judge service can be built and tested in isolation
-- Shared utilities in `common-go/` provide consistent behavior
+---
 
-### Integration Testing
-```bash
-# Full stack with development settings
-docker-compose up --build
+## Deployment & Management
 
-# With health checks
-docker-compose -f docker-compose.prod.yml up --build
+See `docs/DEPLOYMENT.md` for full details.
 
-# Check deployment readiness
-bash scripts/check-deployment-readiness.sh
+**Start:**
+```powershell
+docker-compose up -d --build
 ```
 
+**Stop:**
+```powershell
+docker-compose down
+```
 
-### Maven Tasks (if present)
+**Logs:**
+```powershell
+docker-compose logs -f
+```
+
+**Database/Redis access:**
+```powershell
+docker-compose exec db psql -U user -d codejudgedb
+docker-compose exec redis redis-cli
+```
+
+---
+
+## API Endpoints (Monolith)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET    | /api/problems/           | List all problems |
+| GET    | /api/problems/{id}       | Get problem by ID |
+| POST   | /api/problems/           | Create a new problem (auth required) |
+| POST   | /api/problems/{id}/testcases | Add testcases (auth required) |
+| POST   | /api/auth/register       | Register a new user |
+| POST   | /api/auth/login          | Login and get JWT |
+| POST   | /api/auth/validate       | Validate JWT |
+| GET    | /api/auth/me             | Get current user info (auth required) |
+| POST   | /api/submissions         | Submit code for judging (auth required) |
+| GET    | /api/submissions/{id}    | Get submission result (auth required) |
+| GET    | /api/plagiarism/reports  | Get plagiarism reports (auth required) |
+
+---
+
+## Example Submission
+
+```json
+{
+   "problem_id": 1,
+   "language": "cpp",
+   "source_code": "#include <iostream>\nint main() { int a, b; std::cin >> a >> b; std::cout << a + b << std::endl; return 0; }"
+}
+```
+
+---
+
+## Development & Testing
+
+- All backend logic is in `monolith/` (Go)
+- Judge logic is in `judge/` (C++)
+- Shared code/utilities in `common/`
+
+**Run tests:**
 ```powershell
 mvn -B verify
 mvn -B test
 ```
 
-## API Endpoints
-
-| Method | Path | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/problems/` | Retrieve all problems. |
-| `POST`| `/api/problems/` | Create a new problem. |
-| `POST`| `/api/submissions`| Enqueue a new code submission for judging. |
-| `GET` | `/api/plagiarism/reports` | Get plagiarism analysis reports. |
-
-
-**Example Submission:** `POST /api/submissions`
-```json
-{
-  "problem_id": 1,
-  "language": "cpp",
-  "source_code": "#include <iostream>\nint main() { int a, b; std::cin >> a >> b; std::cout << a + b << std::endl; return 0; }"
-}
-```
 ---
-2025 Harshit Sharma
 
-##  Mono Branch Structure
+## Maintainer
 
-```
-codejudge/
- docs/              # Documentation
- monolith/          # Main application service
- judge/             # C++ judge service
- common/            # Shared Go libraries
- deploy/            # Deployment scripts
- docker-compose.yml # Main compose file
-```
-
-## Quick Start
-
-```powershell
-# Start services
-docker-compose up -d --build
-
-# Access at http://localhost:8080
-```
-
-See `docs/DEPLOYMENT.md` for detailed instructions.
+Harshit Sharma
