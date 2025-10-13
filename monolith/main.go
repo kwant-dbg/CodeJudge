@@ -114,6 +114,7 @@ func main() {
 	problemsHandler := handlers.NewProblemsHandler(logger, dbManager)
 	submissionsHandler := handlers.NewSubmissionsHandler(logger, dbManager, rdb)
 	plagiarismHandler := handlers.NewPlagiarismHandler(logger, dbManager, rdb)
+	adminHandler := handlers.NewAdminHandler(logger)
 
 	// Create database tables
 	authHandler.CreateTables()
@@ -198,9 +199,14 @@ func main() {
 		})
 	})
 
+	// Admin routes
+	r.Route("/admin", func(adminRouter chi.Router) {
+		adminRouter.Use(commonauth.RequireRole(jwtSecret, []string{"admin"}, logger))
+		adminRouter.Get("/", adminHandler.ShowAdminDashboard)
+	})
+
 	// Serve static files (for the frontend)
 	r.Handle("/*", http.FileServer(http.Dir("./static/")))
-
 	// Get port from environment or use default
 	port := env.Get("PORT", "8080")
 

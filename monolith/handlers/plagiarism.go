@@ -3,20 +3,30 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"codejudge/common/dbutil"
 
+	"github.com/dgryski/go-farm"
+	"github.com/dgryski/go-minhash"
+	minhashlsh "github.com/ekzhu/minhash-lsh"
 	"github.com/go-redis/redis/v8"
+	"github.com/goplus/llcppg/ast"
+	"github.com/goplus/llcppg/parser"
 	"go.uber.org/zap"
+	"go/token"
 )
 
 type PlagiarismSubmission struct {
 	ID         int
 	ProblemID  int
 	SourceCode string
+	Language   string
 }
 
 type Report struct {
@@ -62,6 +72,60 @@ func (h *PlagiarismHandler) CreateTables() {
 	h.logger.Info("'plagiarism_reports' table is ready")
 }
 
+func walk(node ast.Node, f func(ast.Node)) {
+	if node == nil {
+		return
+	}
+	f(node)
+
+	switch n := node.(type) {
+	case *ast.File:
+		for _, decl := range n.Decls {
+			walk(decl, f)
+		}
+	}
+}
+
+func (h *PlagiarismHandler) getAST(source string) ([]string, error) {
+	fset := token.NewFileSet()
+	tmpfile, err := os.CreateTemp("", "example.cpp")
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove(tmpfile.Name())
+
+	if _, err := tmpfile.WriteString(source); err != nil {
+		return nil, err
+	}
+	if err := tmpfile.Close(); err != nil {
+		return nil, err
+	}
+
+	astFile, err := parser.ParseFile(fset, tmpfile.Name(), "", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var nodes []string
+	walk(astFile, func(n ast.Node) {
+		if n != nil {
+			nodes = append(nodes, fmt.Sprintf("%T", n))
+		}
+	})
+	return nodes, nil
+}
+
+func getShingles(nodes []string, k int) [][]string {
+	if len(nodes) < k {
+		return [][]string{nodes}
+	}
+	shingles := make([][]string, len(nodes)-k+1)
+	for i := 0; i < len(nodes)-k+1; i++ {
+		shingles[i] = nodes[i : i+k]
+	}
+	return shingles
+}
+
 func (h *PlagiarismHandler) startWorker() {
 	h.logger.Info("Plagiarism worker started")
 	go func() {
@@ -80,8 +144,82 @@ func (h *PlagiarismHandler) startWorker() {
 			}
 
 			h.logger.Info("Processing plagiarism check", zap.Int("submission_id", submissionID))
-			// For monolith version, we'll implement a basic plagiarism check
-			// In a real implementation, this would do sophisticated comparison
+
+			var currentSubmission PlagiarismSubmission
+			err = h.dbManager.GetDB().QueryRow("SELECT id, problem_id, source_code, language FROM submissions WHERE id = $1", submissionID).Scan(&currentSubmission.ID, &currentSubmission.ProblemID, &currentSubmission.SourceCode, &currentSubmission.Language)
+			if err != nil {
+				h.logger.Error("Failed to get submission", zap.Error(err))
+				continue
+			}
+
+			if currentSubmission.Language != "C++" {
+				h.logger.Info("Skipping plagiarism check for non-C++ submission", zap.Int("submission_id", submissionID))
+				continue
+			}
+
+			// 1. Get all submissions for the same problem
+			rows, err := h.dbManager.GetDB().Query("SELECT id, source_code FROM submissions WHERE problem_id = $1 AND language = 'C++'", currentSubmission.ProblemID)
+			if err != nil {
+				h.logger.Error("Failed to get other submissions", zap.Error(err))
+				continue
+			}
+			defer rows.Close()
+
+			// 2. Create a map of submission ID to shingles
+			submissionShingles := make(map[int][][]string)
+			for rows.Next() {
+				var submission PlagiarismSubmission
+				if err := rows.Scan(&submission.ID, &submission.SourceCode); err != nil {
+					h.logger.Error("Failed to scan other submission", zap.Error(err))
+					continue
+				}
+				nodes, err := h.getAST(submission.SourceCode)
+				if err != nil {
+					h.logger.Error("Failed to get AST", zap.Error(err), zap.Int("submission_id", submission.ID))
+					continue
+				}
+				submissionShingles[submission.ID] = getShingles(nodes, 5)
+			}
+
+			// 3. Create MinHash for each submission
+			minhashes := make(map[int]*minhash.MinWise)
+			for id, shingles := range submissionShingles {
+				h1 := farm.Hash64
+				h2 := farm.Hash64
+				mw := minhash.NewMinWise(h1, h2, 128)
+				for _, shingle := range shingles {
+					mw.Push([]byte(strings.Join(shingle, "")))
+				}
+				minhashes[id] = mw
+			}
+
+			// 4. Use LSH to find candidate pairs
+			l := minhashlsh.NewMinhashLSH(128, 0.8, 1)
+
+			for id, mh := range minhashes {
+				l.Add(fmt.Sprintf("%d", id), mh.Signature())
+			}
+
+			// 5. For each submission, query for candidates
+			for id, mh := range minhashes {
+				candidates := l.Query(mh.Signature())
+				for _, candidate := range candidates {
+					candidateID, _ := strconv.Atoi(candidate.(string))
+					if id >= candidateID {
+						continue
+					}
+
+					// 6. Calculate Jaccard similarity for candidate pairs
+					jaccard := minhashes[id].Similarity(minhashes[candidateID])
+
+					if jaccard > 0.8 { // Threshold
+						_, err := h.dbManager.GetDB().Exec("INSERT INTO plagiarism_reports (submission_a, submission_b, similarity) VALUES ($1, $2, $3) ON CONFLICT (submission_a, submission_b) DO NOTHING", id, candidateID, jaccard)
+						if err != nil {
+							h.logger.Error("Failed to insert plagiarism report", zap.Error(err))
+						}
+					}
+				}
+			}
 		}
 	}()
 }
@@ -110,4 +248,3 @@ func (h *PlagiarismHandler) GetReports(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(reports)
 }
-

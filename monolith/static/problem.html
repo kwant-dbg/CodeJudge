@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Problem - CodeJudge</title>
     <!-- KaTeX for LaTeX rendering -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
     <style>
         :root {
             --bg-primary: #ffffff;
@@ -96,12 +96,134 @@
         .badge-hard { background: var(--bg-primary); color: #ef4743; border-color: #ef4743; }
         .problem-id { color: var(--text-secondary); font-size: 12px; font-weight: 400; transition: color 0.3s ease; }
         
-        .problem-description { line-height: 1.6; color: var(--text-primary); font-size: 14px; transition: color 0.3s ease; }
+        .problem-description { line-height: 1.8; color: var(--text-primary); font-size: 14px; transition: color 0.3s ease; }
         .problem-description h3 { margin-top: 24px; margin-bottom: 12px; color: var(--text-primary); font-weight: 600; font-size: 18px; letter-spacing: -0.5px; transition: color 0.3s ease; }
-        .problem-description p { margin-bottom: 12px; }
+        .problem-description p { margin-bottom: 16px; line-height: 1.8; }
         .problem-description ul, .problem-description ol { margin-left: 20px; margin-bottom: 12px; }
         .problem-description code { background: var(--bg-secondary); color: var(--text-primary); padding: 2px 6px; font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace; font-size: 13px; border: 1px solid var(--border-color); transition: all 0.3s ease; }
         .problem-description strong { color: var(--text-primary); font-weight: 600; transition: color 0.3s ease; }
+        
+        /* Enhanced KaTeX/Math styling */
+        .problem-description .katex { font-size: 1.1em; }
+        .problem-description .katex-display { margin: 1.5em 0; overflow-x: auto; overflow-y: hidden; }
+        .problem-description .katex-display > .katex { display: inline-block; white-space: nowrap; max-width: 100%; }
+        .problem-description .katex .katex-html { color: var(--text-primary); }
+        
+        /* Dark mode KaTeX adjustments */
+        [data-theme="dark"] .katex { color: var(--text-primary); }
+        [data-theme="dark"] .katex .mord, 
+        [data-theme="dark"] .katex .mbin,
+        [data-theme="dark"] .katex .mrel,
+        [data-theme="dark"] .katex .mop,
+        [data-theme="dark"] .katex .mopen,
+        [data-theme="dark"] .katex .mclose,
+        [data-theme="dark"] .katex .mpunct { color: var(--text-primary) !important; }
+        
+        /* Codeforces-style sections */
+        .info-section { 
+            margin-bottom: 24px; 
+            margin-top: 24px;
+        }
+        .section-title { 
+            font-size: 16px; 
+            font-weight: 600; 
+            color: var(--text-primary); 
+            margin-bottom: 12px; 
+            letter-spacing: -0.3px;
+            transition: color 0.3s ease;
+        }
+        .section-content { 
+            background: var(--bg-secondary); 
+            padding: 16px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        .section-content p { margin-bottom: 8px; line-height: 1.6; }
+        .section-content p:last-child { margin-bottom: 0; }
+        
+        /* Sample test cases */
+        .sample-tests { margin-top: 24px; }
+        .sample-test { 
+            margin-bottom: 20px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 4px; 
+            overflow: hidden;
+            transition: border-color 0.3s ease;
+        }
+        .sample-test-header {
+            background: var(--bg-secondary);
+            padding: 8px 16px;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            letter-spacing: 0.3px;
+            transition: all 0.3s ease;
+        }
+        .sample-test-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+        .sample-io {
+            padding: 0;
+        }
+        .sample-io-label {
+            background: var(--bg-secondary);
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+        .sample-io-content {
+            padding: 12px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            word-break: break-word;
+            transition: all 0.3s ease;
+        }
+        .sample-io:first-child {
+            border-right: 1px solid var(--border-color);
+        }
+        
+        /* Notes section */
+        .note-section {
+            background: #fffbea;
+            border: 1px solid #f5d547;
+            border-left: 4px solid #f5d547;
+            padding: 16px;
+            margin-top: 24px;
+            border-radius: 4px;
+        }
+        [data-theme="dark"] .note-section {
+            background: rgba(245, 213, 71, 0.1);
+            border-color: #f5d547;
+        }
+        .note-section .section-title {
+            color: #856404;
+            margin-bottom: 8px;
+        }
+        [data-theme="dark"] .note-section .section-title {
+            color: #f5d547;
+        }
+        
+        @media (max-width: 768px) {
+            .sample-test-body {
+                grid-template-columns: 1fr;
+            }
+            .sample-io:first-child {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+        }
         
         /* Submission Panel */
         .submission-panel { background: var(--card-bg); color: var(--text-primary); padding: 24px 24px; height: fit-content; position: sticky; top: 0; transition: all 0.3s ease; }
@@ -205,6 +327,138 @@
         console.log('Auth Token from localStorage:', authToken);
         console.log('Token exists?', !!authToken);
 
+        // Parse structured problem description
+        function parseStructuredDescription(description) {
+            const result = {
+                mainDescription: '',
+                inputSection: '',
+                outputSection: '',
+                examplesSection: ''
+            };
+
+            console.log('Parsing description:', description);
+
+            // Check if description uses structured format
+            if (!description.includes('---INPUT---')) {
+                // Legacy format - return as is
+                console.log('Using legacy format');
+                result.mainDescription = description;
+                return result;
+            }
+
+            console.log('Using structured format');
+
+            // Normalize line endings
+            description = description.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            
+            // Split by sections
+            const parts = description.split(/---([A-Z]+)---/);
+            result.mainDescription = parts[0].trim();
+
+            let currentSection = null;
+            let inputContent = '';
+            let outputContent = '';
+            let examplesContent = '';
+
+            for (let i = 1; i < parts.length; i += 2) {
+                const sectionName = parts[i];
+                const sectionContent = parts[i + 1] ? parts[i + 1].trim() : '';
+
+                if (sectionName === 'INPUT') {
+                    inputContent = sectionContent;
+                    console.log('Found INPUT:', inputContent);
+                } else if (sectionName === 'OUTPUT') {
+                    outputContent = sectionContent;
+                    console.log('Found OUTPUT:', outputContent);
+                } else if (sectionName === 'EXAMPLES') {
+                    examplesContent = sectionContent;
+                    console.log('Found EXAMPLES:', examplesContent);
+                }
+            }
+
+            console.log('Final sections:', { inputContent, outputContent, examplesContent });
+
+            // Build Input section
+            if (inputContent) {
+                // Keep content as-is to preserve inline LaTeX, just wrap paragraphs
+                const inputParagraphs = inputContent.split('\n\n').filter(p => p.trim());
+                result.inputSection = `
+                    <div class="info-section">
+                        <div class="section-title">Input</div>
+                        <div class="section-content">
+                            ${inputParagraphs.map(para => `<p>${para.replace(/\n/g, ' ').trim()}</p>`).join('')}
+                        </div>
+                    </div>
+                `;
+                console.log('Input section created:', result.inputSection);
+            }
+
+            // Build Output section
+            if (outputContent) {
+                // Keep content as-is to preserve inline LaTeX, just wrap paragraphs
+                const outputParagraphs = outputContent.split('\n\n').filter(p => p.trim());
+                result.outputSection = `
+                    <div class="info-section">
+                        <div class="section-title">Output</div>
+                        <div class="section-content">
+                            ${outputParagraphs.map(para => `<p>${para.replace(/\n/g, ' ').trim()}</p>`).join('')}
+                        </div>
+                    </div>
+                `;
+                console.log('Output section created:', result.outputSection);
+            }
+
+            // Build Examples section
+            if (examplesContent) {
+                const examples = examplesContent.split(/###EXAMPLE\d+###/).filter(e => e.trim());
+                let examplesHtml = '<div class="sample-tests">';
+                
+                examples.forEach((example, index) => {
+                    const lines = example.trim().split('\n');
+                    let input = '';
+                    let output = '';
+                    let note = '';
+
+                    lines.forEach(line => {
+                        const trimmed = line.trim();
+                        if (trimmed.startsWith('INPUT:')) {
+                            input = trimmed.substring(6).trim();
+                        } else if (trimmed.startsWith('OUTPUT:')) {
+                            output = trimmed.substring(7).trim();
+                        } else if (trimmed.startsWith('NOTE:')) {
+                            note = trimmed.substring(5).trim();
+                        }
+                    });
+
+                    if (input || output) {
+                        examplesHtml += `
+                            <div class="sample-test">
+                                <div class="sample-test-header">Example ${index + 1}</div>
+                                <div class="sample-test-body">
+                                    <div class="sample-io">
+                                        <div class="sample-io-label">INPUT</div>
+                                        <div class="sample-io-content">${input}</div>
+                                    </div>
+                                    <div class="sample-io">
+                                        <div class="sample-io-label">OUTPUT</div>
+                                        <div class="sample-io-content">${output}</div>
+                                    </div>
+                                </div>
+                                ${note ? `<div class="note-section"><div class="section-title">Note</div><p>${note}</p></div>` : ''}
+                            </div>
+                        `;
+                    }
+                });
+
+                examplesHtml += '</div>';
+                result.examplesSection = examplesHtml;
+                console.log('Examples section created:', result.examplesSection);
+            }
+
+            console.log('Returning result:', result);
+            return result;
+        }
+
         // Get problem ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         problemId = urlParams.get('id');
@@ -236,8 +490,11 @@
                 const difficultyClass = problem.difficulty === 'easy' ? 'badge-easy' : 
                                        problem.difficulty === 'medium' ? 'badge-medium' : 'badge-hard';
                 
-                // Process description with basic Markdown support
+                // Process description with structured format support
                 let desc = problem.description || 'No description provided.';
+                
+                // Parse structured format
+                const parsed = parseStructuredDescription(desc);
                 
                 document.getElementById('problemContent').innerHTML = `
                     <div class="problem-header">
@@ -248,34 +505,95 @@
                         </div>
                     </div>
                     <div class="problem-description" id="problemDesc">
-                        ${desc}
+                        ${parsed.mainDescription}
                     </div>
+                    ${parsed.inputSection}
+                    ${parsed.outputSection}
+                    ${parsed.examplesSection}
                 `;
                 
-                // Apply basic Markdown formatting (before LaTeX rendering to avoid conflicts)
-                const descElement = document.getElementById('problemDesc');
-                let html = descElement.innerHTML;
+                // Apply basic Markdown formatting to all sections (before LaTeX rendering)
+                const problemContent = document.getElementById('problemContent');
+                const elementsToProcess = problemContent.querySelectorAll('.problem-description, .section-content, .note-section p');
                 
-                // Process bold text **text** but avoid LaTeX content
-                // We need to be careful not to touch math expressions
-                html = html.replace(/\*\*(?!\$)([^\*]+?)\*\*/g, '<strong>$1</strong>');
+                elementsToProcess.forEach(element => {
+                    let html = element.innerHTML;
+                    
+                    // Protect LaTeX expressions from markdown processing
+                    const latexProtected = [];
+                    let protectIndex = 0;
+                    
+                    // Temporarily replace LaTeX with placeholders
+                    html = html.replace(/\$\$[\s\S]+?\$\$/g, (match) => {
+                        latexProtected.push(match);
+                        return `___LATEX_DISPLAY_${protectIndex++}___`;
+                    });
+                    html = html.replace(/\$[^\$\n]+?\$/g, (match) => {
+                        latexProtected.push(match);
+                        return `___LATEX_INLINE_${protectIndex++}___`;
+                    });
+                    html = html.replace(/\\\[[\s\S]+?\\\]/g, (match) => {
+                        latexProtected.push(match);
+                        return `___LATEX_BRACKET_${protectIndex++}___`;
+                    });
+                    html = html.replace(/\\\([\s\S]+?\\\)/g, (match) => {
+                        latexProtected.push(match);
+                        return `___LATEX_PAREN_${protectIndex++}___`;
+                    });
+                    
+                    // Now safely process markdown
+                    html = html.replace(/\*\*([^\*]+?)\*\*/g, '<strong>$1</strong>');
+                    html = html.replace(/(?<!\*)\*(?!\*)([^\*]+?)\*(?!\*)/g, '<em>$1</em>');
+                    
+                    // Restore LaTeX expressions
+                    protectIndex = 0;
+                    html = html.replace(/___LATEX_(DISPLAY|INLINE|BRACKET|PAREN)_\d+___/g, () => {
+                        return latexProtected[protectIndex++] || '';
+                    });
+                    
+                    element.innerHTML = html;
+                });
                 
-                // Process italic text *text* (single asterisk)
-                html = html.replace(/(?<!\*)\*(?!\*)(?!\$)([^\*]+?)\*(?!\*)/g, '<em>$1</em>');
-                
-                descElement.innerHTML = html;
-                
-                // Render LaTeX after Markdown
-                setTimeout(() => {
+                // Render LaTeX after Markdown with enhanced error handling
+                // Wait for KaTeX auto-render to load
+                const renderMath = () => {
                     if (typeof renderMathInElement !== 'undefined') {
-                        renderMathInElement(descElement, {
-                            delimiters: [
-                                {left: '$$', right: '$$', display: true},
-                                {left: '$', right: '$', display: false}
-                            ]
-                        });
+                        try {
+                            // Render LaTeX in all problem sections
+                            renderMathInElement(problemContent, {
+                                delimiters: [
+                                    {left: '$$', right: '$$', display: true},
+                                    {left: '\\[', right: '\\]', display: true},
+                                    {left: '\\(', right: '\\)', display: false},
+                                    // Single $ for inline, but process last to avoid conflicts
+                                    {left: '$', right: '$', display: false}
+                                ],
+                                throwOnError: false,
+                                errorColor: '#cc0000',
+                                strict: false,
+                                trust: true,
+                                fleqn: false,
+                                ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+                                ignoredClasses: ['no-katex'],
+                                // Preprocess function to handle edge cases
+                                preProcess: (math) => {
+                                    // Ensure proper spacing
+                                    return math.trim();
+                                }
+                            });
+                            console.log('KaTeX rendering completed successfully');
+                        } catch (e) {
+                            console.error('KaTeX rendering error:', e);
+                        }
+                    } else {
+                        // Retry after a short delay if KaTeX isn't loaded yet
+                        console.log('Waiting for KaTeX to load...');
+                        setTimeout(renderMath, 100);
                     }
-                }, 100);
+                };
+                
+                // Start rendering after a brief delay to ensure DOM is ready
+                setTimeout(renderMath, 50);
                 
             } catch (err) {
                 document.getElementById('problemContent').innerHTML = `

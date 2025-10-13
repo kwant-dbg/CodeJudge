@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plagiarism Reports - CodeJudge</title>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #fafafa;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --border-color: #e0e0e0;
+            --accent: #1a1a1a;
+            --accent-hover: #333333;
+            --card-bg: #ffffff;
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #282828;
+            --text-primary: #eff1f6;
+            --text-secondary: #a0a0a0;
+            --border-color: #3a3a3a;
+            --accent: #eff1f6;
+            --accent-hover: #d0d0d0;
+            --card-bg: #262626;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif; 
+            background: var(--bg-primary); 
+            color: var(--text-primary); 
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .header { background: var(--card-bg); color: var(--text-primary); padding: 10px 0; border-bottom: 1px solid var(--border-color); transition: all 0.3s ease; }
+        .header-content { max-width: 1200px; margin: 0 auto; padding: 0 32px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 20px; font-weight: 600; text-decoration: none; color: var(--text-primary); letter-spacing: -1px; transition: color 0.3s ease; }
+        .nav-links a { color: var(--text-primary); text-decoration: none; padding: 0; font-weight: 500; font-size: 13px; letter-spacing: 0.3px; transition: opacity 0.2s; }
+        .nav-links a:hover { opacity: 0.6; }
+
+        .container { max-width: 1200px; margin: 24px auto; padding: 0 32px; }
+        h1 { font-size: 28px; font-weight: 600; letter-spacing: -1px; margin-bottom: 24px; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th {
+            background-color: var(--bg-secondary);
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        tr:hover {
+            background-color: var(--bg-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <a href="/" class="logo">CodeJudge</a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Plagiarism Reports</h1>
+        <div id="reportsContainer">
+            <p>Loading reports...</p>
+        </div>
+    </div>
+
+    <script>
+        let authToken = localStorage.getItem('authToken');
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (authToken) {
+                loadReports();
+            } else {
+                document.getElementById('reportsContainer').innerHTML = '<p>You must be logged in as an admin to view this page.</p>';
+            }
+        });
+
+        async function loadReports() {
+            try {
+                const response = await fetch('/api/plagiarism/reports', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load reports. Make sure you are an admin.');
+                }
+
+                const reports = await response.json();
+                displayReports(reports);
+
+            } catch (err) {
+                document.getElementById('reportsContainer').innerHTML = `<p>${err.message}</p>`;
+            }
+        }
+
+        function displayReports(reports) {
+            const container = document.getElementById('reportsContainer');
+            if (!reports || reports.length === 0) {
+                container.innerHTML = '<p>No plagiarism reports found.</p>';
+                return;
+            }
+
+            let tableHtml = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Report ID</th>
+                            <th>Submission A</th>
+                            <th>Submission B</th>
+                            <th>Similarity</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            reports.forEach(report => {
+                tableHtml += `
+                    <tr>
+                        <td>${report.id}</td>
+                        <td><a href="/submission.html?id=${report.submission_a}">${report.submission_a}</a></td>
+                        <td><a href="/submission.html?id=${report.submission_b}">${report.submission_b}</a></td>
+                        <td>${(report.similarity * 100).toFixed(2)}%</td>
+                        <td>${new Date(report.created_at).toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+
+            tableHtml += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = tableHtml;
+        }
+
+        // Theme initialization
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+</body>
+</html>
