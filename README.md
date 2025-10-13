@@ -1,5 +1,3 @@
-
-
 # CodeJudge (Mono Branch)
 
 CodeJudge is a high-performance online judge system. The **mono branch** uses a monolithic Go application (with C++ judge) instead of a distributed microservices architecture.
@@ -105,11 +103,19 @@ docker-compose exec redis redis-cli
 - Judge logic is in `judge/` (C++)
 - Shared code/utilities in `common/`
 
-**Run tests:**
-```powershell
-mvn -B verify
-mvn -B test
-```
+---
+
+## Documentation
+
+- [Deployment Guide](docs/DEPLOYMENT.md)
+- [Azure Quickstart](docs/AZURE_QUICKSTART.md)
+- [Azure Deployment](docs/AZURE.md)
+- [Sample Problems](docs/SAMPLE_PROBLEMS.md)
+- [Sample Solutions](docs/SAMPLE_SOLUTIONS.md)
+- [Sample Test Cases](docs/SAMPLE_TESTS_COMPLETE.md)
+- [Codeforces-Style Update](docs/CODEFORCES_STYLE_UPDATE.md)
+
+> Internal notes, refactoring logs, and LaTeX improvement docs are not included in the public repository.
 
 ---
 

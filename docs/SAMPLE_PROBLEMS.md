@@ -109,4 +109,4 @@ The problems were created using the PowerShell script `create_sample_problems.ps
 3. Creates both problems via the REST API
 4. Displays the URLs to view them
 
-You can run it again with: `.\create_sample_problems.ps1`
+You can run it again with: `./create_sample_problems.ps1`
