@@ -1,6 +1,5 @@
 #!/bin/bash
 # Quick deployment readiness check script
-set -e
 
 echo "🔍 Checking CodeJudge deployment readiness..."
 
@@ -8,12 +7,12 @@ echo "🔍 Checking CodeJudge deployment readiness..."
 required_files=(
     "go.work"
     "docker-compose.yml"
-    "common-go/go.mod"
-    "api-gateway/Dockerfile"
-    "problems-service-go/Dockerfile"
-    "submissions-service-go/Dockerfile"
-    "plagiarism-service-go/Dockerfile"
-    "judge-service/Dockerfile"
+    "services/go/common-go/go.mod"
+    "services/go/api-gateway/Dockerfile"
+    "services/go/problems-service-go/Dockerfile"
+    "services/go/submissions-service-go/Dockerfile"
+    "services/go/plagiarism-service-go/Dockerfile"
+    "services/cpp/judge-service/Dockerfile"
 )
 
 for file in "${required_files[@]}"; do
@@ -36,12 +35,12 @@ echo "✅ Go workspace ready"
 
 # Run tests
 echo "🧪 Running tests..."
-cd common-go
+cd services/go/common-go
 if ! go test ./...; then
     echo "❌ Tests failed"
     exit 1
 fi
-cd ..
+cd ../../..
 
 echo "✅ All tests pass"
 
@@ -51,13 +50,13 @@ services=("api-gateway" "problems-service-go" "submissions-service-go" "plagiari
 
 for service in "${services[@]}"; do
     echo "  Building $service..."
-    cd "$service"
+    cd "services/go/$service"
     if ! go build -o /tmp/test-build-$$; then
         echo "❌ Build failed for $service"
         exit 1
     fi
     rm -f /tmp/test-build-$$
-    cd ..
+    cd ../../..
 done
 
 echo "✅ All services build successfully"

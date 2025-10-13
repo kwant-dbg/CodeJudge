@@ -30,8 +30,8 @@ services:
 
   problems:
     build:
-      context: .
-      dockerfile: Dockerfile.go-service
+      context: ./services/go/problems-service-go
+      dockerfile: ../../Dockerfile.go-service
       args:
         SERVICE_NAME: problems-service-go
         SERVICE_PORT: 8000
@@ -50,8 +50,8 @@ services:
 
   submissions:
     build:
-      context: .
-      dockerfile: Dockerfile.go-service
+      context: ./services/go/submissions-service-go
+      dockerfile: ../../Dockerfile.go-service
       args:
         SERVICE_NAME: submissions-service-go
         SERVICE_PORT: 8001
@@ -76,8 +76,8 @@ services:
 
   plagiarism:
     build:
-      context: .
-      dockerfile: Dockerfile.go-service
+      context: ./services/go/plagiarism-service-go
+      dockerfile: ../../Dockerfile.go-service
       args:
         SERVICE_NAME: plagiarism-service-go
         SERVICE_PORT: 8002
@@ -99,8 +99,8 @@ services:
 
   judge:
     build:
-      context: judge-service
-      dockerfile: Dockerfile.modern
+      context: ./services/cpp/judge-service
+      dockerfile: ../../Dockerfile.modern
     environment:
       DATABASE_URL: "postgresql://codejudge:password@postgres:5432/codejudge?sslmode=disable"
       REDIS_HOST: redis
@@ -121,8 +121,8 @@ services:
 
   auth:
     build:
-      context: .
-      dockerfile: Dockerfile.go-service
+      context: ./services/go/auth-service-go
+      dockerfile: ../../Dockerfile.go-service
       args:
         SERVICE_NAME: auth-service-go
         SERVICE_PORT: 8003
@@ -142,8 +142,8 @@ services:
 
   api-gateway:
     build:
-      context: .
-      dockerfile: Dockerfile.go-service
+      context: ./services/go/api-gateway
+      dockerfile: ../../Dockerfile.go-service
       args:
         SERVICE_NAME: api-gateway
         SERVICE_PORT: 8080

@@ -1,8 +1,8 @@
 services:
   gateway:
     build:
-      context: .
-      dockerfile: api-gateway/Dockerfile
+      context: ./services/go/api-gateway
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     depends_on:
@@ -13,8 +13,8 @@ services:
 
   problems:
     build:
-      context: .
-      dockerfile: problems-service-go/Dockerfile
+      context: ./services/go/problems-service-go
+      dockerfile: Dockerfile
     depends_on:
       - db
     environment:
@@ -22,8 +22,8 @@ services:
 
   submissions:
     build:
-      context: .
-      dockerfile: submissions-service-go/Dockerfile
+      context: ./services/go/submissions-service-go
+      dockerfile: Dockerfile
     depends_on:
       - db
       - redis
@@ -36,8 +36,8 @@ services:
 
   plagiarism:
     build:
-      context: .
-      dockerfile: plagiarism-service-go/Dockerfile
+      context: ./services/go/plagiarism-service-go
+      dockerfile: Dockerfile
     depends_on:
       - db
       - redis
@@ -47,8 +47,8 @@ services:
 
   auth:
     build:
-      context: .
-      dockerfile: auth-service-go/Dockerfile
+      context: ./services/go/auth-service-go
+      dockerfile: Dockerfile
     depends_on:
       - db
     environment:
@@ -56,7 +56,7 @@ services:
       - JWT_SECRET=your-jwt-secret-key-change-in-production
 
   judge:
-    build: ./judge-service
+    build: ./services/cpp/judge-service
     depends_on:
       - redis
       - db

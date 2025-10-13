@@ -57,11 +57,13 @@ coverage.html
 tmp/
 temp/
 
-# Local project summaries and notes
+
+# Ignore internal documentation and notes
+docs/*_FIX.md
+docs/*_MANUAL.md
 PROJECT_SUMMARY.md
 IMPROVEMENTS.md
 
-# Local-only files: development notes, deployment checklists, and Copilot plan
 .azure/plan.copilotmd
 docs/azure-deployment.md
 docs/deployment-checklist.md

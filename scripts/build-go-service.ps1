@@ -34,15 +34,16 @@ function Build-Service {
     Write-Host "Building $ServiceName (port $ServicePort)..." -ForegroundColor Green
     
     # Build using the generic Dockerfile
+    $contextPath = "services/go/$ServiceName"
+    $dockerfilePath = "Dockerfile.go-service"
     $buildArgs = @(
         "build"
         "--build-arg", "SERVICE_NAME=$ServiceName"
         "--build-arg", "SERVICE_PORT=$ServicePort"
-        "-f", "Dockerfile.go-service"
+        "-f", $dockerfilePath
         "-t", "codejudge/$ServiceName`:latest"
-        "."
+        $contextPath
     )
-    
     & docker @buildArgs
     
     if ($LASTEXITCODE -eq 0) {

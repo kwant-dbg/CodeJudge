@@ -25,15 +25,15 @@ CodeJudge is designed with reliability and performance in mind:
 
 ## Microservices Overview
 
-| Service                  | Language | Path                   | Role                                 |
-|--------------------------|----------|------------------------|--------------------------------------|
-| **API Gateway**          | Go       | `api-gateway/`         | HTTP API entrypoint, routing, static UI |
-| **Problems Service**     | Go       | `problems-service-go/` | Problem CRUD, metadata, DB access    |
-| **Submissions Service**  | Go       | `submissions-service-go/` | Handles code submissions, job queue |
-| **Plagiarism Service**   | Go       | `plagiarism-service-go/` | Plagiarism detection pipeline      |
-| **Judge Service**        | C++      | `judge-service/`       | Secure code execution, sandboxing    |
-| **Database**             | Postgres | Docker/K8s             | Primary datastore                    |
-| **Message Queue**        | Redis    | Docker/K8s             | Job queue & message bus              |
+| Service                  | Language | Path                                   | Role                                 |
+|--------------------------|----------|----------------------------------------|--------------------------------------|
+| **API Gateway**          | Go       | `services/go/api-gateway/`             | HTTP API entrypoint, routing, static UI |
+| **Problems Service**     | Go       | `services/go/problems-service-go/`     | Problem CRUD, metadata, DB access    |
+| **Submissions Service**  | Go       | `services/go/submissions-service-go/`  | Handles code submissions, job queue  |
+| **Plagiarism Service**   | Go       | `services/go/plagiarism-service-go/`   | Plagiarism detection pipeline        |
+| **Judge Service**        | C++      | `services/cpp/judge-service/`          | Secure code execution, sandboxing    |
+| **Database**             | Postgres | Docker/K8s                             | Primary datastore                    |
+| **Message Queue**        | Redis    | Docker/K8s                             | Job queue & message bus              |
 
 ## Technology Stack
 
@@ -124,6 +124,10 @@ Images are automatically built and published via GitHub Actions on every push to
    bash scripts/check-deployment-readiness.sh
    ```
 
+## Azure Deployment
+
+See [docs/AZURE_DEPLOYMENT.md](docs/AZURE_DEPLOYMENT.md) for a step-by-step guide to deploying CodeJudge on Microsoft Azure.
+
 ## Maintenance page (GitHub Pages)
 
 If you need to temporarily take the site offline to save resources, this repository includes a small static maintenance page and a lightweight deploy helper.
@@ -179,10 +183,7 @@ bash scripts/check-deployment-readiness.sh
 
 
 ### Maven Tasks (if present)
-```powershell
-mvn -B verify
-mvn -B test
-```
+
 
 ## API Endpoints
 

@@ -6,8 +6,8 @@ version: '3.8'
 services:
   gateway:
     build:
-      context: .
-      dockerfile: api-gateway/Dockerfile
+      context: ./services/go/api-gateway
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     depends_on:
@@ -36,8 +36,8 @@ services:
 
   problems:
     build:
-      context: .
-      dockerfile: problems-service-go/Dockerfile
+      context: ./services/go/problems-service-go
+      dockerfile: Dockerfile
     depends_on:
       db:
         condition: service_healthy
@@ -58,8 +58,8 @@ services:
 
   submissions:
     build:
-      context: .
-      dockerfile: submissions-service-go/Dockerfile
+      context: ./services/go/submissions-service-go
+      dockerfile: Dockerfile
     depends_on:
       db:
         condition: service_healthy
@@ -86,8 +86,8 @@ services:
 
   plagiarism:
     build:
-      context: .
-      dockerfile: plagiarism-service-go/Dockerfile
+      context: ./services/go/plagiarism-service-go
+      dockerfile: Dockerfile
     depends_on:
       db:
         condition: service_healthy
@@ -110,7 +110,7 @@ services:
     restart: unless-stopped
 
   judge:
-    build: ./judge-service
+    build: ./services/cpp/judge-service
     depends_on:
       redis:
         condition: service_healthy
