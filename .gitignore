@@ -1,3 +1,11 @@
+# Ignore internal documentation and notes
+docs/*_FIX.md
+docs/*_MANUAL.md
+docs/*_GUIDE.md
+docs/*_COMPLETE.md
+docs/*_IMPROVEMENTS.md
+docs/*_UPDATE.md
+docs/SAMPLE_*.md
 # Hide internal docs from public repo
 docs/LATEX_IMPROVEMENTS.md
 docs/THEME_UPDATE.md
