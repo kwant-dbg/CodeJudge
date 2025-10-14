@@ -12,6 +12,8 @@ import (
 
 	"codejudge/common/dbutil"
 
+	"go/token"
+
 	"github.com/dgryski/go-farm"
 	"github.com/dgryski/go-minhash"
 	minhashlsh "github.com/ekzhu/minhash-lsh"
@@ -19,7 +21,6 @@ import (
 	"github.com/goplus/llcppg/ast"
 	"github.com/goplus/llcppg/parser"
 	"go.uber.org/zap"
-	"go/token"
 )
 
 type PlagiarismSubmission struct {

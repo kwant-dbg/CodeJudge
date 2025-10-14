@@ -10,9 +10,6 @@ docs/SAMPLE_*.md
 docs/LATEX_IMPROVEMENTS.md
 docs/THEME_UPDATE.md
 docs/UI_COMPACT_UPDATE.md
-docs/REFACTOR_GUIDE.md
-docs/REFACTORING.md
-docs/REFACTORING_COMPLETE.md
 docs/MARKDOWN_FIX.md
 # Binaries for programs and plugins
 *.exe
@@ -89,8 +86,6 @@ docs/deployment-checklist.md
 # Internal/private documentation (not for public repo)
 docs/AZURE_DEPLOYMENT_MANUAL.md
 docs/AZURE_READY.md
-docs/REFACTORING.md
-docs/REFACTORING_COMPLETE.md
 docs/MARKDOWN_FIX.md
 
 # Archived publish artifacts

@@ -1,5 +1,5 @@
 # CodeJudge Azure Deployment Script
-# Simplified deployment for Azure Student accounts
+# Simplified deployment script for Azure
 
 param(
     [string]$ResourceGroup = "codejudge-rg",

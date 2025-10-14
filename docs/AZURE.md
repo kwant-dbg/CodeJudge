@@ -4,18 +4,18 @@
 
 **YES**, your project is ready for Azure deployment! Here's how to deploy it.
 
-## Azure Student Account Benefits
+## Azure Benefits
 
-With Azure for Students, you get:
-- $100 in Azure credits (12 months)
-- Free services: App Service, Azure Database for PostgreSQL, Azure Container Registry
-- No credit card required
+With Azure, you get access to free tiers and credits depending on your account type. Typical benefits include:
+- Free services or trial credits from time to time
+- App Service, Azure Database for PostgreSQL, Azure Container Registry (depending on tier)
+- Streamlined deployment tooling via Azure CLI
 
 ## Deployment Options
 
 ### Option 1: Azure Container Instances (Simplest - Recommended for Testing)
 
-**Cost**: ~$10-20/month with student credits
+**Cost**: ~$10-20/month
 **Complexity**: Low
 **Best for**: Quick deployment, testing, low traffic
 
@@ -126,7 +126,7 @@ az container show --resource-group codejudge-rg --name codejudge-monolith --quer
 
 ### Option 2: Azure App Service (Best for Production)
 
-**Cost**: ~$15-30/month with student credits
+**Cost**: ~$15-30/month
 **Complexity**: Medium
 **Best for**: Production, auto-scaling, custom domains
 
@@ -184,7 +184,7 @@ https://codejudge-app.azurewebsites.net
 
 ### Option 3: Azure Kubernetes Service (AKS) - Advanced
 
-**Cost**: ~$30-50/month with student credits
+**Cost**: ~$30-50/month
 **Complexity**: High
 **Best for**: Microservices, high scalability, production grade
 
@@ -269,7 +269,7 @@ kubectl get service codejudge-service
 
 ---
 
-## Cost Estimates (with Azure Student Credits)
+## Cost Estimates (with Azure credits)
 
 | Service | Option 1 (ACI) | Option 2 (App Service) | Option 3 (AKS) |
 |---------|----------------|------------------------|----------------|
@@ -278,7 +278,7 @@ kubectl get service codejudge-service
 | Redis Cache (Basic) | $16 | $16 | $16 |
 | Container Registry | Free (Basic) | Free (Basic) | Free (Basic) |
 | **Total/month** | **~$41-50** | **~$46-56** | **~$61-76** |
-| **Student Credits** | 2+ months free | 2 months free | 1.5 months free |
+| **Credits (example)** | 2+ months free | 2 months free | 1.5 months free |
 
 ## Judge Service Deployment (C++ Sandbox)
 
@@ -386,7 +386,7 @@ Write-Host "Configure your app with the connection strings from Azure Portal" -F
 
 ---
 
-## Recommended Approach for Azure Student Account
+## Recommended Approach for Azure
 
 1. **Start with Option 1 (Container Instances)** - Quickest to test
 2. **Monitor costs** in Azure Portal

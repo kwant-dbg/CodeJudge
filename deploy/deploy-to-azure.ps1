@@ -39,7 +39,7 @@ try {
 # Resource group already exists, so we skip creating it
 Write-Host "`n[2/4] Using existing resource group: $ResourceGroup" -ForegroundColor Cyan
 
-# Create App Service Plan (Basic B1 - better than Free for student credits)
+# Create App Service Plan (Basic B1 - recommended for low-cost production tier)
 Write-Host "`n[3/4] Creating App Service Plan..." -ForegroundColor Cyan
 az appservice plan create `
   --name $PlanName `

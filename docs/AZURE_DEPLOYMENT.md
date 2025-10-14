@@ -1,8 +1,6 @@
-# CodeJudge: Azure Deployment Guide# CodeJudge: Azure Deployment Guide
+# CodeJudge: Azure Deployment Guide
 
-
-
-This guide explains how to deploy CodeJudge to Microsoft Azure using either Docker or a pre-built binary. It is written for third-party users and omits internal, student, or irrelevant details.This guide explains how to deploy CodeJudge to Microsoft Azure using either Docker or a pre-built binary. It is written for third-party users and omits internal, student, or irrelevant details.
+This guide explains how to deploy CodeJudge to Microsoft Azure using either Docker or a pre-built binary. It is written for third-party users and omits internal or irrelevant details.
 
 
 

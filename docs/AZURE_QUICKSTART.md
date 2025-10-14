@@ -4,8 +4,8 @@
 
 ## Option 1: One-Command Deployment (Easiest)
 
-### Prerequisites
-- Azure Student Account (with $100 credits)
+- ### Prerequisites
+- An Azure account (credits may be available via trial or promotional offers)
 - Azure CLI installed: `winget install Microsoft.AzureCLI`
 - Docker Desktop running
 
@@ -35,7 +35,7 @@ See `AZURE_DEPLOYMENT.md` for detailed instructions.
 
 ## Cost Estimate
 
-With Azure Student ($100 credits):
+With example Azure credits (amounts vary by account type):
 
 - **Container Instances**: ~$45/month → **2+ months free**
 - **App Service**: ~$55/month → **1.8 months free**
