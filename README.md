@@ -1,4 +1,4 @@
-# CodeJudge - Competitive Programming Platform
+# CodeJudge - Online Judge Platform
 
 <div align="center">
 
@@ -9,7 +9,7 @@
 ![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=for-the-badge&logo=redis)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker)
 
-A high-performance online judge system with **real-time contests**, **plagiarism detection**, and **secure sandboxed execution**.
+A production-ready online judge system featuring real-time contest management, automated plagiarism detection, and secure sandboxed code execution.
 
 [Features](#features) • [Quick Start](#quick-start) • [Architecture](#architecture) • [Documentation](#documentation) • [API](#api-reference)
 
@@ -20,46 +20,46 @@ A high-performance online judge system with **real-time contests**, **plagiarism
 ## Features
 
 ### Core Functionality
-- **Problem Management** - Create and solve algorithmic problems
-- **Multi-Language Support** - C++, Python, Java
-- **Secure Execution** - Sandboxed code execution with resource limits
-- **Real-time Judging** - Fast verdict delivery with detailed feedback
-- **Test Cases** - Public sample cases + hidden test cases
+- **Problem Management** - Comprehensive problem creation and administration
+- **Multi-Language Support** - C++, Python, Java compilation and execution
+- **Secure Execution** - Isolated sandboxed environment with strict resource limits
+- **Automated Judging** - Fast verdict delivery with detailed test case feedback
+- **Test Case Management** - Support for public examples and hidden evaluation cases
 
-### Contest System (Like Codeforces!)
-- **Time-based Contests** - Upcoming, Active, Finished states
-- **Live Leaderboard** - Real-time rankings with auto-refresh
-- **Leaderboard Freeze** - Freeze standings in final minutes
-- **Custom Scoring** - Assign point values per problem
-- **User Registration** - Easy contest sign-up
-- **Penalty System** - Time-based penalty in rankings
+### Contest System
+- **Time-based Contests** - Full lifecycle management (Upcoming, Active, Finished)
+- **Live Leaderboard** - Real-time ranking system with automatic updates
+- **Leaderboard Freeze** - Configurable freeze period for final standings
+- **Custom Scoring** - Flexible point allocation per problem
+- **Registration System** - User enrollment and eligibility management
+- **Penalty Calculation** - Time-based penalty system for rankings
 
 ### Plagiarism Detection
-- **Automated Detection** - MinHash LSH algorithm
-- **Code Similarity** - Compare submissions automatically
-- **Admin Reports** - Review flagged submissions
+- **Automated Analysis** - MinHash LSH algorithm for code similarity detection
+- **Submission Comparison** - Pairwise analysis across all submissions
+- **Administrative Reports** - Detailed flagged submission review interface
 
 ### User Interface
-- **Modern Design** - Clean, responsive interface
-- **Dark Mode** - Easy on the eyes
-- **LaTeX Support** - Render mathematical equations (KaTeX)
-- **Real-time Updates** - Live submission status
-- **Mobile Friendly** - Works on all devices
+- **Responsive Design** - Cross-platform compatibility
+- **Dark Mode** - Optimized viewing experience
+- **LaTeX Support** - Mathematical equation rendering via KaTeX
+- **Real-time Updates** - Live submission status tracking
+- **Accessibility** - Mobile-responsive layout
 
-### Security & Admin
-- **JWT Authentication** - Secure user sessions
-- **Role-based Access** - User vs Admin permissions
-- **Admin Dashboard** - Manage platform
-- **Rate Limiting** - Prevent abuse
+### Security & Administration
+- **JWT Authentication** - Token-based secure session management
+- **Role-based Access Control** - Granular permission system
+- **Administrative Dashboard** - Centralized platform management
+- **Rate Limiting** - Request throttling and abuse prevention
 
 ---
 
 ## Quick Start
 
 ### Prerequisites
-- Docker & Docker Compose
-- 4GB RAM minimum
-- 10GB free disk space
+- Docker 20.10+ and Docker Compose 2.0+
+- Minimum 4GB RAM
+- 10GB available disk space
 
 ### Installation
 
@@ -72,18 +72,18 @@ cd CodeJudge
 docker-compose up -d --build
 
 # Access the platform
-open http://localhost:8080
+# Navigate to http://localhost:8080 in your browser
 ```
 
-That's it! CodeJudge is now running.
+The application will be available at `http://localhost:8080` once all containers are running.
 
-### First Steps
+### Initial Setup
 
-1. **Register** - Create your account
-2. **Browse Problems** - Explore available challenges
-3. **Submit Solution** - Write and submit code
-4. **Check Contests** - Join competitive contests
-5. **(Admin) Create Contest** - Set up your own programming competition
+1. Register an account through the registration interface
+2. Browse the problem set and review available challenges
+3. Submit solutions for automated evaluation
+4. Participate in scheduled contests
+5. (Administrator) Access administrative functions for contest and problem management
 
 ---
 
@@ -219,55 +219,56 @@ sequenceDiagram
     Frontend->>User: Display Result
 ```
 
-**Key Flow:**
-1. User submits code through the web interface
-2. Monolith saves submission to PostgreSQL and queues it in Redis
-3. Judge service pulls job, compiles code in secure sandbox
-4. Judge runs test cases with time/memory limits
-5. Results are stored in database
-6. Frontend polls for real-time status updates
+**Submission Processing Flow:**
+1. Client submits source code via REST API
+2. Monolith service persists submission to PostgreSQL with PENDING status
+3. Job enqueued to Redis for asynchronous processing
+4. Judge worker dequeues job and executes in isolated sandbox
+5. Test cases evaluated with enforced time and memory constraints
+6. Verdict stored in database with detailed execution metrics
+7. Client retrieves results via polling or webhook
 
 ---
 
 ## Development
 
-### Local Setup
+### Local Development Environment
 
 ```bash
-# Install dependencies
+# Install Go dependencies
 cd monolith
 go mod download
 
-# Run monolith locally (requires PostgreSQL & Redis)
+# Run monolith service (requires PostgreSQL and Redis running)
 go run main.go
 
-# Build judge service
+# Compile judge service
 cd ../judge
 g++ -std=c++17 modern_main.cpp sandbox.cpp -o judge
 ```
 
-### Database Migrations
+### Database Setup
 
 ```bash
-# Seed sample data
+# Initialize database with sample data
 cd deploy
 ./seed-db.sh
 
-# Or manually
+# Manual initialization
 psql -U postgres -d codejudge -f seed-db.sql
 ```
 
-### Docker Development
+### Docker Development Workflow
 
 ```bash
 # Rebuild specific service
 docker-compose build monolith
 docker-compose up -d monolith
 
-# View logs
+# Monitor service logs
 docker-compose logs -f monolith judge
 
-# Reset everything
+# Clean rebuild
 docker-compose down -v
 docker-compose up -d --build
 ```
@@ -277,14 +278,14 @@ docker-compose up -d --build
 ## Testing
 
 ```bash
-# Run all tests
+# Execute full test suite
 cd monolith
 go test ./...
 
-# Test specific package
+# Run specific package tests
 go test ./handlers -v
 
-# With coverage
+# Generate coverage report
 go test -coverprofile=coverage.out ./...
 go tool cover -html=coverage.out
 ```
@@ -345,37 +346,39 @@ go tool cover -html=coverage.out
 
 ## Roadmap
 
-- [ ] Multi-language support (Rust, JavaScript, Go)
-- [ ] Virtual contests (practice mode)
-- [ ] Editorial system (problem explanations)
-- [ ] User profiles with statistics
-- [ ] Discussion forums
-- [ ] Email notifications
-- [ ] Export submissions to PDF
-- [ ] Mobile app (React Native)
+Planned features and enhancements:
+
+- [ ] Additional language support (Rust, JavaScript, Go)
+- [ ] Virtual contest mode for practice
+- [ ] Editorial and solution explanation system
+- [ ] User profile pages with detailed statistics
+- [ ] Community discussion forums
+- [ ] Email notification system
+- [ ] PDF export functionality for submissions
+- [ ] Native mobile applications
 
 ---
 
 ## Contributing
 
-Contributions are welcome! Please follow these steps:
+Contributions are welcome. Please adhere to the following workflow:
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch (`git checkout -b feature/feature-name`)
+3. Commit changes with descriptive messages (`git commit -m 'Add feature description'`)
+4. Push to the branch (`git push origin feature/feature-name`)
+5. Submit a Pull Request with detailed description
 
-### Code Style
-- Go: Follow [Effective Go](https://golang.org/doc/effective_go)
-- C++: Use `clang-format` with Google style
-- Frontend: Use 2-space indentation, semicolons
+### Code Style Guidelines
+- **Go**: Follow [Effective Go](https://golang.org/doc/effective_go) conventions
+- **C++**: Apply `clang-format` with Google style guide
+- **Frontend**: Maintain 2-space indentation with semicolons
 
 ---
 
 ## License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for complete terms and conditions.
 
 ---
 
@@ -388,19 +391,18 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## Acknowledgments
 
-- Inspired by [Codeforces](https://codeforces.com) and [AtCoder](https://atcoder.jp)
-- Plagiarism detection based on MinHash LSH algorithm
-- Sandbox implementation using Linux namespaces and cgroups
-- KaTeX for beautiful math rendering
+- Architecture inspired by competitive programming platforms including Codeforces and AtCoder
+- Plagiarism detection implements MinHash LSH algorithm
+- Secure execution utilizes Linux namespaces and cgroups
+- Mathematical rendering powered by KaTeX library
 
 ---
 
 <div align="center">
 
-Made with care by competitive programmers, for competitive programmers
-
-**Star this repo if you find it useful!**
+**CodeJudge** - Production-ready online judge platform
 
 </div>
+
 
 
