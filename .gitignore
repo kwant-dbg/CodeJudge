@@ -79,6 +79,15 @@ azure-deployment-config.txt
 .azure/
 data/
 
+# Deploy folder - keep scripts but ignore local config/credentials
+deploy/azure-deploy.ps1
+deploy/azure-maintenance.md
+deploy/cloudflare-setup.md
+deploy/*.md
+deploy/*.txt
+deploy/*.log
+deploy/*.backup
+
 coverage.out
 coverage.html
 
