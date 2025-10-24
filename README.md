@@ -1,4 +1,4 @@
-# 🏆 CodeJudge - Competitive Programming Platform
+# CodeJudge - Competitive Programming Platform
 
 <div align="center">
 
@@ -11,22 +11,22 @@
 
 A high-performance online judge system with **real-time contests**, **plagiarism detection**, and **secure sandboxed execution**.
 
-[Features](#-features) • [Quick Start](#-quick-start) • [Architecture](#-architecture) • [Documentation](#-documentation) • [API](#-api-reference)
+[Features](#features) • [Quick Start](#quick-start) • [Architecture](#architecture) • [Documentation](#documentation) • [API](#api-reference)
 
 </div>
 
 ---
 
-## ✨ Features
+## Features
 
-### 🎯 Core Functionality
+### Core Functionality
 - **Problem Management** - Create and solve algorithmic problems
 - **Multi-Language Support** - C++, Python, Java
 - **Secure Execution** - Sandboxed code execution with resource limits
 - **Real-time Judging** - Fast verdict delivery with detailed feedback
 - **Test Cases** - Public sample cases + hidden test cases
 
-### 🏆 Contest System (Like Codeforces!)
+### Contest System (Like Codeforces!)
 - **Time-based Contests** - Upcoming, Active, Finished states
 - **Live Leaderboard** - Real-time rankings with auto-refresh
 - **Leaderboard Freeze** - Freeze standings in final minutes
@@ -34,19 +34,19 @@ A high-performance online judge system with **real-time contests**, **plagiarism
 - **User Registration** - Easy contest sign-up
 - **Penalty System** - Time-based penalty in rankings
 
-### 🔍 Plagiarism Detection
+### Plagiarism Detection
 - **Automated Detection** - MinHash LSH algorithm
 - **Code Similarity** - Compare submissions automatically
 - **Admin Reports** - Review flagged submissions
 
-### 🎨 User Interface
+### User Interface
 - **Modern Design** - Clean, responsive interface
 - **Dark Mode** - Easy on the eyes
 - **LaTeX Support** - Render mathematical equations (KaTeX)
 - **Real-time Updates** - Live submission status
 - **Mobile Friendly** - Works on all devices
 
-### 🔐 Security & Admin
+### Security & Admin
 - **JWT Authentication** - Secure user sessions
 - **Role-based Access** - User vs Admin permissions
 - **Admin Dashboard** - Manage platform
@@ -54,7 +54,7 @@ A high-performance online judge system with **real-time contests**, **plagiarism
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Docker & Docker Compose
@@ -75,7 +75,7 @@ docker-compose up -d --build
 open http://localhost:8080
 ```
 
-That's it! 🎉 CodeJudge is now running.
+That's it! CodeJudge is now running.
 
 ### First Steps
 
@@ -87,14 +87,14 @@ That's it! 🎉 CodeJudge is now running.
 
 ---
 
-## 📐 Architecture
+## Architecture
 
 CodeJudge uses a **monolithic architecture** for simplicity and performance:
 
 ```mermaid
 graph TB
     subgraph "Client Layer"
-        Browser[🌐 Web Browser]
+        Browser[Web Browser]
     end
 
     subgraph "Monolith Service - Go"
@@ -141,11 +141,11 @@ graph TB
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 codejudge/
-├── 🏢 monolith/              # Go Backend Service
+├── monolith/              # Go Backend Service
 │   ├── handlers/
 │   │   ├── auth.go           # Authentication & user management
 │   │   ├── problems.go       # Problem CRUD operations
@@ -163,26 +163,26 @@ codejudge/
 │   ├── main.go               # Server entrypoint
 │   └── Dockerfile.standalone
 │
-├── ⚖️ judge/                  # C++ Judge Service
+├── judge/                  # C++ Judge Service
 │   ├── modern_main.cpp       # Judge worker
 │   ├── sandbox.cpp           # Secure execution sandbox
 │   ├── sandbox.h
 │   └── Dockerfile.modern
 │
-├── 📚 common/                 # Shared Go Libraries
+├── common/                 # Shared Go Libraries
 │   ├── auth/                 # JWT utilities
 │   ├── dbutil/               # Database connection pooling
 │   ├── health/               # Health checks
 │   ├── httpx/                # HTTP helpers
 │   └── redisutil/            # Redis queue management
 │
-├── 📖 docs/
+├── docs/
 │   ├── ARCHITECTURE.md       # Detailed architecture diagrams
 │   ├── CONTESTS_FEATURE.md   # Contest system documentation
 │   ├── DEPLOYMENT.md         # Deployment guides
 │   └── SAMPLE_*.md           # Sample data
 │
-├── 🚀 deploy/                 # Deployment Scripts
+├── deploy/                 # Deployment Scripts
 │   ├── azure-deploy.ps1
 │   ├── seed-db.sh
 │   └── seed-db.sql
@@ -192,7 +192,7 @@ codejudge/
 
 ---
 
-## 🔧 How It Works
+## How It Works
 
 ```mermaid
 sequenceDiagram
@@ -216,7 +216,7 @@ sequenceDiagram
     Frontend->>Monolith: GET /api/submissions/:id
     Monolith->>DB: Fetch Status
     Monolith-->>Frontend: Return Verdict
-    Frontend->>User: Display Result ✅
+    Frontend->>User: Display Result
 ```
 
 **Key Flow:**
@@ -229,7 +229,7 @@ sequenceDiagram
 
 ---
 
-## 💻 Development
+## Development
 
 ### Local Setup
 
@@ -274,7 +274,7 @@ docker-compose up -d --build
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Run all tests
@@ -291,7 +291,7 @@ go tool cover -html=coverage.out
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 - **[Architecture Guide](docs/ARCHITECTURE.md)** - System design, database schema, flows
 - **[Contest System](docs/CONTESTS_FEATURE.md)** - Contest API, leaderboard logic
@@ -301,7 +301,7 @@ go tool cover -html=coverage.out
 
 ---
 
-## 🌐 API Reference
+## API Reference
 
 ### Authentication
 - `POST /api/register` - Create new user
@@ -343,7 +343,7 @@ go tool cover -html=coverage.out
 
 ---
 
-## 🎯 Roadmap
+## Roadmap
 
 - [ ] Multi-language support (Rust, JavaScript, Go)
 - [ ] Virtual contests (practice mode)
@@ -356,7 +356,7 @@ go tool cover -html=coverage.out
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please follow these steps:
 
@@ -373,20 +373,20 @@ Contributions are welcome! Please follow these steps:
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 **Harshit Sharma**
 - GitHub: [@kwant-dbg](https://github.com/kwant-dbg)
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Inspired by [Codeforces](https://codeforces.com) and [AtCoder](https://atcoder.jp)
 - Plagiarism detection based on MinHash LSH algorithm
@@ -397,9 +397,10 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 <div align="center">
 
-Made with ❤️ by competitive programmers, for competitive programmers
+Made with care by competitive programmers, for competitive programmers
 
-⭐ **Star this repo if you find it useful!**
+**Star this repo if you find it useful!**
 
 </div>
+
 
