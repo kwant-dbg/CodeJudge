@@ -325,7 +325,6 @@ go tool cover -html=coverage.out
 - **[Architecture Guide](docs/ARCHITECTURE.md)** - System design, database schema, request flows
 - **[Contest System](docs/CONTESTS_FEATURE.md)** - Contest management, leaderboard API, scoring logic
 - **[Deployment Guide](docs/DEPLOYMENT.md)** - Docker deployment, Azure setup, production config
-- **[Cleanup Summary](CLEANUP_SUMMARY.md)** - Recent refactoring & code simplification details
 
 ---
 
