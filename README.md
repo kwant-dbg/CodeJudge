@@ -19,38 +19,14 @@ A production-ready online judge system featuring real-time contest management, a
 
 ## Features
 
-### Core Functionality
-- **Problem Management** - Comprehensive problem creation and administration
-- **Multi-Language Support** - C++, Python, Java compilation and execution
-- **Secure Execution** - Isolated sandboxed environment with strict resource limits
-- **Automated Judging** - Fast verdict delivery with detailed test case feedback
-- **Test Case Management** - Support for public examples and hidden evaluation cases
-
-### Contest System
-- **Time-based Contests** - Full lifecycle management (Upcoming, Active, Finished)
-- **Live Leaderboard** - Real-time ranking system with automatic updates
-- **Leaderboard Freeze** - Configurable freeze period for final standings
-- **Custom Scoring** - Flexible point allocation per problem
-- **Registration System** - User enrollment and eligibility management
-- **Penalty Calculation** - Time-based penalty system for rankings
-
-### Plagiarism Detection
-- **Automated Analysis** - MinHash LSH algorithm for code similarity detection
-- **Submission Comparison** - Pairwise analysis across all submissions
-- **Administrative Reports** - Detailed flagged submission review interface
-
-### User Interface
-- **Responsive Design** - Cross-platform compatibility
-- **Dark Mode** - Optimized viewing experience
-- **LaTeX Support** - Mathematical equation rendering via KaTeX
-- **Real-time Updates** - Live submission status tracking
-- **Accessibility** - Mobile-responsive layout
-
-### Security & Administration
-- **JWT Authentication** - Token-based secure session management
-- **Role-based Access Control** - Granular permission system
-- **Administrative Dashboard** - Centralized platform management
-- **Rate Limiting** - Request throttling and abuse prevention
+- **Problem Management** - Create and manage coding problems with LaTeX support
+- **Multi-Language Support** - C++, Python, and Java compilation
+- **Secure Sandbox** - Isolated execution with resource limits
+- **Contests** - Time-based contests with live leaderboards and freeze periods
+- **Plagiarism Detection** - MinHash LSH algorithm for code similarity
+- **Modern UI** - Responsive design with dark mode and real-time updates
+- **JWT Authentication** - Secure token-based authentication with role-based access
+- **Admin Dashboard** - Centralized platform management
 
 ---
 
