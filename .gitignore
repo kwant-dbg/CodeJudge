@@ -1,3 +1,6 @@
+# AI Context (keep local, contains detailed deployment info)
+.ai-context.md
+
 # Ignore internal documentation and notes
 docs/*_FIX.md
 docs/*_MANUAL.md

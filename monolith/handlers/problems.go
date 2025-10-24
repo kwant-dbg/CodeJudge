@@ -22,6 +22,26 @@ type Problem struct {
 	OutputFormat string `json:"output_format"`
 }
 
+type problemRow struct {
+	ID           int
+	Title        string
+	Description  string
+	Difficulty   string
+	InputFormat  sql.NullString
+	OutputFormat sql.NullString
+}
+
+func (pr *problemRow) toProblem() Problem {
+	return Problem{
+		ID:           pr.ID,
+		Title:        pr.Title,
+		Description:  pr.Description,
+		Difficulty:   pr.Difficulty,
+		InputFormat:  pr.InputFormat.String,
+		OutputFormat: pr.OutputFormat.String,
+	}
+}
+
 type TestCase struct {
 	ID        int    `json:"id"`
 	ProblemID int    `json:"problem_id"`
@@ -99,8 +119,8 @@ func (h *ProblemsHandler) GetProblems(w http.ResponseWriter, r *http.Request) {
 
 	problems := []Problem{}
 	for rows.Next() {
-		var p Problem
-		if err := rows.Scan(&p.ID, &p.Title, &p.Description, &p.Difficulty, &p.InputFormat, &p.OutputFormat); err != nil {
+		var pr problemRow
+		if err := rows.Scan(&pr.ID, &pr.Title, &pr.Description, &pr.Difficulty, &pr.InputFormat, &pr.OutputFormat); err != nil {
 			serviceErr := httpx.NewServiceError(
 				"Failed to process problem data",
 				"DATA_PROCESSING_ERROR",
@@ -110,7 +130,7 @@ func (h *ProblemsHandler) GetProblems(w http.ResponseWriter, r *http.Request) {
 			httpx.ErrorWithDetails(w, serviceErr, h.logger)
 			return
 		}
-		problems = append(problems, p)
+		problems = append(problems, pr.toProblem())
 	}
 
 	httpx.JSON(w, http.StatusOK, problems)
@@ -130,13 +150,13 @@ func (h *ProblemsHandler) GetProblem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var p Problem
+	var pr problemRow
 	ctx := r.Context()
 	db := h.dbManager.GetDB()
 	query := `SELECT id, title, description, difficulty, input_format, output_format FROM problems WHERE id = $1`
 
 	row := db.QueryRowContext(ctx, query, id)
-	err = row.Scan(&p.ID, &p.Title, &p.Description, &p.Difficulty, &p.InputFormat, &p.OutputFormat)
+	err = row.Scan(&pr.ID, &pr.Title, &pr.Description, &pr.Difficulty, &pr.InputFormat, &pr.OutputFormat)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			serviceErr := httpx.NewServiceError(
@@ -190,7 +210,7 @@ func (h *ProblemsHandler) GetProblem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := ProblemWithTestCases{
-		Problem:   p,
+		Problem:   pr.toProblem(),
 		TestCases: testCases,
 	}
 
