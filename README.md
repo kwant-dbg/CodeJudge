@@ -100,7 +100,7 @@ graph TB
     subgraph "Monolith Service - Go"
         Router[Chi Router]
         Auth[JWT Auth]
-        Handlers[API Handlers<br/>Problems | Submissions<br/>Contests | Plagiarism]
+        Handlers[API Handlers<br/>Problems, Submissions<br/>Contests, Plagiarism]
     end
 
     subgraph "Judge Service - C++"
