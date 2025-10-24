@@ -141,7 +141,7 @@ POST /api/contests/{id}/problems
 4. **Track Your Rank**
    - View leaderboard in real-time
    - See your rank, score, problems solved, and penalty time
-   - Top 3 positions are highlighted (🥇🥈🥉)
+   - Top 3 positions are highlighted
 
 ### For Admins
 
@@ -169,7 +169,7 @@ POST /api/contests/{id}/problems
    - Status automatically changes based on time
    - Participants can register until contest ends
 
-## 📊 Scoring System
+## Scoring System
 
 ### How Scores are Calculated
 
@@ -186,9 +186,9 @@ POST /api/contests/{id}/problems
 - Set freeze time when creating contest (e.g., 60 minutes)
 - During last X minutes, leaderboard shows standings from freeze point
 - Adds excitement and prevents last-minute sniping
-- Full results revealed after contest ends
+   - Full results revealed after contest ends
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Start the System
 ```powershell
@@ -207,7 +207,7 @@ http://localhost:8080
 ### 3. Create Your First Contest
 ```
 1. Login as admin
-2. Go to Contests page (🏆 button)
+2. Go to Contests page
 3. Click "Create Contest"
 4. Fill in details
 5. Add 3-5 problems with different point values
@@ -222,7 +222,7 @@ http://localhost:8080
 4. Check leaderboard
 ```
 
-## 🎯 Best Practices
+## Best Practices
 
 ### Contest Duration
 - **Short contests**: 1-2 hours (3-4 problems)
@@ -237,9 +237,9 @@ http://localhost:8080
 ### Freeze Time
 - Short contests: 15-30 minutes
 - Long contests: 60-120 minutes
-- Set to 0 for no freeze
+   - Set to 0 for no freeze
 
-## 🔧 Technical Details
+## Technical Details
 
 ### Handler: `handlers/contests.go`
 - `ContestsHandler` struct with database manager
@@ -258,9 +258,9 @@ http://localhost:8080
 - **Prepared Statements**: Optimized queries
 - **Real-time Updates**: Auto-refresh leaderboard
 - **Time-based Logic**: Automatic contest state management
-- **Security**: JWT auth, admin-only endpoints
+   - **Security**: JWT auth, admin-only endpoints
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Leaderboard not updating
 - Check if contest is actually active
@@ -275,9 +275,9 @@ http://localhost:8080
 ### Submissions not counting for contest
 - Ensure you're clicking problem from contest page
 - Check URL has `?contest_id=X` parameter
-- Verify contest is active (not finished)
+   - Verify contest is active (not finished)
 
-## 📝 Example Contest
+## Example Contest
 
 ```json
 {
