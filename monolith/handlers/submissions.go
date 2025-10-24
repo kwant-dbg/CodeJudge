@@ -32,17 +32,14 @@ type Submission struct {
 type SubmissionsHandler struct {
 	logger    *zap.Logger
 	dbManager *dbutil.ConnectionManager
-	txManager *dbutil.TransactionManager
 	rdb       *redis.Client
 	ctx       context.Context
 }
 
 func NewSubmissionsHandler(logger *zap.Logger, dbManager *dbutil.ConnectionManager, rdb *redis.Client) *SubmissionsHandler {
-	txManager := dbutil.NewTransactionManager(dbManager, logger)
 	return &SubmissionsHandler{
 		logger:    logger,
 		dbManager: dbManager,
-		txManager: txManager,
 		rdb:       rdb,
 		ctx:       context.Background(),
 	}

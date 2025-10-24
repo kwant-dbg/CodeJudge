@@ -47,24 +47,6 @@ func NewProblemsHandler(logger *zap.Logger, dbManager *dbutil.ConnectionManager)
 	}
 }
 
-func (h *ProblemsHandler) PrepareStatements() {
-	statements := map[string]string{
-		"list_problems":    `SELECT id, title, description, difficulty, input_format, output_format FROM problems ORDER BY id`,
-		"get_problem":      `SELECT id, title, description, difficulty, input_format, output_format FROM problems WHERE id = $1`,
-		"create_problem":   `INSERT INTO problems (title, description, difficulty, input_format, output_format) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-		"get_test_cases":   `SELECT id, problem_id, input, output, sample FROM test_cases WHERE problem_id = $1 ORDER BY id`,
-		"create_test_case": `INSERT INTO test_cases (problem_id, input, output, sample) VALUES ($1, $2, $3, $4) RETURNING id`,
-	}
-
-	for name, query := range statements {
-		if err := h.dbManager.PrepareStatement(name, query); err != nil {
-			h.logger.Fatal("Failed to prepare statement", zap.String("name", name), zap.Error(err))
-		}
-	}
-
-	h.logger.Info("Problems SQL statements prepared successfully")
-}
-
 func (h *ProblemsHandler) CreateTables() {
 	createProblemsTableSQL := `
     CREATE TABLE IF NOT EXISTS problems (
@@ -99,7 +81,10 @@ func (h *ProblemsHandler) CreateTables() {
 
 func (h *ProblemsHandler) GetProblems(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	rows, err := h.dbManager.QueryPrepared(ctx, "list_problems")
+	db := h.dbManager.GetDB()
+	query := `SELECT id, title, description, difficulty, input_format, output_format FROM problems ORDER BY id`
+	
+	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
 		serviceErr := httpx.NewServiceError(
 			"Failed to retrieve problems",
@@ -147,7 +132,10 @@ func (h *ProblemsHandler) GetProblem(w http.ResponseWriter, r *http.Request) {
 
 	var p Problem
 	ctx := r.Context()
-	row := h.dbManager.QueryRowPrepared(ctx, "get_problem", id)
+	db := h.dbManager.GetDB()
+	query := `SELECT id, title, description, difficulty, input_format, output_format FROM problems WHERE id = $1`
+	
+	row := db.QueryRowContext(ctx, query, id)
 	err = row.Scan(&p.ID, &p.Title, &p.Description, &p.Difficulty, &p.InputFormat, &p.OutputFormat)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -171,7 +159,8 @@ func (h *ProblemsHandler) GetProblem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch test cases for the problem
-	rows, err := h.dbManager.QueryPrepared(ctx, "get_test_cases", id)
+	testCasesQuery := `SELECT id, problem_id, input, output, sample FROM test_cases WHERE problem_id = $1 ORDER BY id`
+	rows, err := db.QueryContext(ctx, testCasesQuery, id)
 	if err != nil {
 		serviceErr := httpx.NewServiceError(
 			"Failed to retrieve test cases",
@@ -253,10 +242,12 @@ func (h *ProblemsHandler) CreateProblem(w http.ResponseWriter, r *http.Request) 
 	}
 
 	ctx := r.Context()
+	db := h.dbManager.GetDB()
 
 	// Create the problem
 	var problemID int
-	row := h.dbManager.QueryRowPrepared(ctx, "create_problem", req.Title, req.Description, req.Difficulty, req.InputFormat, req.OutputFormat)
+	createProblemQuery := `INSERT INTO problems (title, description, difficulty, input_format, output_format) VALUES ($1, $2, $3, $4, $5) RETURNING id`
+	row := db.QueryRowContext(ctx, createProblemQuery, req.Title, req.Description, req.Difficulty, req.InputFormat, req.OutputFormat)
 	err := row.Scan(&problemID)
 	if err != nil {
 		serviceErr := httpx.NewServiceError(
@@ -270,9 +261,10 @@ func (h *ProblemsHandler) CreateProblem(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Create all test cases
+	createTestCaseQuery := `INSERT INTO test_cases (problem_id, input, output, sample) VALUES ($1, $2, $3, $4) RETURNING id`
 	for _, tc := range req.TestCases {
 		var testCaseID int
-		tcRow := h.dbManager.QueryRowPrepared(ctx, "create_test_case", problemID, tc.Input, tc.Output, tc.Sample)
+		tcRow := db.QueryRowContext(ctx, createTestCaseQuery, problemID, tc.Input, tc.Output, tc.Sample)
 		if err := tcRow.Scan(&testCaseID); err != nil {
 			h.logger.Error("Failed to create test case", zap.Error(err), zap.Int("problemID", problemID))
 			// Continue creating other test cases even if one fails
@@ -311,7 +303,9 @@ func (h *ProblemsHandler) CreateTestCase(w http.ResponseWriter, r *http.Request)
 	tc.ProblemID = problemID
 
 	ctx := r.Context()
-	row := h.dbManager.QueryRowPrepared(ctx, "create_test_case", tc.ProblemID, tc.Input, tc.Output, tc.Sample)
+	db := h.dbManager.GetDB()
+	query := `INSERT INTO test_cases (problem_id, input, output, sample) VALUES ($1, $2, $3, $4) RETURNING id`
+	row := db.QueryRowContext(ctx, query, tc.ProblemID, tc.Input, tc.Output, tc.Sample)
 	err = row.Scan(&tc.ID)
 	if err != nil {
 		h.logger.Error("Error creating test case", zap.Error(err))

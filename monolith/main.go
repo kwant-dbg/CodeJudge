@@ -120,7 +120,6 @@ func main() {
 	// Create database tables
 	authHandler.CreateTables()
 	problemsHandler.CreateTables()
-	problemsHandler.PrepareStatements()
 	submissionsHandler.CreateTables()
 	plagiarismHandler.CreateTables()
 	contestsHandler.CreateTables()
