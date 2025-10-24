@@ -33,33 +33,18 @@ A production-ready online judge system featuring real-time contest management, a
 ## Quick Start
 
 ### Prerequisites
-- Docker 20.10+ and Docker Compose 2.0+
-- Minimum 4GB RAM
-- 10GB available disk space
+- Docker & Docker Compose
+- 4GB RAM minimum
 
 ### Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/kwant-dbg/CodeJudge.git
 cd CodeJudge
-
-# Start all services
 docker-compose up -d --build
-
-# Access the platform
-# Navigate to http://localhost:8080 in your browser
 ```
 
-The application will be available at `http://localhost:8080` once all containers are running.
-
-### Initial Setup
-
-1. Register an account through the registration interface
-2. Browse the problem set and review available challenges
-3. Submit solutions for automated evaluation
-4. Participate in scheduled contests
-5. (Administrator) Access administrative functions for contest and problem management
+Access the platform at `http://localhost:8080`
 
 ---
 
@@ -105,14 +90,7 @@ graph TB
     style Judge fill:#8b5cf6,color:#fff
 ```
 
-**📚 Detailed Architecture:** See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for comprehensive diagrams including:
-- System architecture overview
-- Request flow diagrams
-- Database schema (ERD)
-- Authentication flow
-- Contest system logic
-- Security layers
-- Deployment architecture
+See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed system design, database schema, and API flows.
 
 
 ---
@@ -199,75 +177,36 @@ sequenceDiagram
     Frontend->>User: Display Result
 ```
 
-**Submission Processing Flow:**
-1. Client submits source code via REST API
-2. Monolith service persists submission to PostgreSQL with PENDING status
-3. Job enqueued to Redis for asynchronous processing
-4. Judge worker dequeues job and executes in isolated sandbox
-5. Test cases evaluated with enforced time and memory constraints
-6. Verdict stored in database with detailed execution metrics
-7. Client retrieves results via polling or webhook
+**Flow:**
+1. User submits code via API
+2. Saved to PostgreSQL (PENDING status)
+3. Queued in Redis for processing
+4. Judge executes in sandbox with resource limits
+5. Results updated in database
+6. Client polls for verdict
 
 ---
 
 ## Development
 
-### Local Development Environment
-
+### Local Setup
 ```bash
-# Install Go dependencies
 cd monolith
 go mod download
-
-# Run monolith service (requires PostgreSQL and Redis running)
 go run main.go
-
-# Compile judge service
-cd ../judge
-g++ -std=c++17 modern_main.cpp sandbox.cpp -o judge
 ```
 
-### Database Setup
-
+### Testing
 ```bash
-# Initialize database with sample data
-cd deploy
-./seed-db.sh
-
-# Manual initialization
-psql -U postgres -d codejudge -f seed-db.sql
-```
-
-### Docker Development Workflow
-
-```bash
-# Rebuild specific service
-docker-compose build monolith
-docker-compose up -d monolith
-
-# Monitor service logs
-docker-compose logs -f monolith judge
-
-# Clean rebuild
-docker-compose down -v
-docker-compose up -d --build
-```
-
----
-
-## Testing
-
-```bash
-# Execute full test suite
-cd monolith
 go test ./...
-
-# Run specific package tests
 go test ./handlers -v
+```
 
-# Generate coverage report
-go test -coverprofile=coverage.out ./...
-go tool cover -html=coverage.out
+### Docker
+```bash
+docker-compose up -d --build
+docker-compose logs -f
+docker-compose down -v
 ```
 
 ---
