@@ -3,7 +3,7 @@
 <div align="center">
 
 ![CodeJudge](https://img.shields.io/badge/CodeJudge-Online%20Judge-667eea?style=for-the-badge)
-![Go](https://img.shields.io/badge/Go-1.23-00ADD8?style=for-the-badge&logo=go)
+![Go](https://img.shields.io/badge/Go-1.24-00ADD8?style=for-the-badge&logo=go)
 ![C++](https://img.shields.io/badge/C++-17-00599C?style=for-the-badge&logo=cplusplus)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14-336791?style=for-the-badge&logo=postgresql)
 ![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=for-the-badge&logo=redis)
@@ -205,9 +205,8 @@ codejudge/
 │
 ├── scripts/                  # Utility Scripts (if needed)
 │
-├── docker-compose.yml        # Local development environment
-├── README.md                 # This file
-└── CLEANUP_SUMMARY.md        # Code cleanup documentation
+├── docker-compose.yml        # Local development environment                 
+└── README.md       # This file 
 ```
 
 ### Recent Refactoring (Oct 2024)
