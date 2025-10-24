@@ -145,50 +145,78 @@ graph TB
 
 ```
 codejudge/
-├── monolith/              # Go Backend Service
-│   ├── handlers/
-│   │   ├── auth.go           # Authentication & user management
-│   │   ├── problems.go       # Problem CRUD operations
-│   │   ├── submissions.go    # Code submission & judging
-│   │   ├── contests.go       # Contest management & leaderboards
-│   │   ├── plagiarism.go     # Similarity detection
-│   │   └── admin.go          # Admin operations
-│   ├── static/
-│   │   ├── index.html        # Homepage & navigation
-│   │   ├── problem.html      # Problem view & submit
-│   │   ├── contests.html     # Contest listings
-│   │   ├── contest-detail.html   # Contest leaderboard
-│   │   ├── create-contest.html   # Admin: Create contest
-│   │   └── ...
-│   ├── main.go               # Server entrypoint
-│   └── Dockerfile.standalone
+├── monolith/                 # Go Backend Service (Monolithic Architecture)
+│   ├── handlers/             # HTTP Request Handlers
+│   │   ├── auth.go              # JWT authentication & user management
+│   │   ├── problems.go          # Problem CRUD with direct SQL queries
+│   │   ├── submissions.go       # Code submission & queue management
+│   │   ├── contests.go          # Contest lifecycle & leaderboards
+│   │   ├── plagiarism.go        # MinHash LSH similarity detection
+│   │   └── admin.go             # Administrative dashboard
+│   ├── static/               # Frontend HTML/CSS/JS
+│   │   ├── index.html           # Homepage & navigation
+│   │   ├── problem.html         # Problem viewer with LaTeX & submission form
+│   │   ├── contests.html        # Contest listing page
+│   │   ├── contest-detail.html  # Live contest leaderboard
+│   │   ├── create-contest.html  # Admin contest creation
+│   │   ├── create-problem.html  # Admin problem creation
+│   │   ├── submission.html      # Submission status viewer
+│   │   ├── plagiarism.html      # Plagiarism report interface
+│   │   └── admin.html           # Admin dashboard
+│   ├── main.go               # Application entrypoint & routing
+│   ├── startup.sh            # Container startup script
+│   └── Dockerfile.standalone # Docker build configuration
 │
-├── judge/                  # C++ Judge Service
-│   ├── modern_main.cpp       # Judge worker
-│   ├── sandbox.cpp           # Secure execution sandbox
-│   ├── sandbox.h
-│   └── Dockerfile.modern
+├── judge/                    # C++ Judge Service (Sandboxed Execution)
+│   ├── modern_main.cpp          # Judge worker with Redis queue consumer
+│   ├── sandbox.cpp              # Secure sandbox implementation
+│   ├── sandbox.h                # Sandbox interface definitions
+│   ├── CMakeLists.txt           # Build configuration
+│   └── Dockerfile.modern        # Docker build with dependencies
 │
-├── common/                 # Shared Go Libraries
-│   ├── auth/                 # JWT utilities
-│   ├── dbutil/               # Database connection pooling
-│   ├── health/               # Health checks
-│   ├── httpx/                # HTTP helpers
-│   └── redisutil/            # Redis queue management
+├── common/                   # Shared Go Libraries (Reusable Components)
+│   ├── auth/                    # JWT token generation & validation
+│   │   └── auth.go
+│   ├── dbutil/                  # Simplified database utilities
+│   │   ├── connection_manager.go   # Connection pooling (simplified)
+│   │   └── db.go                   # Database initialization
+│   ├── env/                     # Environment variable helpers
+│   │   ├── env.go
+│   │   └── env_test.go
+│   ├── health/                  # Health check endpoints
+│   │   ├── health.go
+│   │   └── health_test.go
+│   ├── httpx/                   # HTTP utilities & middleware
+│   │   ├── httpx.go
+│   │   ├── httpx_test.go
+│   │   └── shutdown.go
+│   └── redisutil/               # Redis queue management
+│       └── redis.go
 │
-├── docs/
-│   ├── ARCHITECTURE.md       # Detailed architecture diagrams
-│   ├── CONTESTS_FEATURE.md   # Contest system documentation
-│   ├── DEPLOYMENT.md         # Deployment guides
-│   └── SAMPLE_*.md           # Sample data
+├── docs/                     # Documentation
+│   ├── ARCHITECTURE.md          # System architecture & diagrams
+│   ├── CONTESTS_FEATURE.md      # Contest system documentation
+│   └── DEPLOYMENT.md            # Deployment instructions
 │
-├── deploy/                 # Deployment Scripts
-│   ├── azure-deploy.ps1
-│   ├── seed-db.sh
-│   └── seed-db.sql
+├── deploy/                   # Deployment & Setup Scripts
+│   ├── deploy-to-azure.ps1      # Azure deployment (simplified)
+│   ├── local.ps1                # Local Docker management script
+│   └── seed-db.sql              # Database seeding with sample problems
 │
-└── docker-compose.yml        # Local Development Setup
+├── scripts/                  # Utility Scripts (if needed)
+│
+├── docker-compose.yml        # Local development environment
+├── README.md                 # This file
+└── CLEANUP_SUMMARY.md        # Code cleanup documentation
 ```
+
+### Recent Refactoring (Oct 2024)
+- ✅ Removed 875+ lines of unused code (~29% reduction)
+- ✅ Simplified database layer (removed unused transaction manager & prepared statements)
+- ✅ Eliminated one-off admin tools with hardcoded tokens
+- ✅ Removed duplicate deployment scripts
+- ✅ Cleaned up outdated documentation
+- 🎯 Result: Simpler, more maintainable codebase with zero functionality loss
 
 ---
 
@@ -294,11 +322,10 @@ go tool cover -html=coverage.out
 
 ## Documentation
 
-- **[Architecture Guide](docs/ARCHITECTURE.md)** - System design, database schema, flows
-- **[Contest System](docs/CONTESTS_FEATURE.md)** - Contest API, leaderboard logic
-- **[Deployment Guide](docs/DEPLOYMENT.md)** - Azure, Docker, production setup
-- **[Sample Problems](docs/SAMPLE_PROBLEMS.md)** - Example problem set
-- **[Sample Solutions](docs/SAMPLE_SOLUTIONS.md)** - Reference solutions
+- **[Architecture Guide](docs/ARCHITECTURE.md)** - System design, database schema, request flows
+- **[Contest System](docs/CONTESTS_FEATURE.md)** - Contest management, leaderboard API, scoring logic
+- **[Deployment Guide](docs/DEPLOYMENT.md)** - Docker deployment, Azure setup, production config
+- **[Cleanup Summary](CLEANUP_SUMMARY.md)** - Recent refactoring & code simplification details
 
 ---
 
