@@ -4,26 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .container.mt-4 { margin-top: 2rem; }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="/">CodeJudge</a>
-        <div class="collapse navbar-collapse">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/admin">Admin</a>
-                </li>
-            </ul>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <a href="/" class="logo-link">
+                    <img src="/logo.svg" alt="CodeJudge Logo" class="logo-icon">
+                    <div class="logo-text">
+                        <div class="logo-title">CodeJudge</div>
+                    </div>
+                </a>
+            </div>
+            <div class="header-right">
+                <div class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/admin.html">Admin</a>
+                </div>
+                <span id="userInfo"></span>
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                    <span id="themeIcon">🌙</span>
+                </button>
+            </div>
         </div>
-    </nav>
+    </div>
 
-    <div class="container mt-4">
-        <h1>Admin Dashboard</h1>
-        <p>Welcome to the admin dashboard. Here you can manage users, problems, and submissions.</p>
+    <div class="container mt-4" style="padding: 24px; max-width: 1200px; margin: 24px auto;">
+        <h1 style="margin-bottom: 12px; font-size: 32px; font-weight: 600; letter-spacing: -1.5px;">Admin Dashboard</h1>
+        <p style="margin-bottom: 32px; color: var(--text-secondary);">Welcome to the admin dashboard. Here you can manage users, problems, and submissions.</p>
         
         <div class="row">
             <div class="col-md-4">
@@ -67,6 +80,26 @@
                 // If no token, redirect to login page
                 window.location.href = '/?message=Please+log+in+to+access+the+admin+dashboard.';
             }
+        })();
+
+        // Theme toggle functionality
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            const themeIcon = document.getElementById('themeIcon');
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            if (themeIcon) themeIcon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // Initialize theme from localStorage
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const themeIcon = document.getElementById('themeIcon');
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            if (themeIcon) themeIcon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
         })();
     </script>
 </body>

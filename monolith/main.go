@@ -1,5 +1,11 @@
 package main
 
+// TODO: Fix HTML layout and styling inconsistencies across all pages
+// - Ensure consistent spacing, padding, and component alignment
+// - Review responsive design for mobile/tablet breakpoints
+// - Standardize form layouts and button positioning
+// - Verify dark mode styling is consistent across all components
+
 import (
 	"context"
 	"crypto/rand"

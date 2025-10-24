@@ -9,18 +9,33 @@
 <body>
     <div class="header">
         <div class="header-content">
-            <a href="/" class="logo">CodeJudge</a>
-            <div class="nav-links">
-                <a href="/">Home</a>
-                <a href="/plagiarism.html">Plagiarism Reports</a>
+            <div class="header-left">
+                <a href="/" class="logo-link">
+                    <img src="/logo.svg" alt="CodeJudge Logo" class="logo-icon">
+                    <div class="logo-text">
+                        <div class="logo-title">CodeJudge</div>
+                    </div>
+                </a>
+            </div>
+            <div class="header-right">
+                <div class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/plagiarism.html">Plagiarism Reports</a>
+                </div>
+                <span id="userInfo"></span>
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                    <span id="themeIcon">🌙</span>
+                </button>
             </div>
         </div>
     </div>
 
     <div class="container">
-        <h1>Submission Details</h1>
-        <div id="submissionContainer">
-            <p>Loading submission details...</p>
+        <div class="card">
+            <h1 style="margin-bottom: 24px; font-size: 32px; font-weight: 600; letter-spacing: -1.5px;">Submission Details</h1>
+            <div id="submissionContainer">
+                <p>Loading submission details...</p>
+            </div>
         </div>
     </div>
 

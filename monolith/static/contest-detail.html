@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/style.css">
     <style>
         /* Page-specific styles */
-        .contest-header { background: var(--card-bg); padding: 30px 32px; border-bottom: 1px solid var(--border-color); }
+        .contest-header { background: var(--card-bg); padding: 30px 32px; border-bottom: 1px solid var(--border-color); margin: 24px 24px 0 24px; border-radius: 4px 4px 0 0; }
         .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
         .contest-status { display: inline-block; padding: 8px 16px; border-radius: 20px; font-size: 0.9em; font-weight: 600; margin-bottom: 15px; }
         .status-upcoming { background: #fef3c7; color: #92400e; }
@@ -22,7 +22,7 @@
         .meta-label { font-size: 0.9em; color: var(--text-secondary); margin-bottom: 5px; }
         .meta-value { font-size: 1.1em; font-weight: 600; color: var(--text-primary); }
         .action-buttons { display: flex; gap: 10px; }
-        .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 32px; }
+        .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 24px; }
         .card { background: var(--card-bg); padding: 25px; border: 1px solid var(--border-color); border-radius: 4px; }
         .card h2 { color: var(--text-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-size: 20px; }
         .problem-list { list-style: none; }
@@ -55,10 +55,20 @@
     <!-- Header -->
     <div class="header">
         <div class="header-content">
-            <a href="/" class="logo">CodeJudge</a>
-            <div class="nav-links">
-                <a href="/">Home</a>
-                <a href="/contests.html">Contests</a>
+            <div class="header-left">
+                <a href="/" class="logo-link">
+                    <img src="/logo.svg" alt="CodeJudge Logo" class="logo-icon">
+                    <div class="logo-text">
+                        <div class="logo-title">CodeJudge</div>
+                    </div>
+                </a>
+            </div>
+            <div class="header-right">
+                <div class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/contests.html">Contests</a>
+                </div>
+                <span id="userInfo"></span>
                 <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
                     <span id="themeIcon">🌙</span>
                 </button>

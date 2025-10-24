@@ -13,20 +13,27 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="header-left">
-                <div>
-                    <h1>CodeJudge</h1>
-                    <div class="subtitle">Online Coding Platform</div>
+            <div class="header-content">
+                <div class="header-left">
+                    <a href="/" class="logo-link">
+                        <img src="/logo.svg" alt="CodeJudge Logo" class="logo-icon">
+                        <div class="logo-text">
+                            <div class="logo-title">CodeJudge</div>
+                            <div class="subtitle">Online Coding Platform</div>
+                        </div>
+                    </a>
                 </div>
-                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
-                    <span id="themeIcon">🌙</span>
-                </button>
-            </div>
-            <div class="auth-section">
-                <span id="userInfo" class="user-info hidden"></span>
-                <button id="loginBtn" onclick="showLogin()">Login</button>
-                <button id="registerBtn" onclick="showRegister()">Register</button>
-                <button id="logoutBtn" class="hidden danger" onclick="logout()">Logout</button>
+                <div class="header-right">
+                    <div class="auth-section">
+                        <span id="userInfo" class="user-info hidden"></span>
+                        <button id="loginBtn" onclick="showLogin()">Login</button>
+                        <button id="registerBtn" onclick="showRegister()">Register</button>
+                        <button id="logoutBtn" class="hidden danger" onclick="logout()">Logout</button>
+                    </div>
+                    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                        <span id="themeIcon">🌙</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -66,7 +73,7 @@
                     <button type="submit" style="flex: 1;">Login</button>
                     <button type="button" class="secondary" onclick="hideAuth()" style="flex: 1;">Cancel</button>
                 </div>
-                <p style="margin-top: 32px; text-align: center; color: #666;">Don't have an account? <a href="#" onclick="showRegister(); return false;" style="color: #000; text-decoration: none; border-bottom: 1px solid #000; font-weight: 500;">Register here</a></p>
+                <p class="form-footer">Don't have an account? <a href="#" onclick="showRegister(); return false;">Register here</a></p>
             </form>
             
             <form id="registerForm" class="hidden" style="max-width: 500px;">
@@ -86,7 +93,7 @@
                     <button type="submit" style="flex: 1;">Register</button>
                     <button type="button" class="secondary" onclick="hideAuth()" style="flex: 1;">Cancel</button>
                 </div>
-                <p style="margin-top: 32px; text-align: center; color: #666;">Already have an account? <a href="#" onclick="showLogin(); return false;" style="color: #000; text-decoration: none; border-bottom: 1px solid #000; font-weight: 500;">Login here</a></p>
+                <p class="form-footer">Already have an account? <a href="#" onclick="showLogin(); return false;">Login here</a></p>
             </form>
         </div>
 
@@ -94,13 +101,13 @@
         <div id="mainContent" class="card hidden">
             <!-- Quick Action Links -->
             <div style="margin-bottom: 24px; display: flex; gap: 12px;">
-                <a href="/contests.html" style="display: inline-block; background: var(--accent); color: var(--bg-primary); padding: 10px 20px; text-decoration: none; font-weight: 600; font-size: 13px; letter-spacing: 0.5px; border: 1px solid var(--accent); transition: all 0.2s ease;" onmouseover="this.style.background='var(--bg-primary)'; this.style.color='var(--accent)';" onmouseout="this.style.background='var(--accent)'; this.style.color='var(--bg-primary)';">
+                <a href="/contests.html" class="button-link">
                     🏆 Contests
                 </a>
-                <a href="/create-problem.html" id="createProblemBtn" style="display: inline-block; background: var(--accent); color: var(--bg-primary); padding: 10px 20px; text-decoration: none; font-weight: 600; font-size: 13px; letter-spacing: 0.5px; border: 1px solid var(--accent); transition: all 0.2s ease;" onmouseover="this.style.background='var(--bg-primary)'; this.style.color='var(--accent)';" onmouseout="this.style.background='var(--accent)'; this.style.color='var(--bg-primary)';">
+                <a href="/create-problem.html" id="createProblemBtn" class="button-link">
                     Create New Problem
                 </a>
-                <a href="/plagiarism.html" id="plagiarismBtn" class="hidden" style="display: inline-block; background: var(--accent); color: var(--bg-primary); padding: 10px 20px; text-decoration: none; font-weight: 600; font-size: 13px; letter-spacing: 0.5px; border: 1px solid var(--accent); transition: all 0.2s ease;" onmouseover="this.style.background='var(--bg-primary)'; this.style.color='var(--accent)';" onmouseout="this.style.background='var(--accent)'; this.style.color='var(--bg-primary)';">
+                <a href="/plagiarism.html" id="plagiarismBtn" class="hidden button-link">
                     Plagiarism Reports
                 </a>
             </div>
@@ -126,14 +133,22 @@
                 validateToken();
             }
             // Initialize KaTeX auto-render for the whole page
-            if (typeof renderMathInElement !== 'undefined') {
-                renderMathInElement(document.body, {
-                    delimiters: [
-                        {left: '$$', right: '$$', display: true},
-                        {left: '$', right: '$', display: false}
-                    ]
-                });
-            }
+            // Use a more robust approach to wait for KaTeX to load
+            const initKaTeX = () => {
+                if (typeof renderMathInElement !== 'undefined') {
+                    renderMathInElement(document.body, {
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '$', right: '$', display: false}
+                        ],
+                        throwOnError: false
+                    });
+                } else {
+                    // Retry after a short delay if not loaded yet
+                    setTimeout(initKaTeX, 100);
+                }
+            };
+            initKaTeX();
         });
 
         // Tab switching removed - using dedicated pages now

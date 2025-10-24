@@ -28,14 +28,23 @@
     <!-- Header -->
     <div class="header">
         <div class="header-content">
-            <a href="/" class="logo">CodeJudge</a>
-            <div class="nav-links">
-                <a href="/">Home</a>
-                <a href="/#problemsTab">Problems</a>
+            <div class="header-left">
+                <a href="/" class="logo-link">
+                    <img src="/logo.svg" alt="CodeJudge Logo" class="logo-icon">
+                    <div class="logo-text">
+                        <div class="logo-title">CodeJudge</div>
+                    </div>
+                </a>
+            </div>
+            <div class="header-right">
+                <div class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/#problemsTab">Problems</a>
+                </div>
+                <span id="userInfo"></span>
                 <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
                     <span id="themeIcon">🌙</span>
                 </button>
-                <span id="userInfo" style="background: var(--accent); color: var(--bg-primary); padding: 12px 24px; font-weight: 600; font-size: 14px; letter-spacing: 0.3px;"></span>
             </div>
         </div>
     </div>

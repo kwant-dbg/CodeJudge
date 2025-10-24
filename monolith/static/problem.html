@@ -65,14 +65,23 @@
     <!-- Header -->
     <div class="header">
         <div class="header-content">
-            <a href="/" class="logo">CodeJudge</a>
-            <div class="nav-links">
-                <a href="/">Home</a>
-                <a href="/#problemsTab">Problems</a>
+            <div class="header-left">
+                <a href="/" class="logo-link">
+                    <img src="/logo.svg" alt="CodeJudge Logo" class="logo-icon">
+                    <div class="logo-text">
+                        <div class="logo-title">CodeJudge</div>
+                    </div>
+                </a>
+            </div>
+            <div class="header-right">
+                <div class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/#problemsTab">Problems</a>
+                </div>
+                <span id="userInfo"></span>
                 <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
                     <span id="themeIcon">🌙</span>
                 </button>
-                <span id="userInfo"></span>
             </div>
         </div>
     </div>
@@ -251,7 +260,7 @@
                                         <div class="sample-io-content">${output}</div>
                                     </div>
                                 </div>
-                                ${note ? `<div class="note-section"><div class="section-title">Note</div><p>${note}</p></div>` : ''}
+                                ${note ? `<div class="note-section"><div class="section-title">Note</div><p class="note-content">${note}</p></div>` : ''}
                             </div>
                         `;
                     }
@@ -319,17 +328,18 @@
                     if (sampleTests.length > 0) {
                         sampleTestsHtml = '<div class="sample-tests"><div class="section-title">Sample Tests</div>';
                         sampleTests.forEach((test, index) => {
+                            // Don't escape HTML for sample test content - it might contain LaTeX or formatting
                             sampleTestsHtml += `
                                 <div class="sample-test">
                                     <div class="sample-test-header">Example ${index + 1}</div>
                                     <div class="sample-test-body">
                                         <div class="sample-io">
                                             <div class="sample-io-label">INPUT</div>
-                                            <div class="sample-io-content">${escapeHtml(test.input)}</div>
+                                            <div class="sample-io-content">${test.input}</div>
                                         </div>
                                         <div class="sample-io">
                                             <div class="sample-io-label">OUTPUT</div>
-                                            <div class="sample-io-content">${escapeHtml(test.output)}</div>
+                                            <div class="sample-io-content">${test.output}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -358,7 +368,7 @@
                 
                 // Apply basic Markdown formatting to all sections (before LaTeX rendering)
                 const problemContent = document.getElementById('problemContent');
-                const elementsToProcess = problemContent.querySelectorAll('.problem-description, .section-content, .note-section p');
+                const elementsToProcess = problemContent.querySelectorAll('.problem-description, .section-content, .note-content, .sample-io-content');
                 
                 elementsToProcess.forEach(element => {
                     let html = element.innerHTML;
@@ -424,7 +434,7 @@
                 });
                 
                 // Render LaTeX after Markdown with enhanced error handling
-                // Wait for KaTeX auto-render to load
+                // Wait for KaTeX auto-render to load with retry mechanism
                 const renderMath = () => {
                     if (typeof renderMathInElement !== 'undefined') {
                         try {
