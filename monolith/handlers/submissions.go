@@ -20,10 +20,13 @@ import (
 type Submission struct {
 	ID         int    `json:"id"`
 	ProblemID  int    `json:"problem_id"`
+	ContestID  *int   `json:"contest_id,omitempty"`
+	UserID     *int   `json:"user_id,omitempty"`
 	SourceCode string `json:"source_code"`
 	Language   string `json:"language,omitempty"`
 	Verdict    string `json:"verdict,omitempty"`
 	Status     string `json:"status,omitempty"`
+	Points     int    `json:"points,omitempty"`
 }
 
 type SubmissionsHandler struct {
@@ -83,8 +86,8 @@ func (h *SubmissionsHandler) createSubmissionTransactional(s *Submission) error 
 	// Step 1: Insert into database with direct connection
 	db := h.dbManager.GetDB()
 
-	query := "INSERT INTO submissions (problem_id, source_code, language) VALUES ($1, $2, $3) RETURNING id"
-	err := db.QueryRowContext(ctx, query, s.ProblemID, s.SourceCode, s.Language).Scan(&s.ID)
+	query := "INSERT INTO submissions (problem_id, source_code, language, contest_id, user_id, points) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
+	err := db.QueryRowContext(ctx, query, s.ProblemID, s.SourceCode, s.Language, s.ContestID, s.UserID, s.Points).Scan(&s.ID)
 	if err != nil {
 		return &SubmissionError{
 			Message: "Failed to insert submission into database",
@@ -125,6 +128,35 @@ func (h *SubmissionsHandler) CreateSubmission(w http.ResponseWriter, r *http.Req
 	if err := json.NewDecoder(r.Body).Decode(&s); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
+	}
+
+	// Get user ID from context (set by auth middleware)
+	if userID, ok := r.Context().Value("user_id").(int); ok {
+		s.UserID = &userID
+	}
+
+	// If contest_id is provided, validate and calculate points
+	if s.ContestID != nil {
+		db := h.dbManager.GetDB()
+
+		// Check if contest is active
+		var startTime, endTime string
+		err := db.QueryRow("SELECT start_time, end_time FROM contests WHERE id = $1", s.ContestID).Scan(&startTime, &endTime)
+		if err != nil {
+			http.Error(w, "Contest not found", http.StatusNotFound)
+			return
+		}
+
+		// Get points for the problem in this contest
+		var points int
+		err = db.QueryRow("SELECT points FROM contest_problems WHERE contest_id = $1 AND problem_id = $2",
+			s.ContestID, s.ProblemID).Scan(&points)
+		if err != nil {
+			http.Error(w, "Problem not in this contest", http.StatusBadRequest)
+			return
+		}
+
+		s.Points = points
 	}
 
 	// Use transactional submission creation
@@ -189,4 +221,3 @@ func (h *SubmissionsHandler) GetSubmission(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
-
