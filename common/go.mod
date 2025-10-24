@@ -1,10 +1,10 @@
 module codejudge/common
 
-go 1.19
+go 1.21
 
 require (
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/golang-jwt/jwt/v5 v5.0.0
+	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/lib/pq v1.10.9
 	go.uber.org/zap v1.27.0
 )

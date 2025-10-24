@@ -13,6 +13,16 @@ import (
 	"go.uber.org/zap"
 )
 
+// contextKey is a custom type for context keys to avoid collisions
+type contextKey int
+
+const (
+	userContextKey contextKey = iota
+	userIDContextKey
+	usernameContextKey
+	roleContextKey
+)
+
 // UserContext represents the authenticated user information
 type UserContext struct {
 	UserID   int    `json:"user_id"`
@@ -102,10 +112,10 @@ func JWTMiddleware(config AuthConfig, logger *zap.Logger) func(http.Handler) htt
 			}
 
 			// Add user context to request
-			ctx := context.WithValue(r.Context(), "user", userCtx)
-			ctx = context.WithValue(ctx, "user_id", userCtx.UserID)
-			ctx = context.WithValue(ctx, "username", userCtx.Username)
-			ctx = context.WithValue(ctx, "role", userCtx.Role)
+			ctx := context.WithValue(r.Context(), userContextKey, userCtx)
+			ctx = context.WithValue(ctx, userIDContextKey, userCtx.UserID)
+			ctx = context.WithValue(ctx, usernameContextKey, userCtx.Username)
+			ctx = context.WithValue(ctx, roleContextKey, userCtx.Role)
 
 			// Continue with authenticated request
 			next.ServeHTTP(w, r.WithContext(ctx))
@@ -146,13 +156,13 @@ func ValidateToken(tokenString string, jwtSecret []byte) (*UserContext, error) {
 
 // GetUserFromContext extracts user context from request context
 func GetUserFromContext(ctx context.Context) (*UserContext, bool) {
-	user, ok := ctx.Value("user").(*UserContext)
+	user, ok := ctx.Value(userContextKey).(*UserContext)
 	return user, ok
 }
 
 // GetUserIDFromContext extracts user ID from request context
 func GetUserIDFromContext(ctx context.Context) (int, bool) {
-	userID, ok := ctx.Value("user_id").(int)
+	userID, ok := ctx.Value(userIDContextKey).(int)
 	return userID, ok
 }
 
