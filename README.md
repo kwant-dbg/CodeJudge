@@ -1,6 +1,4 @@
-# CodeJudge - Online Judge Platform
-
-<div align="left">
+# CodeJudge
 
 ![CodeJudge](https://img.shields.io/badge/CodeJudge-Online%20Judge-667eea?style=for-the-badge)
 ![Go](https://img.shields.io/badge/Go-1.24-00ADD8?style=for-the-badge&logo=go)
