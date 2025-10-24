@@ -348,14 +348,9 @@ go tool cover -html=coverage.out
 
 Planned features and enhancements:
 
-- [ ] Additional language support (Rust, JavaScript, Go)
 - [ ] Virtual contest mode for practice
-- [ ] Editorial and solution explanation system
 - [ ] User profile pages with detailed statistics
 - [ ] Community discussion forums
-- [ ] Email notification system
-- [ ] PDF export functionality for submissions
-- [ ] Native mobile applications
 
 ---
 
