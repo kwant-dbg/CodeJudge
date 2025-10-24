@@ -359,14 +359,6 @@ Planned features and enhancements:
 **Harshit Sharma**
 - GitHub: [@kwant-dbg](https://github.com/kwant-dbg)
 
----
-
-<div align="center">
-
-**CodeJudge** - Production-ready online judge platform
-
-</div>
-
 
 
 
