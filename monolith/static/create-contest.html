@@ -4,136 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Contest - CodeJudge</title>
+    <link rel="stylesheet" href="/style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .card {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-
-        h1 {
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 2.5em;
-        }
-
-        .subtitle {
-            color: #6b7280;
-            margin-bottom: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 8px;
-            font-size: 0.95em;
-        }
-
-        input[type="text"],
-        input[type="datetime-local"],
-        input[type="number"],
-        textarea,
-        select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e5e7eb;
-            border-radius: 5px;
-            font-size: 1em;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-
-        input:focus,
-        textarea:focus,
-        select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-
+        /* Page-specific styles */
         .time-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
 
-        .btn {
-            padding: 14px 28px;
-            border: none;
-            border-radius: 5px;
-            font-weight: 600;
-            font-size: 1em;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: #e5e7eb;
-            color: #374151;
-            margin-left: 10px;
-        }
-
-        .btn-secondary:hover {
-            background: #d1d5db;
-        }
-
-        .btn-success {
-            background: #10b981;
-            color: white;
-            margin-top: 10px;
-            width: 100%;
-        }
-
-        .btn-success:hover {
-            background: #059669;
-        }
-
         .problems-section {
             margin-top: 40px;
             padding-top: 30px;
-            border-top: 2px solid #e5e7eb;
+            border-top: 2px solid var(--border-color);
         }
 
         .problem-item {
@@ -141,7 +24,7 @@
             gap: 15px;
             align-items: end;
             padding: 15px;
-            background: #f9fafb;
+            background: var(--bg-secondary);
             border-radius: 5px;
             margin-bottom: 10px;
         }
@@ -153,39 +36,11 @@
 
         .problem-item button {
             padding: 12px 20px;
-            background: #ef4444;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .problem-item button:hover {
-            background: #dc2626;
-        }
-
-        .success-message {
-            background: #d1fae5;
-            color: #065f46;
-            padding: 15px 20px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            border-left: 4px solid #10b981;
-        }
-
-        .error-message {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 15px 20px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            border-left: 4px solid #dc2626;
         }
 
         .help-text {
             font-size: 0.85em;
-            color: #6b7280;
+            color: var(--text-secondary);
             margin-top: 5px;
         }
 
@@ -194,9 +49,28 @@
             gap: 10px;
             margin-top: 30px;
         }
+
+        .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
     </style>
 </head>
 <body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <a href="/" class="logo">CodeJudge</a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/contests.html">Contests</a>
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                    <span id="themeIcon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <div class="card">
             <h1>Create New Contest</h1>
@@ -412,6 +286,21 @@
         // Initialize
         setDefaultTimes();
         loadProblems();
+
+        // Theme toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            document.getElementById('themeIcon').textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // Load theme on page load
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeIcon').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
     </script>
 </body>
 </html>
