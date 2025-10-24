@@ -1,29 +1,29 @@
-# 🏆 CodeJudge Contests Feature
+# CodeJudge Contests Feature
 
 A complete competitive programming contest system inspired by Codeforces, integrated into CodeJudge.
 
-## ✨ Features
+## Features
 
 ### Core Functionality
-- ✅ **Contest Management** - Create, view, and manage programming contests
-- ✅ **Time-based States** - Automatic contest status (upcoming/active/finished)
-- ✅ **Real-time Leaderboard** - Live rankings with automatic updates during active contests
-- ✅ **Leaderboard Freeze** - Freeze leaderboard in final minutes (configurable)
-- ✅ **User Registration** - Participants can register for contests
-- ✅ **Custom Scoring** - Assign different point values to each problem
-- ✅ **Contest Problems** - Multiple problems per contest
-- ✅ **Penalty System** - Time-based penalties in scoring
-- ✅ **Admin Controls** - Admin-only contest creation and management
+- **Contest Management** - Create, view, and manage programming contests
+- **Time-based States** - Automatic contest status (upcoming/active/finished)
+- **Real-time Leaderboard** - Live rankings with automatic updates during active contests
+- **Leaderboard Freeze** - Freeze leaderboard in final minutes (configurable)
+- **User Registration** - Participants can register for contests
+- **Custom Scoring** - Assign different point values to each problem
+- **Contest Problems** - Multiple problems per contest
+- **Penalty System** - Time-based penalties in scoring
+- **Admin Controls** - Admin-only contest creation and management
 
 ### User Interface
-- 📱 **Responsive Design** - Works on desktop, tablet, and mobile
-- 🎨 **Beautiful UI** - Modern, clean interface with smooth animations
-- 🏅 **Status Badges** - Visual indicators for contest states
-- 📊 **Leaderboard Table** - Clean, sortable rankings
-- 🎯 **Contest Cards** - Easy-to-read contest information
-- ⚡ **Auto-refresh** - Leaderboard updates every 30 seconds during active contests
+- **Responsive Design** - Works on desktop, tablet, and mobile
+- **Beautiful UI** - Modern, clean interface with smooth animations
+- **Status Badges** - Visual indicators for contest states
+- **Leaderboard Table** - Clean, sortable rankings
+- **Contest Cards** - Easy-to-read contest information
+- **Auto-refresh** - Leaderboard updates every 30 seconds during active contests
 
-## 🗄️ Database Schema
+## Database Schema
 
 ### Tables Created
 
@@ -65,7 +65,7 @@ ADD COLUMN user_id INTEGER,
 ADD COLUMN points INTEGER DEFAULT 0;
 ```
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Public Endpoints (No Auth Required)
 
@@ -117,7 +117,7 @@ POST /api/contests/{id}/problems
 - Response: Contest problem mapping
 ```
 
-## 🎮 User Guide
+## User Guide
 
 ### For Participants
 
@@ -293,7 +293,3 @@ http://localhost:8080
   ]
 }
 ```
-
-## 🎉 Enjoy Your Contest Platform!
-
-Your CodeJudge instance now has a full-featured contest system. Happy coding! 🚀
