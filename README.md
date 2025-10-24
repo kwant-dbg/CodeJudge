@@ -354,42 +354,10 @@ Planned features and enhancements:
 
 ---
 
-## Contributing
-
-Contributions are welcome. Please adhere to the following workflow:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/feature-name`)
-3. Commit changes with descriptive messages (`git commit -m 'Add feature description'`)
-4. Push to the branch (`git push origin feature/feature-name`)
-5. Submit a Pull Request with detailed description
-
-### Code Style Guidelines
-- **Go**: Follow [Effective Go](https://golang.org/doc/effective_go) conventions
-- **C++**: Apply `clang-format` with Google style guide
-- **Frontend**: Maintain 2-space indentation with semicolons
-
----
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for complete terms and conditions.
-
----
-
 ## Author
 
 **Harshit Sharma**
 - GitHub: [@kwant-dbg](https://github.com/kwant-dbg)
-
----
-
-## Acknowledgments
-
-- Architecture inspired by competitive programming platforms including Codeforces and AtCoder
-- Plagiarism detection implements MinHash LSH algorithm
-- Secure execution utilizes Linux namespaces and cgroups
-- Mathematical rendering powered by KaTeX library
 
 ---
 
@@ -398,6 +366,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 **CodeJudge** - Production-ready online judge platform
 
 </div>
+
 
 
 
