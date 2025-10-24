@@ -1,6 +1,6 @@
 # CodeJudge - Online Judge Platform
 
-<div align="center">
+<div align="left">
 
 ![CodeJudge](https://img.shields.io/badge/CodeJudge-Online%20Judge-667eea?style=for-the-badge)
 ![Go](https://img.shields.io/badge/Go-1.24-00ADD8?style=for-the-badge&logo=go)
@@ -208,17 +208,6 @@ codejudge/
 ├── docker-compose.yml        # Local development environment                 
 └── README.md       # This file 
 ```
-
-### Recent Refactoring (Oct 2024)
-- ✅ Removed 875+ lines of unused code (~29% reduction)
-- ✅ Simplified database layer (removed unused transaction manager & prepared statements)
-- ✅ Eliminated one-off admin tools with hardcoded tokens
-- ✅ Removed duplicate deployment scripts
-- ✅ Cleaned up outdated documentation
-- 🎯 Result: Simpler, more maintainable codebase with zero functionality loss
-
----
-
 ## How It Works
 
 ```mermaid
