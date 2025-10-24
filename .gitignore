@@ -17,6 +17,8 @@ docs/MARKDOWN_FIX.md
 *.dll
 *.so
 *.dylib
+codejudge-monolith
+plagiarism-service
 
 # Test binary, build artifacts
 *.test
@@ -28,7 +30,8 @@ docs/MARKDOWN_FIX.md
 # Go vendor directory
 /vendor/
 
-# Go workspace (keep go.work but ignore sync files)
+# Go workspace files (local development only)
+go.work
 go.work.sum
 
 # Environment files
@@ -54,6 +57,15 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Azure logs and deployment artifacts
+azure-logs/
+deploy.zip
+
+# Backup files
+*.backup
+*.bak
+*.old
 
 # Build artifacts
 target/

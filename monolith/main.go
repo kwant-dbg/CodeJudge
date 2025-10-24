@@ -114,6 +114,7 @@ func main() {
 	problemsHandler := handlers.NewProblemsHandler(logger, dbManager)
 	submissionsHandler := handlers.NewSubmissionsHandler(logger, dbManager, rdb)
 	plagiarismHandler := handlers.NewPlagiarismHandler(logger, dbManager, rdb)
+	contestsHandler := handlers.NewContestsHandler(logger, dbManager)
 	adminHandler := handlers.NewAdminHandler(logger)
 
 	// Create database tables
@@ -122,6 +123,7 @@ func main() {
 	problemsHandler.PrepareStatements()
 	submissionsHandler.CreateTables()
 	plagiarismHandler.CreateTables()
+	contestsHandler.CreateTables()
 
 	// Start background workers
 	plagiarismHandler.StartWorker()
@@ -197,6 +199,26 @@ func main() {
 		apiRouter.Route("/plagiarism", func(plagiarismRouter chi.Router) {
 			plagiarismRouter.Get("/reports", plagiarismHandler.GetReports)
 		})
+
+		// Contest endpoints (protected)
+		apiRouter.Route("/contests", func(contestRouter chi.Router) {
+			contestRouter.Post("/{id}/register", contestsHandler.RegisterForContest)
+		})
+	})
+
+	// Public contest endpoints (viewing only)
+	r.Route("/api/contests", func(contestRouter chi.Router) {
+		contestRouter.Get("/", contestsHandler.ListContests)
+		contestRouter.Get("/{id}", contestsHandler.GetContest)
+		contestRouter.Get("/{id}/problems", contestsHandler.GetContestProblems)
+		contestRouter.Get("/{id}/leaderboard", contestsHandler.GetLeaderboard)
+
+		// Protected contest management (admin only)
+		contestRouter.Group(func(protected chi.Router) {
+			protected.Use(commonauth.RequireRole(jwtSecret, []string{"admin"}, logger))
+			protected.Post("/", contestsHandler.CreateContest)
+			protected.Post("/{id}/problems", contestsHandler.AddProblemToContest)
+		})
 	})
 
 	// Admin routes
@@ -246,5 +268,3 @@ func connectRedis() {
 	rdb = redisutil.ConnectWithRetry(ctx, logger, redisURL, 5, 2*time.Second)
 	logger.Info("Redis connected successfully")
 }
-
-

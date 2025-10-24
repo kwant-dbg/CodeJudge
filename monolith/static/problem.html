@@ -281,6 +281,12 @@
             <a href="/">Home</a> / <a href="/#problemsTab">Problems</a> / <span id="breadcrumbTitle">Loading...</span>
         </div>
 
+        <!-- Contest Banner (shown when viewing from contest) -->
+        <div id="contestBanner" style="display: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 32px; font-weight: 600; font-size: 14px;">
+            🏆 Contest Mode: <span id="contestTitle"></span> | 
+            <a href="#" id="backToContest" style="color: white; text-decoration: underline; margin-left: 10px;">Back to Contest</a>
+        </div>
+
         <div class="main-content">
             <!-- Problem Description -->
             <div class="problem-section">
@@ -727,17 +733,28 @@
             resultDiv.innerHTML = '⏳ Submitting your solution...';
 
             try {
+                // Check if this is a contest submission
+                const urlParams = new URLSearchParams(window.location.search);
+                const contestId = urlParams.get('contest_id');
+                
+                const submissionData = {
+                    problem_id: parseInt(problemId),
+                    language: language,
+                    source_code: code
+                };
+                
+                // Add contest_id if present
+                if (contestId) {
+                    submissionData.contest_id = parseInt(contestId);
+                }
+                
                 const response = await fetch('/api/submissions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${authToken}`
                     },
-                    body: JSON.stringify({
-                        problem_id: parseInt(problemId),
-                        language: language,
-                        source_code: code
-                    })
+                    body: JSON.stringify(submissionData)
                 });
 
                 if (response.ok) {
@@ -857,6 +874,14 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log('DOMContentLoaded - Starting initialization');
             console.log('authToken:', authToken);
+            
+            // Check if viewing from a contest
+            const urlParams = new URLSearchParams(window.location.search);
+            const contestId = urlParams.get('contest_id');
+            if (contestId) {
+                loadContestInfo(contestId);
+            }
+            
             loadProblem();
             
             if (authToken) {
@@ -867,6 +892,22 @@
                 showLoginRequired();
             }
         });
+
+        // Load contest info and show banner
+        async function loadContestInfo(contestId) {
+            try {
+                const response = await fetch(`/api/contests/${contestId}`);
+                if (response.ok) {
+                    const contest = await response.json();
+                    const banner = document.getElementById('contestBanner');
+                    document.getElementById('contestTitle').textContent = contest.title;
+                    document.getElementById('backToContest').href = `/contest-detail.html?id=${contestId}`;
+                    banner.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Failed to load contest info:', error);
+            }
+        }
     </script>
 </body>
 </html>

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Contest - CodeJudge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="datetime-local"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .time-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .problems-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #e5e7eb;
+        }
+
+        .problem-item {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .problem-item .form-group {
+            margin-bottom: 0;
+            flex: 1;
+        }
+
+        .problem-item button {
+            padding: 12px 20px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .problem-item button:hover {
+            background: #dc2626;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #10b981;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc2626;
+        }
+
+        .help-text {
+            font-size: 0.85em;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>Create New Contest</h1>
+            <p class="subtitle">Set up a competitive programming contest with custom problems and scoring</p>
+
+            <div id="message-container"></div>
+
+            <form id="contest-form">
+                <div class="form-group">
+                    <label for="title">Contest Title *</label>
+                    <input type="text" id="title" name="title" required placeholder="e.g., Weekly Challenge #42">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" placeholder="Describe the contest format, rules, and any special instructions..."></textarea>
+                </div>
+
+                <div class="time-grid">
+                    <div class="form-group">
+                        <label for="start_time">Start Time *</label>
+                        <input type="datetime-local" id="start_time" name="start_time" required>
+                        <p class="help-text">When the contest begins</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="end_time">End Time *</label>
+                        <input type="datetime-local" id="end_time" name="end_time" required>
+                        <p class="help-text">When the contest ends</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="freeze_time">Leaderboard Freeze (minutes before end)</label>
+                    <input type="number" id="freeze_time" name="freeze_time" min="0" value="0" placeholder="0">
+                    <p class="help-text">Set to 0 for no freeze, or e.g., 60 to freeze the last hour</p>
+                </div>
+
+                <div class="problems-section">
+                    <h2 style="margin-bottom: 20px; color: #1f2937;">Contest Problems</h2>
+                    
+                    <div id="problems-container"></div>
+
+                    <button type="button" class="btn btn-success" onclick="addProblemField()">
+                        + Add Problem
+                    </button>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">Create Contest</button>
+                    <a href="/contests.html" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let problemCount = 0;
+        let availableProblems = [];
+
+        // Load available problems
+        async function loadProblems() {
+            try {
+                const response = await fetch('/api/problems');
+                if (response.ok) {
+                    availableProblems = await response.json();
+                    addProblemField(); // Add first problem field
+                }
+            } catch (error) {
+                showMessage('Failed to load problems', 'error');
+            }
+        }
+
+        // Add problem field
+        function addProblemField() {
+            problemCount++;
+            const container = document.getElementById('problems-container');
+            const problemDiv = document.createElement('div');
+            problemDiv.className = 'problem-item';
+            problemDiv.id = `problem-${problemCount}`;
+            
+            problemDiv.innerHTML = `
+                <div class="form-group" style="flex: 2;">
+                    <label for="problem_id_${problemCount}">Problem</label>
+                    <select id="problem_id_${problemCount}" name="problem_id[]" required>
+                        <option value="">Select a problem...</option>
+                        ${availableProblems.map(p => `
+                            <option value="${p.id}">${p.title} (${p.difficulty || 'N/A'})</option>
+                        `).join('')}
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label for="points_${problemCount}">Points</label>
+                    <input type="number" id="points_${problemCount}" name="points[]" value="100" min="1" required>
+                </div>
+                <div class="form-group" style="flex: 0.5;">
+                    <label for="order_${problemCount}">Order</label>
+                    <input type="number" id="order_${problemCount}" name="order[]" value="${problemCount}" min="1" required>
+                </div>
+                <button type="button" onclick="removeProblem(${problemCount})">Remove</button>
+            `;
+            
+            container.appendChild(problemDiv);
+        }
+
+        // Remove problem field
+        function removeProblem(id) {
+            const element = document.getElementById(`problem-${id}`);
+            if (element) {
+                element.remove();
+            }
+        }
+
+        // Show message
+        function showMessage(message, type) {
+            const container = document.getElementById('message-container');
+            container.innerHTML = `<div class="${type}-message">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        // Handle form submission
+        document.getElementById('contest-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showMessage('You must be logged in as admin', 'error');
+                return;
+            }
+
+            // Collect form data
+            const formData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                start_time: new Date(document.getElementById('start_time').value).toISOString(),
+                end_time: new Date(document.getElementById('end_time').value).toISOString(),
+                freeze_time: parseInt(document.getElementById('freeze_time').value) || null
+            };
+
+            try {
+                // Create contest
+                const contestResponse = await fetch('/api/contests', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!contestResponse.ok) {
+                    const error = await contestResponse.json();
+                    throw new Error(error.error || 'Failed to create contest');
+                }
+
+                const contest = await contestResponse.json();
+
+                // Add problems to contest
+                const problemIds = document.querySelectorAll('[name="problem_id[]"]');
+                const points = document.querySelectorAll('[name="points[]"]');
+                const orders = document.querySelectorAll('[name="order[]"]');
+
+                for (let i = 0; i < problemIds.length; i++) {
+                    if (problemIds[i].value) {
+                        const problemData = {
+                            problem_id: parseInt(problemIds[i].value),
+                            points: parseInt(points[i].value),
+                            order_num: parseInt(orders[i].value)
+                        };
+
+                        await fetch(`/api/contests/${contest.id}/problems`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(problemData)
+                        });
+                    }
+                }
+
+                showMessage('Contest created successfully! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = `/contest-detail.html?id=${contest.id}`;
+                }, 2000);
+
+            } catch (error) {
+                showMessage(error.message, 'error');
+            }
+        });
+
+        // Set default times (start: now, end: 2 hours from now)
+        function setDefaultTimes() {
+            const now = new Date();
+            const startTime = new Date(now.getTime() + 5 * 60000); // 5 minutes from now
+            const endTime = new Date(startTime.getTime() + 2 * 60 * 60000); // 2 hours later
+
+            document.getElementById('start_time').value = formatDateTimeLocal(startTime);
+            document.getElementById('end_time').value = formatDateTimeLocal(endTime);
+        }
+
+        function formatDateTimeLocal(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        // Initialize
+        setDefaultTimes();
+        loadProblems();
+    </script>
+</body>
+</html>

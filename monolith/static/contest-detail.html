@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contest Details - CodeJudge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .contest-status {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .status-upcoming { background: #fef3c7; color: #92400e; }
+        .status-active { background: #d1fae5; color: #065f46; }
+        .status-finished { background: #e5e7eb; color: #374151; }
+
+        h1 {
+            color: #1f2937;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .contest-description {
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .contest-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meta-label {
+            font-size: 0.9em;
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .problem-list {
+            list-style: none;
+        }
+
+        .problem-item {
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .problem-item:hover {
+            border-color: #667eea;
+            background: #f9fafb;
+        }
+
+        .problem-info {
+            flex: 1;
+        }
+
+        .problem-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        .problem-difficulty {
+            font-size: 0.85em;
+            padding: 3px 10px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        .difficulty-easy { background: #d1fae5; color: #065f46; }
+        .difficulty-medium { background: #fef3c7; color: #92400e; }
+        .difficulty-hard { background: #fee2e2; color: #991b1b; }
+
+        .problem-points {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leaderboard-table thead {
+            background: #667eea;
+            color: white;
+        }
+
+        .leaderboard-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .leaderboard-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .leaderboard-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .rank {
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .rank-1 { color: #fbbf24; }
+        .rank-2 { color: #9ca3af; }
+        .rank-3 { color: #cd7f32; }
+
+        .frozen-notice {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 12px 20px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .loading, .error {
+            padding: 40px;
+            text-align: center;
+            color: #6b7280;
+        }
+
+        .error {
+            color: #dc2626;
+        }
+
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header id="contest-header" class="loading">
+            Loading contest details...
+        </header>
+
+        <div class="content-grid">
+            <div class="card">
+                <h2>📚 Problems</h2>
+                <ul id="problems-list" class="problem-list">
+                    <li class="loading">Loading problems...</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>🏆 Leaderboard</h2>
+                <div id="leaderboard-container">
+                    <div class="loading">Loading leaderboard...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const contestId = new URLSearchParams(window.location.search).get('id');
+        let contest = null;
+        let isRegistered = false;
+
+        async function loadContest() {
+            try {
+                const response = await fetch(`/api/contests/${contestId}`);
+                if (!response.ok) throw new Error('Failed to load contest');
+                
+                contest = await response.json();
+                displayContest();
+            } catch (error) {
+                document.getElementById('contest-header').innerHTML = `
+                    <div class="error">Failed to load contest: ${error.message}</div>
+                `;
+            }
+        }
+
+        async function loadProblems() {
+            try {
+                const response = await fetch(`/api/contests/${contestId}/problems`);
+                if (!response.ok) throw new Error('Failed to load problems');
+                
+                const problems = await response.json();
+                displayProblems(problems);
+            } catch (error) {
+                document.getElementById('problems-list').innerHTML = `
+                    <li class="error">Failed to load problems</li>
+                `;
+            }
+        }
+
+        async function loadLeaderboard() {
+            try {
+                const response = await fetch(`/api/contests/${contestId}/leaderboard`);
+                if (!response.ok) throw new Error('Failed to load leaderboard');
+                
+                const data = await response.json();
+                displayLeaderboard(data.leaderboard, data.is_frozen);
+            } catch (error) {
+                document.getElementById('leaderboard-container').innerHTML = `
+                    <div class="error">Failed to load leaderboard</div>
+                `;
+            }
+        }
+
+        function displayContest() {
+            const startTime = new Date(contest.start_time).toLocaleString();
+            const endTime = new Date(contest.end_time).toLocaleString();
+            const duration = Math.round((new Date(contest.end_time) - new Date(contest.start_time)) / (1000 * 60 * 60));
+
+            let registerBtn = '';
+            if (contest.status !== 'finished' && localStorage.getItem('token')) {
+                registerBtn = `<button class="btn btn-success" onclick="registerForContest()">Register</button>`;
+            }
+
+            document.getElementById('contest-header').innerHTML = `
+                <div class="header-top">
+                    <div>
+                        <span class="contest-status status-${contest.status}">${contest.status.toUpperCase()}</span>
+                        <h1>${escapeHtml(contest.title)}</h1>
+                        <p class="contest-description">${escapeHtml(contest.description || '')}</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="/contests.html" class="btn btn-primary">Back to Contests</a>
+                        ${registerBtn}
+                    </div>
+                </div>
+                <div class="contest-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Status</span>
+                        <span class="meta-value">${contest.status}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Start Time</span>
+                        <span class="meta-value">${startTime}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">End Time</span>
+                        <span class="meta-value">${endTime}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Duration</span>
+                        <span class="meta-value">${duration} hours</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayProblems(problems) {
+            if (problems.length === 0) {
+                document.getElementById('problems-list').innerHTML = `
+                    <li>No problems added yet</li>
+                `;
+                return;
+            }
+
+            document.getElementById('problems-list').innerHTML = problems.map(p => `
+                <li class="problem-item" onclick="window.location.href='/problem.html?id=${p.problem_id}&contest_id=${p.contest_id}'">
+                    <div class="problem-info">
+                        <div class="problem-title">${escapeHtml(p.title)}</div>
+                        <span class="problem-difficulty difficulty-${p.difficulty?.toLowerCase() || 'medium'}">
+                            ${p.difficulty || 'Medium'}
+                        </span>
+                    </div>
+                    <div class="problem-points">${p.points} pts</div>
+                </li>
+            `).join('');
+        }
+
+        function displayLeaderboard(leaderboard, isFrozen) {
+            let html = '';
+            
+            if (isFrozen) {
+                html += `<div class="frozen-notice">⚠️ Leaderboard is frozen for the final minutes of the contest</div>`;
+            }
+
+            if (leaderboard.length === 0) {
+                html += '<p>No submissions yet</p>';
+            } else {
+                html += `
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Username</th>
+                                <th>Score</th>
+                                <th>Solved</th>
+                                <th>Penalty</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${leaderboard.map(entry => `
+                                <tr>
+                                    <td class="rank rank-${entry.rank <= 3 ? entry.rank : ''}">${entry.rank}</td>
+                                    <td>${escapeHtml(entry.username)}</td>
+                                    <td><strong>${entry.total_score}</strong></td>
+                                    <td>${entry.problems_solved}</td>
+                                    <td>${entry.penalty_minutes} min</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            document.getElementById('leaderboard-container').innerHTML = html;
+        }
+
+        async function registerForContest() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Please login first');
+                window.location.href = '/';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/contests/${contestId}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert('Successfully registered for the contest!');
+                    isRegistered = true;
+                } else {
+                    const error = await response.json();
+                    alert(`Failed to register: ${error.error}`);
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize
+        if (!contestId) {
+            document.getElementById('contest-header').innerHTML = `
+                <div class="error">Invalid contest ID</div>
+            `;
+        } else {
+            loadContest();
+            loadProblems();
+            loadLeaderboard();
+            
+            // Refresh leaderboard every 30 seconds if contest is active
+            setInterval(() => {
+                if (contest && contest.status === 'active') {
+                    loadLeaderboard();
+                }
+            }, 30000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contests - CodeJudge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2em;
+        }
+
+        .nav-links a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: #667eea;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .filter-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .contests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .contest-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .contest-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.2);
+        }
+
+        .contest-status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .status-upcoming {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-finished {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .contest-title {
+            font-size: 1.4em;
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .contest-description {
+            color: #6b7280;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .contest-time {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 0.9em;
+            color: #4b5563;
+        }
+
+        .contest-time span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .time-label {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .create-contest-btn {
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .create-contest-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            background: white;
+            padding: 60px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .empty-state h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #6b7280;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏆 Contests</h1>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/admin" id="admin-link" style="display: none;">Admin</a>
+                <button class="create-contest-btn" id="create-contest-btn" style="display: none;">
+                    Create Contest
+                </button>
+            </div>
+        </header>
+
+        <div class="filters">
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">All Contests</button>
+                <button class="filter-btn" data-filter="upcoming">Upcoming</button>
+                <button class="filter-btn" data-filter="active">Active</button>
+                <button class="filter-btn" data-filter="finished">Finished</button>
+            </div>
+        </div>
+
+        <div id="error-container"></div>
+        <div id="contests-container" class="loading">Loading contests...</div>
+    </div>
+
+    <script>
+        let allContests = [];
+        let currentFilter = 'all';
+
+        // Check if user is admin
+        async function checkAdmin() {
+            const token = localStorage.getItem('token');
+            if (!token) return false;
+
+            try {
+                const response = await fetch('/api/auth/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const user = await response.json();
+                    if (user.role === 'admin') {
+                        document.getElementById('admin-link').style.display = 'inline';
+                        document.getElementById('create-contest-btn').style.display = 'inline-block';
+                        return true;
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking admin status:', error);
+            }
+            return false;
+        }
+
+        // Load contests
+        async function loadContests() {
+            try {
+                const response = await fetch('/api/contests');
+                if (!response.ok) throw new Error('Failed to load contests');
+                
+                allContests = await response.json();
+                displayContests();
+            } catch (error) {
+                document.getElementById('contests-container').innerHTML = `
+                    <div class="error">Failed to load contests: ${error.message}</div>
+                `;
+            }
+        }
+
+        // Display contests based on filter
+        function displayContests() {
+            const container = document.getElementById('contests-container');
+            
+            let filtered = allContests;
+            if (currentFilter !== 'all') {
+                filtered = allContests.filter(c => c.status === currentFilter);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h2>No ${currentFilter === 'all' ? '' : currentFilter} contests found</h2>
+                        <p>Check back later for new contests!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+            container.className = 'contests-grid';
+
+            filtered.forEach(contest => {
+                const card = createContestCard(contest);
+                container.appendChild(card);
+            });
+        }
+
+        // Create contest card element
+        function createContestCard(contest) {
+            const card = document.createElement('div');
+            card.className = 'contest-card';
+            card.onclick = () => window.location.href = `/contest-detail.html?id=${contest.id}`;
+
+            const startTime = new Date(contest.start_time).toLocaleString();
+            const endTime = new Date(contest.end_time).toLocaleString();
+
+            card.innerHTML = `
+                <span class="contest-status status-${contest.status}">${contest.status.toUpperCase()}</span>
+                <div class="contest-title">${escapeHtml(contest.title)}</div>
+                <div class="contest-description">${escapeHtml(contest.description || 'No description')}</div>
+                <div class="contest-time">
+                    <span><span class="time-label">Start:</span> ${startTime}</span>
+                    <span><span class="time-label">End:</span> ${endTime}</span>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Set up filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                displayContests();
+            });
+        });
+
+        // Create contest button
+        document.getElementById('create-contest-btn').addEventListener('click', () => {
+            window.location.href = '/create-contest.html';
+        });
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize
+        checkAdmin();
+        loadContests();
+    </script>
+</body>
+</html>
