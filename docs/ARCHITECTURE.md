@@ -2,7 +2,7 @@
 
 This document provides comprehensive architecture diagrams for the CodeJudge monolithic system.
 
-## 📐 System Architecture Overview
+## System Architecture Overview
 
 ```mermaid
 graph TB
@@ -98,7 +98,9 @@ graph TB
     style JudgeWorker fill:#8b5cf6
 ```
 
-## 🔄 Request Flow - User Submission
+---
+
+## Request Flow - User Submission
 
 ```mermaid
 sequenceDiagram
@@ -148,7 +150,9 @@ sequenceDiagram
     Browser-->>User: Show verdict (Accepted/Wrong Answer/etc)
 ```
 
-## 🏆 Contest System Flow
+---
+
+## Contest System Flow
 
 ```mermaid
 flowchart TD
@@ -200,7 +204,9 @@ flowchart TD
     style UpdateLeaderboard fill:#f59e0b
 ```
 
-## 🗄️ Database Schema
+---
+
+## Database Schema
 
 ```mermaid
 erDiagram
@@ -290,7 +296,9 @@ erDiagram
     }
 ```
 
-## 🔐 Authentication & Authorization Flow
+---
+
+## Authentication & Authorization Flow
 
 ```mermaid
 stateDiagram-v2
@@ -335,7 +343,9 @@ stateDiagram-v2
     Logout --> [*] : Clear token
 ```
 
-## 🏗️ Component Architecture
+---
+
+## Component Architecture
 
 ```mermaid
 graph LR
@@ -403,53 +413,27 @@ graph LR
     style RedisConn fill:#f59e0b,color:#fff
 ```
 
-## 🔧 Deployment Architecture
+## Deployment Architecture
 
 ```mermaid
-graph TB
-    subgraph "Docker Compose Environment"
-        subgraph "monolith Container"
-            GoApp[Go Application<br/>Port 8080]
-            StaticFiles[Static HTML/CSS/JS]
-        end
-        
-        subgraph "judge Container"
-            JudgeCPP[C++ Judge Worker<br/>Privileged Mode]
-            SandboxEnv[Sandbox Environment<br/>Namespaces + cgroups]
-        end
-        
-        subgraph "db Container"
-            PG[PostgreSQL 14<br/>Port 5432]
-            PGVolume[(postgres_data volume)]
-        end
-        
-        subgraph "redis Container"
-            RedisServer[Redis 7<br/>Port 6379]
-            RedisVolume[(redis_data volume)]
-        end
-    end
+graph LR
+    Internet[Internet] --> Monolith[Monolith Container<br/>Go + Static Files<br/>Port 8080]
+    
+    Monolith --> DB[PostgreSQL 14<br/>Port 5432]
+    Monolith --> Redis[Redis 7<br/>Port 6379]
+    
+    Judge[Judge Container<br/>C++ Worker] --> DB
+    Judge --> Redis
 
-    Internet[Internet] --> LoadBalancer[Load Balancer<br/>Port 8080]
-    LoadBalancer --> GoApp
-    
-    GoApp --> PG
-    GoApp --> RedisServer
-    JudgeCPP --> PG
-    JudgeCPP --> RedisServer
-    
-    PG --> PGVolume
-    RedisServer --> RedisVolume
-    
-    GoApp -.->|Health Check| HealthEndpoint[/health]
-    JudgeCPP -.->|Queue Polling| RedisServer
-
-    style GoApp fill:#10b981,color:#fff
-    style JudgeCPP fill:#8b5cf6,color:#fff
-    style PG fill:#ef4444,color:#fff
-    style RedisServer fill:#f59e0b,color:#fff
+    style Monolith fill:#10b981,color:#fff
+    style Judge fill:#8b5cf6,color:#fff
+    style DB fill:#ef4444,color:#fff
+    style Redis fill:#f59e0b,color:#fff
 ```
 
-## 📊 Leaderboard Calculation Logic
+---
+
+## Leaderboard Calculation Logic
 
 ```mermaid
 flowchart TD
@@ -484,7 +468,9 @@ flowchart TD
     style RankUsers fill:#8b5cf6,color:#fff
 ```
 
-## 🛡️ Security Layers
+---
+
+## Security Layers
 
 ```mermaid
 graph TD
@@ -544,7 +530,9 @@ graph TD
     style SecureSandbox fill:#8b5cf6,color:#fff
 ```
 
-## 📦 Technology Stack
+---
+
+## Technology Stack
 
 ```mermaid
 mindmap
@@ -587,7 +575,9 @@ mindmap
       hiredis
 ```
 
-## 🚀 Scaling Considerations
+---
+
+## Scaling Considerations
 
 ```mermaid
 graph TB
@@ -654,7 +644,7 @@ graph TB
 
 ---
 
-## 📝 Notes
+## Notes
 
 - All diagrams are in Mermaid format for native GitHub rendering
 - Copy any diagram directly into your README.md
