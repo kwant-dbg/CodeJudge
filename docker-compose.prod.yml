@@ -1,22 +1,25 @@
+# Production Docker Compose Configuration
+# Uses pre-built images from GitHub Container Registry
+# 
+# Quick start:
+#   1. Copy this file: cp docker-compose.prod.yml docker-compose.override.yml
+#   2. Edit environment variables as needed
+#   3. Run: docker-compose up -d
+
 services:
   monolith:
-    # Option 1: Build locally (for development)
-    build:
-      context: .
-      dockerfile: monolith/Dockerfile.standalone
-    
-    # Option 2: Use pre-built image from CI/CD (for production)
-    # image: ghcr.io/kwant-dbg/codejudge-monolith:latest
-    
+    image: ghcr.io/kwant-dbg/codejudge-monolith:latest
     ports:
       - "8080:8080"
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
       - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=your-jwt-secret-key-change-in-production
+      - JWT_SECRET=${JWT_SECRET:-change-this-in-production}
       - PORT=8080
       - GIN_MODE=release
     restart: unless-stopped
@@ -30,16 +33,16 @@ services:
   db:
     image: postgres:14-alpine
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: codejudgedb
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-codejudgedb}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d codejudgedb"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-codejudgedb}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -58,23 +61,18 @@ services:
       retries: 5
 
   judge:
-    # Option 1: Build locally (for development)
-    build:
-      context: ./judge
-      dockerfile: Dockerfile.modern
-    
-    # Option 2: Use pre-built image from CI/CD (for production)
-    # image: ghcr.io/kwant-dbg/codejudge-judge:latest
-    
+    image: ghcr.io/kwant-dbg/codejudge-judge:latest
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
-      - DATABASE_URL=postgres://user:password@db:5432/codejudgedb?sslmode=disable
+      - DATABASE_URL=postgres://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-codejudgedb}?sslmode=disable
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - TIME_LIMIT=5
-      - MEMORY_LIMIT=256
+      - TIME_LIMIT=${TIME_LIMIT:-5}
+      - MEMORY_LIMIT=${MEMORY_LIMIT:-256}
       - SANDBOX_USER=sandbox_user
       - ENABLE_SANDBOX=true
     restart: unless-stopped
@@ -95,4 +93,3 @@ volumes:
   postgres_data:
   redis_data:
   judge_submissions:
-

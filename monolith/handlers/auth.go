@@ -189,6 +189,67 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	httpx.JSON(w, http.StatusCreated, response)
 }
 
+func (h *AuthHandler) RegisterAdmin(w http.ResponseWriter, r *http.Request) {
+	var req AuthRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Validate input
+	if req.Username == "" || req.Email == "" || req.Password == "" {
+		httpx.Error(w, http.StatusBadRequest, "Username, email, and password are required")
+		return
+	}
+
+	if len(req.Password) < 6 {
+		httpx.Error(w, http.StatusBadRequest, "Password must be at least 6 characters")
+		return
+	}
+
+	// Hash password
+	hashedPassword, err := h.hashPassword(req.Password)
+	if err != nil {
+		httpx.Error(w, http.StatusInternalServerError, "Failed to process password")
+		return
+	}
+
+	// Insert admin user
+	var user User
+	query := `
+        INSERT INTO users (username, email, password_hash, role) 
+        VALUES ($1, $2, $3, 'admin') 
+        RETURNING id, username, email, role, created_at, updated_at`
+
+	err = h.dbManager.GetDB().QueryRowContext(r.Context(), query, req.Username, req.Email, hashedPassword).
+		Scan(&user.ID, &user.Username, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key") {
+			httpx.Error(w, http.StatusConflict, "Username or email already exists")
+		} else {
+			h.logger.Error("Failed to create admin user", zap.Error(err))
+			httpx.Error(w, http.StatusInternalServerError, "Failed to create admin user")
+		}
+		return
+	}
+
+	// Generate token
+	token, err := h.generateToken(user)
+	if err != nil {
+		httpx.Error(w, http.StatusInternalServerError, "Failed to generate token")
+		return
+	}
+
+	response := AuthResponse{
+		Token: token,
+		User:  user,
+	}
+
+	h.logger.Info("Admin user registered successfully", zap.String("username", user.Username), zap.Int("user_id", user.ID))
+	httpx.JSON(w, http.StatusCreated, response)
+}
+
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req AuthRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

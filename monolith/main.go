@@ -169,6 +169,7 @@ func main() {
 	// Public auth endpoints
 	r.Route("/api/auth", func(authRouter chi.Router) {
 		authRouter.Post("/register", authHandler.Register)
+		authRouter.Post("/register-admin", authHandler.RegisterAdmin)
 		authRouter.Post("/login", authHandler.Login)
 		authRouter.Post("/validate", authHandler.ValidateToken)
 
