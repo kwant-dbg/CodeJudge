@@ -83,7 +83,7 @@ func (h *ProblemsHandler) GetProblems(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	db := h.dbManager.GetDB()
 	query := `SELECT id, title, description, difficulty, input_format, output_format FROM problems ORDER BY id`
-	
+
 	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
 		serviceErr := httpx.NewServiceError(
@@ -134,7 +134,7 @@ func (h *ProblemsHandler) GetProblem(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	db := h.dbManager.GetDB()
 	query := `SELECT id, title, description, difficulty, input_format, output_format FROM problems WHERE id = $1`
-	
+
 	row := db.QueryRowContext(ctx, query, id)
 	err = row.Scan(&p.ID, &p.Title, &p.Description, &p.Difficulty, &p.InputFormat, &p.OutputFormat)
 	if err != nil {
