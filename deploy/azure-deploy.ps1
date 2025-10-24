@@ -1,13 +1,12 @@
 # CodeJudge Azure Deployment Script
-# Simplified deployment script for Azure
+# Optimized for cost-effective deployment
 
 param(
     [string]$ResourceGroup = "codejudge-rg",
-    [string]$Location = "eastus",
+    [string]$Location = "southeastasia",
     [string]$ACRName = "codejudgeacr$(Get-Random -Minimum 1000 -Maximum 9999)",
     [string]$AppName = "codejudge-app-$(Get-Random -Minimum 1000 -Maximum 9999)",
     [string]$DBName = "codejudge-db-$(Get-Random -Minimum 1000 -Maximum 9999)",
-    [string]$RedisName = "codejudge-redis-$(Get-Random -Minimum 1000 -Maximum 9999)",
     [string]$DBPassword = "",
     [string]$JWTSecret = ""
 )
@@ -98,7 +97,7 @@ az postgres flexible-server create `
   --tier Burstable `
   --version 14 `
   --storage-size 32 `
-  --public-access 0.0.0.0-255.255.255.255 `
+  --public-access All `
   --yes `
   --output none
 
@@ -117,31 +116,14 @@ az postgres flexible-server db create `
   --database-name codejudgedb `
   --output none
 
-# Create Redis Cache
-Write-Host "`n🔴 Creating Redis Cache: $RedisName..." -ForegroundColor Yellow
-Write-Host "   This may take 10-15 minutes..." -ForegroundColor Yellow
-az redis create `
-  --resource-group $ResourceGroup `
-  --name $RedisName `
-  --location $Location `
-  --sku Basic `
-  --vm-size c0 `
-  --output none
-
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "✅ Redis cache created" -ForegroundColor Green
-} else {
-    Write-Host "❌ Failed to create Redis cache" -ForegroundColor Red
-    exit 1
-}
-
 # Get connection strings
 Write-Host "`n🔗 Retrieving connection strings..." -ForegroundColor Yellow
 $dbHost = "$DBName.postgres.database.azure.com"
 $databaseUrl = "postgres://codejudgeadmin:$DBPassword@$dbHost:5432/codejudgedb?sslmode=require"
 
-$redisKey = az redis list-keys --resource-group $ResourceGroup --name $RedisName --query primaryKey -o tsv
-$redisUrl = "rediss://:$redisKey@$RedisName.redis.cache.windows.net:6380"
+# Note: Using in-memory Redis to minimize costs
+Write-Host "   Using container-based Redis for cost optimization..." -ForegroundColor Yellow
+$redisUrl = "redis://localhost:6379"
 
 # Get ACR credentials
 $acrUser = az acr credential show --name $ACRName --query username -o tsv
@@ -150,29 +132,72 @@ $acrPassword = az acr credential show --name $ACRName --query "passwords[0].valu
 # Deploy to Azure Container Instances
 Write-Host "`n🚀 Deploying to Azure Container Instances..." -ForegroundColor Yellow
 
+# Deploy with custom YAML for multi-container setup (includes Redis sidecar)
+$containerGroupYaml = @"
+apiVersion: 2021-10-01
+location: $Location
+name: $AppName
+properties:
+  containers:
+  - name: monolith
+    properties:
+      image: $imageTag
+      resources:
+        requests:
+          cpu: 0.5
+          memoryInGb: 0.5
+      ports:
+      - port: 8080
+        protocol: TCP
+      environmentVariables:
+      - name: DATABASE_URL
+        secureValue: $databaseUrl
+      - name: REDIS_URL
+        value: redis://localhost:6379
+      - name: JWT_SECRET
+        secureValue: $JWTSecret
+      - name: PORT
+        value: 8080
+      - name: GIN_MODE
+        value: release
+  - name: redis
+    properties:
+      image: redis:7-alpine
+      resources:
+        requests:
+          cpu: 0.25
+          memoryInGb: 0.25
+      ports:
+      - port: 6379
+        protocol: TCP
+  osType: Linux
+  ipAddress:
+    type: Public
+    ports:
+    - protocol: TCP
+      port: 8080
+    dnsNameLabel: $AppName
+  imageRegistryCredentials:
+  - server: $ACRName.azurecr.io
+    username: $acrUser
+    password: $acrPassword
+tags: {}
+"@
+
+$yamlFile = "container-group.yaml"
+$containerGroupYaml | Out-File -FilePath $yamlFile -Encoding UTF8
+
 az container create `
   --resource-group $ResourceGroup `
-  --name $AppName `
-  --image $imageTag `
-  --registry-login-server "$ACRName.azurecr.io" `
-  --registry-username $acrUser `
-  --registry-password $acrPassword `
-  --dns-name-label $AppName `
-  --ports 8080 `
-  --environment-variables `
-    DATABASE_URL="$databaseUrl" `
-    REDIS_URL="$redisUrl" `
-    JWT_SECRET="$JWTSecret" `
-    PORT=8080 `
-    GIN_MODE=release `
-  --cpu 1 --memory 1.5 `
-  --output none
+  --file $yamlFile
+
+Remove-Item $yamlFile
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "`n✅ Deployment successful!" -ForegroundColor Green
     $fqdn = az container show --resource-group $ResourceGroup --name $AppName --query ipAddress.fqdn -o tsv
     Write-Host "`n🌐 Your application is available at:" -ForegroundColor Cyan
-    Write-Host "   http://$fqdn:8080" -ForegroundColor Green
+    Write-Host "   http://$($fqdn):8080" -ForegroundColor Green
 } else {
     Write-Host "❌ Deployment failed" -ForegroundColor Red
     exit 1
@@ -196,11 +221,15 @@ Database Name: codejudgedb
 Database User: codejudgeadmin
 Database Password: $DBPassword
 
-Redis: $RedisName.redis.cache.windows.net
-
 JWT Secret: $JWTSecret
 
-Application URL: http://$fqdn:8080
+Application URL: http://$($fqdn):8080
+
+Cost Optimization Notes:
+- Using container-based Redis (no separate Azure Redis Cache)
+- PostgreSQL: Standard_B1ms (Burstable tier)
+- Container Instance: 0.75 vCPU, 0.75GB RAM
+- Estimated cost: ~$20-25/month
 
 Useful Commands:
   View logs:
@@ -215,9 +244,9 @@ Write-Host "`n📝 Configuration saved to: $configFile" -ForegroundColor Yellow
 
 Write-Host "`n📊 Deployment Summary:" -ForegroundColor Cyan
 Write-Host "   Resource Group: $ResourceGroup" -ForegroundColor White
+Write-Host "   Location: $Location" -ForegroundColor White
 Write-Host "   Container Registry: $ACRName" -ForegroundColor White
 Write-Host "   Database: $DBName" -ForegroundColor White
-Write-Host "   Redis: $RedisName" -ForegroundColor White
 Write-Host "   App Name: $AppName" -ForegroundColor White
 
 Write-Host "`n✅ Deployment Complete! 🎉" -ForegroundColor Green
