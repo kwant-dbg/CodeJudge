@@ -1,5 +1,7 @@
 # CodeJudge
-<div align="center">
+
+<p align="center">
+
 ![CodeJudge](https://img.shields.io/badge/CodeJudge-Online%20Judge-667eea?style=for-the-badge)
 ![Go](https://img.shields.io/badge/Go-1.24-00ADD8?style=for-the-badge&logo=go)
 ![C++](https://img.shields.io/badge/C++-17-00599C?style=for-the-badge&logo=cplusplus)
@@ -11,7 +13,7 @@ A production-ready online judge system featuring real-time contest management, a
 
 [Features](#features) • [Quick Start](#quick-start) • [Architecture](#architecture) • [Documentation](#documentation) • [API](#api-reference)
 
-</div>
+</p>
 
 ---
 
@@ -370,7 +372,3 @@ Planned features and enhancements:
 
 **Harshit Sharma**
 - GitHub: [@kwant-dbg](https://github.com/kwant-dbg)
-
-
-
-
