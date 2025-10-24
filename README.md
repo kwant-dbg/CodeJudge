@@ -121,24 +121,24 @@ graph TB
 
 ```
 codejudge/
-├── monolith/                 # Go Backend Service (Monolithic Architecture)
+├── monolith/                 # Go Backend Service
 │   ├── handlers/             # HTTP Request Handlers
+│   │   ├── admin.go             # Administrative dashboard
 │   │   ├── auth.go              # JWT authentication & user management
-│   │   ├── problems.go          # Problem CRUD with direct SQL queries
-│   │   ├── submissions.go       # Code submission & queue management
 │   │   ├── contests.go          # Contest lifecycle & leaderboards
 │   │   ├── plagiarism.go        # MinHash LSH similarity detection
-│   │   └── admin.go             # Administrative dashboard
+│   │   ├── problems.go          # Problem CRUD with direct SQL queries
+│   │   └── submissions.go       # Code submission & queue management
 │   ├── static/               # Frontend HTML/CSS/JS
-│   │   ├── index.html           # Homepage & navigation
-│   │   ├── problem.html         # Problem viewer with LaTeX & submission form
-│   │   ├── contests.html        # Contest listing page
+│   │   ├── admin.html           # Admin dashboard
 │   │   ├── contest-detail.html  # Live contest leaderboard
+│   │   ├── contests.html        # Contest listing page
 │   │   ├── create-contest.html  # Admin contest creation
 │   │   ├── create-problem.html  # Admin problem creation
-│   │   ├── submission.html      # Submission status viewer
+│   │   ├── index.html           # Homepage & navigation
 │   │   ├── plagiarism.html      # Plagiarism report interface
-│   │   └── admin.html           # Admin dashboard
+│   │   ├── problem.html         # Problem viewer with LaTeX & submission form
+│   │   └── submission.html      # Submission status viewer
 │   ├── main.go               # Application entrypoint & routing
 │   ├── startup.sh            # Container startup script
 │   └── Dockerfile.standalone # Docker build configuration
@@ -150,39 +150,27 @@ codejudge/
 │   ├── CMakeLists.txt           # Build configuration
 │   └── Dockerfile.modern        # Docker build with dependencies
 │
-├── common/                   # Shared Go Libraries (Reusable Components)
+├── common/                   # Shared Go Libraries
 │   ├── auth/                    # JWT token generation & validation
-│   │   └── auth.go
-│   ├── dbutil/                  # Simplified database utilities
-│   │   ├── connection_manager.go   # Connection pooling (simplified)
-│   │   └── db.go                   # Database initialization
+│   ├── dbutil/                  # Database connection pooling (simplified)
+│   │   ├── connection_manager.go
+│   │   └── db.go
 │   ├── env/                     # Environment variable helpers
-│   │   ├── env.go
-│   │   └── env_test.go
 │   ├── health/                  # Health check endpoints
-│   │   ├── health.go
-│   │   └── health_test.go
 │   ├── httpx/                   # HTTP utilities & middleware
-│   │   ├── httpx.go
-│   │   ├── httpx_test.go
-│   │   └── shutdown.go
 │   └── redisutil/               # Redis queue management
-│       └── redis.go
 │
 ├── docs/                     # Documentation
 │   ├── ARCHITECTURE.md          # System architecture & diagrams
 │   ├── CONTESTS_FEATURE.md      # Contest system documentation
 │   └── DEPLOYMENT.md            # Deployment instructions
 │
-├── deploy/                   # Deployment & Setup Scripts
-│   ├── deploy-to-azure.ps1      # Azure deployment (simplified)
-│   ├── local.ps1                # Local Docker management script
+├── deploy/                   # Deployment Scripts
+│   ├── deploy-to-azure.ps1      # Azure deployment
+│   ├── local.ps1                # Local Docker management
 │   └── seed-db.sql              # Database seeding with sample problems
 │
-├── scripts/                  # Utility Scripts (if needed)
-│
-├── docker-compose.yml        # Local development environment                 
-└── README.md       # This file 
+└── docker-compose.yml        # Local development environment
 ```
 ## How It Works
 
