@@ -1,11 +1,5 @@
 package main
 
-// TODO: Fix HTML layout and styling inconsistencies across all pages
-// - Ensure consistent spacing, padding, and component alignment
-// - Review responsive design for mobile/tablet breakpoints
-// - Standardize form layouts and button positioning
-// - Verify dark mode styling is consistent across all components
-
 import (
 	"context"
 	"crypto/rand"
@@ -129,6 +123,14 @@ func main() {
 	submissionsHandler.CreateTables()
 	plagiarismHandler.CreateTables()
 	contestsHandler.CreateTables()
+
+	// Seed admin user from environment variables (if provided)
+	adminUsername := env.Get("ADMIN_USERNAME", "")
+	adminEmail := env.Get("ADMIN_EMAIL", "")
+	adminPassword := env.Get("ADMIN_PASSWORD", "")
+	if err := authHandler.SeedAdminUser(adminUsername, adminEmail, adminPassword); err != nil {
+		logger.Error("Failed to seed admin user", zap.Error(err))
+	}
 
 	// Start background workers
 	plagiarismHandler.StartWorker()

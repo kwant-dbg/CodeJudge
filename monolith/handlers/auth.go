@@ -101,6 +101,52 @@ func (h *AuthHandler) CreateTables() {
 	h.logger.Info("Users table is ready")
 }
 
+// SeedAdminUser creates a default admin user from environment variables if it doesn't exist
+func (h *AuthHandler) SeedAdminUser(username, email, password string) error {
+	if username == "" || email == "" || password == "" {
+		h.logger.Info("Skipping admin user seed - credentials not provided in environment")
+		return nil
+	}
+
+	// Check if admin user already exists
+	var exists bool
+	err := h.dbManager.GetDB().QueryRow(
+		"SELECT EXISTS(SELECT 1 FROM users WHERE username = $1 OR email = $2)",
+		username, email,
+	).Scan(&exists)
+
+	if err != nil {
+		return fmt.Errorf("failed to check for existing admin: %w", err)
+	}
+
+	if exists {
+		h.logger.Info("Admin user already exists, skipping seed",
+			zap.String("username", username))
+		return nil
+	}
+
+	// Hash password
+	hashedPassword, err := h.hashPassword(password)
+	if err != nil {
+		return fmt.Errorf("failed to hash admin password: %w", err)
+	}
+
+	// Insert admin user
+	_, err = h.dbManager.GetDB().Exec(
+		"INSERT INTO users (username, email, password_hash, role) VALUES ($1, $2, $3, 'admin')",
+		username, email, hashedPassword,
+	)
+
+	if err != nil {
+		return fmt.Errorf("failed to create admin user: %w", err)
+	}
+
+	h.logger.Info("Successfully created admin user",
+		zap.String("username", username),
+		zap.String("email", email))
+	return nil
+}
+
 func (h *AuthHandler) hashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err

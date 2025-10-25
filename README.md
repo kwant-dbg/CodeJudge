@@ -227,6 +227,35 @@ docker-compose down -v
 - `POST /api/validate` - Validate JWT
 - `GET /api/me` - Get current user info
 
+#### Admin User Setup
+
+The platform supports automatic admin user creation on startup. **Never commit credentials to Git!**
+
+**For Local Development (.env file):**
+```bash
+ADMIN_USERNAME=admin
+ADMIN_EMAIL=admin@localhost
+ADMIN_PASSWORD=your-secure-password-here
+```
+
+**For Docker Compose:**
+```bash
+# Uncomment in docker-compose.yml:
+- ADMIN_USERNAME=admin
+- ADMIN_EMAIL=admin@yourdomain.com
+- ADMIN_PASSWORD=strong-random-password
+```
+
+**For Azure/Production:**
+```powershell
+# In deploy/azure-deploy.ps1, set these variables:
+$ADMIN_USERNAME = "admin"
+$ADMIN_EMAIL = "admin@yourdomain.com"
+$ADMIN_PASSWORD = "use-azure-key-vault-in-production"
+```
+
+> **Security Note:** The admin user is only created if all three environment variables are set and the user doesn't already exist. Leave variables empty to skip auto-creation and use manual registration via `/api/auth/register-admin`.
+
 ### Problems
 - `GET /api/problems` - List all problems
 - `GET /api/problems/:id` - Get problem details
@@ -267,7 +296,9 @@ Planned features and enhancements:
 
 - [ ] Virtual contest mode for practice
 - [ ] User profile pages with detailed statistics
+- [ ] Add Redis caching for leaderboards
 - [ ] Community discussion forums
+- [ ] Add support for Other languages in plagiarism detection.
 
 ---
 

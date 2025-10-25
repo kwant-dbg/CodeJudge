@@ -59,8 +59,14 @@ bool SecureSandbox::setup_seccomp_filter()
         SCMP_SYS(mprotect), SCMP_SYS(close), SCMP_SYS(fstat), SCMP_SYS(lseek),
         SCMP_SYS(arch_prctl), SCMP_SYS(access), SCMP_SYS(rt_sigaction),
         SCMP_SYS(rt_sigprocmask), SCMP_SYS(ioctl), SCMP_SYS(readv), SCMP_SYS(writev),
-        SCMP_SYS(execve), SCMP_SYS(open), SCMP_SYS(openat), SCMP_SYS(stat),
-        SCMP_SYS(newfstatat), SCMP_SYS(getdents64), SCMP_SYS(pread64), SCMP_SYS(pwrite64)};
+        // Allow execve - needed for program execution
+        SCMP_SYS(execve),
+        // File operations - needed for I/O
+        SCMP_SYS(open), SCMP_SYS(openat), SCMP_SYS(stat),
+        SCMP_SYS(newfstatat), SCMP_SYS(getdents64), SCMP_SYS(pread64), SCMP_SYS(pwrite64),
+        // Additional required syscalls for modern programs
+        SCMP_SYS(getrandom), SCMP_SYS(clock_gettime), SCMP_SYS(gettimeofday),
+        SCMP_SYS(getpid), SCMP_SYS(getuid), SCMP_SYS(getgid), SCMP_SYS(geteuid), SCMP_SYS(getegid)};
 
     for (int syscall : allowed_syscalls)
     {
@@ -176,9 +182,13 @@ SecureSandbox::SandboxResult SecureSandbox::execute(const std::string &executabl
             }
         }
 
-        // Note: Seccomp filter disabled for now as it interferes with execve
-        // TODO: Implement seccomp filter that allows execve or use a different approach
-        // setup_seccomp_filter();
+        // Apply seccomp filter BEFORE execve
+        // This restricts system calls the executed program can make
+        if (!setup_seccomp_filter())
+        {
+            std::cerr << "Warning: Failed to apply seccomp filter" << std::endl;
+            // Continue anyway - better to have some sandboxing than none
+        }
 
         // Disable core dumps
         prctl(PR_SET_DUMPABLE, 0);

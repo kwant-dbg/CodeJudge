@@ -28,6 +28,7 @@
             <div class="header-right">
                 <div class="nav-links">
                     <a href="/">Home</a>
+                    <a href="/admin.html">Admin</a>
                 </div>
                 <span id="userInfo"></span>
                 <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
@@ -47,7 +48,7 @@
     </div>
 
     <script>
-        let authToken = localStorage.getItem('authToken');
+        let authToken = localStorage.getItem('jwt_token');
 
         document.addEventListener('DOMContentLoaded', function() {
             if (authToken) {
@@ -118,10 +119,24 @@
             container.innerHTML = tableHtml;
         }
 
+        // Theme toggle functionality
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            const themeIcon = document.getElementById('themeIcon');
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            if (themeIcon) themeIcon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        }
+
         // Theme initialization
         (function initTheme() {
             const savedTheme = localStorage.getItem('theme') || 'light';
+            const themeIcon = document.getElementById('themeIcon');
             document.documentElement.setAttribute('data-theme', savedTheme);
+            if (themeIcon) themeIcon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
         })();
     </script>
 </body>

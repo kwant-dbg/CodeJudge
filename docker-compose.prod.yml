@@ -22,6 +22,13 @@ services:
       - JWT_SECRET=${JWT_SECRET:-change-this-in-production}
       - PORT=8080
       - GIN_MODE=release
+      - PLAGIARISM_MAX_COMPARISONS=${PLAGIARISM_MAX_COMPARISONS:-1000}
+      - PLAGIARISM_SIMILARITY_THRESHOLD=${PLAGIARISM_SIMILARITY_THRESHOLD:-0.8}
+      # Admin user auto-creation (optional - set in .env file)
+      # WARNING: Never commit real credentials to Git!
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "/app/codejudge-monolith", "-health-check"]
@@ -76,15 +83,17 @@ services:
       - SANDBOX_USER=sandbox_user
       - ENABLE_SANDBOX=true
     restart: unless-stopped
-    # Need privileged mode for proper sandboxing with namespaces/cgroups
-    privileged: true
+    # Security hardened: Use minimal capabilities instead of privileged mode
     cap_add:
-      - SYS_ADMIN
-      - SYS_CHROOT
-      - SYS_PTRACE
+      - SYS_ADMIN      # Required for unshare() namespace creation
+      - SYS_CHROOT     # Required for chroot jails
+      - SETUID         # Required for setuid/setgid to drop privileges
+      - SETGID
+    cap_drop:
+      - ALL
     security_opt:
-      - seccomp:unconfined
-      - apparmor:unconfined
+      - no-new-privileges:true
+      - seccomp=default
     volumes:
       - judge_submissions:/app/submissions
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
