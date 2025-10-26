@@ -4,12 +4,6 @@ on:
   push:
     branches:
       - mono
-    paths:
-      - 'monolith/**'
-      - 'judge/**'
-      - 'common/**'
-      - 'docker-compose.yml'
-      - '.github/workflows/build-push-acr.yml'
   workflow_dispatch:
 
 env:
