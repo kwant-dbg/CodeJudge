@@ -117,11 +117,11 @@ func main() {
 	contestsHandler := handlers.NewContestsHandler(logger, dbManager)
 	adminHandler := handlers.NewAdminHandler(logger)
 
-	// Create database tables (contests before submissions due to foreign key)
+	// Create database tables with proper dependency order
 	authHandler.CreateTables()
 	problemsHandler.CreateTables()
-	contestsHandler.CreateTables()
 	submissionsHandler.CreateTables()
+	contestsHandler.CreateTables()
 	plagiarismHandler.CreateTables()
 
 	// Seed admin user from environment variables (if provided)
