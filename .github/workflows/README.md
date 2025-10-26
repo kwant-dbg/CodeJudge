@@ -1,8 +1,13 @@
-# CI/CD Workflows# CI/CD Workflows# CI/CD Workflows
+# CI/CD# CI/CD Workflows# CI/CD Workflows# CI/CD Workflows
 
 
 
-## `build-push-acr.yml`
+Builds images on code push, pushes to ACR.
+
+
+
+Secrets: `ACR_USERNAME`, `ACR_PASSWORD`## `build-push-acr.yml`
+
 
 
 
