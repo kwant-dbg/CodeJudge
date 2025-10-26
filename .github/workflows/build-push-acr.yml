@@ -101,6 +101,8 @@ jobs:
 
       - name: Start test environment
         run: |
+          set -euo pipefail
+
           # Create test docker-compose
           cat > docker-compose.test.yml <<EOF
           services:
@@ -146,7 +148,38 @@ jobs:
                 start_period: 30s
           EOF
           
-          docker compose -f docker-compose.test.yml up -d --wait
+          docker compose -f docker-compose.test.yml up -d
+
+          services=(db redis monolith)
+          for service in "${services[@]}"; do
+            echo "Waiting for $service to become healthy..."
+            container_id="$(docker compose -f docker-compose.test.yml ps -q "$service")"
+            if [ -z "$container_id" ]; then
+              echo "Unable to find container for $service" >&2
+              docker compose -f docker-compose.test.yml logs "$service" || true
+              exit 1
+            fi
+
+            attempt=1
+            max_attempts=24
+            while true; do
+              health_status="$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$container_id" 2>/dev/null || echo "unknown")"
+              echo "  $service status: $health_status"
+
+              if [ "$health_status" = "healthy" ]; then
+                break
+              fi
+
+              if [ "$health_status" = "exited" ] || [ "$attempt" -ge "$max_attempts" ]; then
+                echo "$service failed to reach healthy state" >&2
+                docker compose -f docker-compose.test.yml logs "$service" || true
+                exit 1
+              fi
+
+              attempt=$((attempt + 1))
+              sleep 5
+            done
+          done
 
       - name: Test API endpoints
         run: |
