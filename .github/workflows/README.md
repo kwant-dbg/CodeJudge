@@ -1,53 +1,98 @@
-# CI/CD Workflows
+# CI/CD Workflows# CI/CD Workflows
 
-This directory contains GitHub Actions workflows for automated building, testing, and deployment of CodeJudge services.
 
-## Workflows
 
-### 1. Docker Build and Push (`docker-build-push.yml`)
+Automated building, testing, and deployment for CodeJudge services.This directory contains GitHub Actions workflows for automated building, testing, and deployment of CodeJudge services.
 
-Automatically builds and pushes Docker images for both Monolith and Judge services.
 
-**Triggers:**
-- Push to `mono` or `main` branches (when relevant files change)
-- Pull requests
-- Manual dispatch via GitHub Actions UI
 
-**Features:**
-- ✅ Multi-architecture builds (amd64, arm64 for monolith)
-- ✅ Automated testing of built images
-- ✅ Security scanning with Trivy
-- ✅ Caching for faster builds
-- ✅ Pushes to GitHub Container Registry (ghcr.io)
-- ✅ Optional Docker Hub support
+## Active Workflows## Workflows
+
+
+
+### `build-push-acr.yml` - Azure Container Registry CI/CD### `build-push-acr.yml` - Azure Container Registry CI/CD
+
+
+
+**Triggers:** Push to `mono` branch, manual dispatchAutomatically builds, tests, and pushes Docker images to Azure Container Registry.
+
+
+
+**Actions:****Triggers:**
+
+- ✅ Builds Monolith & Judge Docker images- Push to `mono` branch (when relevant files change)
+
+- ✅ Pushes to `codejudgeacr9519.azurecr.io`- Manual dispatch via GitHub Actions UI
+
+- ✅ Runs health checks & API tests
+
+- ✅ Security scanning (Trivy)**What it does:**
+
+- ✅ Builds Docker images for Monolith and Judge services
+
+**Images:** `codejudgeacr9519.azurecr.io/codejudge-{monolith|judge}:latest`- ✅ Pushes to Azure Container Registry (`codejudgeacr9519.azurecr.io`)
+
+- ✅ Runs health checks and API tests
+
+## Setup- ✅ Security scanning with Trivy
+
+- ✅ Build caching for faster builds
+
+### GitHub Secrets Required
 
 **Images Published:**
-- `ghcr.io/<owner>/codejudge-monolith:latest`
-- `ghcr.io/<owner>/codejudge-monolith:<branch>-<sha>`
-- `ghcr.io/<owner>/codejudge-judge:latest`
-- `ghcr.io/<owner>/codejudge-judge:<branch>-<sha>`
 
-### 2. Azure Deployment (`deploy-monolith-azure.yml`)
+In **Settings → Secrets → Actions**, add:- `codejudgeacr9519.azurecr.io/codejudge-monolith:latest`
 
-Deploys to Azure Container Instances (currently disabled by default).
+- `codejudgeacr9519.azurecr.io/codejudge-monolith:<commit-sha>`
 
-## Setup Instructions
+- `ACR_USERNAME` - Get: `az acr credential show --name codejudgeacr9519 --query username -o tsv`- `codejudgeacr9519.azurecr.io/codejudge-judge:latest`
 
-### GitHub Container Registry (Default)
+- `ACR_PASSWORD` - Get: `az acr credential show --name codejudgeacr9519 --query "passwords[0].value" -o tsv`- `codejudgeacr9519.azurecr.io/codejudge-judge:<commit-sha>`
 
-No setup needed! The workflow uses `GITHUB_TOKEN` which is automatically available.
 
-**To pull images:**
+
+## Deployment Flow## Setup Instructions
+
+
+
+1. Push code → GitHub Actions builds & tests → Images in ACR### Required GitHub Secrets
+
+2. Deploy: `.\deploy\azure-deploy.ps1`
+
+Add these secrets in your repository settings (`Settings` → `Secrets and variables` → `Actions`):
+
+## Free Tier
+
+1. **`ACR_USERNAME`**: Your Azure Container Registry username
+
+- **GitHub Actions**: 2,000 min/month (each build ~5-10 min)   - Get it: `az acr credential show --name codejudgeacr9519 --query username -o tsv`
+
+- **ACR Basic**: 10 GB storage included
+
+2. **`ACR_PASSWORD`**: Your Azure Container Registry password
+   - Get it: `az acr credential show --name codejudgeacr9519 --query "passwords[0].value" -o tsv`
+
+3. **`AZURE_CREDENTIALS`**: Service principal credentials (for future automated deployment)
+   - Create it: `az ad sp create-for-rbac --name "github-actions-codejudge" --role contributor --scopes /subscriptions/<subscription-id>/resourceGroups/codejudge-sea-rg --sdk-auth`
+
+## Deployment Workflow
+
+1. **Push code** to `mono` branch
+2. **GitHub Actions** automatically builds and tests
+3. **Images pushed** to Azure Container Registry
+4. **Manual deploy** using PowerShell: `.\deploy\azure-deploy.ps1`
+
+## Pull Images Locally
+
 ```bash
-# Login (if private repo)
-echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
+# Login to ACR
+az acr login --name codejudgeacr9519
 
 # Pull images
-docker pull ghcr.io/<owner>/codejudge-monolith:latest
-docker pull ghcr.io/<owner>/codejudge-judge:latest
+docker pull codejudgeacr9519.azurecr.io/codejudge-monolith:latest
+docker pull codejudgeacr9519.azurecr.io/codejudge-judge:latest
 ```
-
-### Docker Hub (Optional)
 
 To also push to Docker Hub, add these secrets to your repository:
 
