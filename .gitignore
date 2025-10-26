@@ -1,46 +1,29 @@
-# AI Context (keep local, contains detailed deployment info)
+# AI Context (contains detailed deployment info)
 .ai-context.md
 
-# Ignore internal documentation and notes
-docs/*_FIX.md
-docs/*_MANUAL.md
-docs/*_GUIDE.md
-docs/*_COMPLETE.md
-docs/*_IMPROVEMENTS.md
-docs/*_UPDATE.md
-docs/SAMPLE_*.md
-# Hide internal docs from public repo
-docs/LATEX_IMPROVEMENTS.md
-docs/THEME_UPDATE.md
-docs/UI_COMPACT_UPDATE.md
-docs/MARKDOWN_FIX.md
-# Binaries for programs and plugins
+# Environment files (contain sensitive credentials)
+.env
+.env.local
+.env.production
+
+# Binaries and executables
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
 codejudge-monolith
-plagiarism-service
+bin/
 
-# Test binary, build artifacts
+# Test and coverage artifacts
 *.test
 *.out
+coverage.out
+coverage.html
 
-# Docker volume data (if created locally)
-/submissions_volume/
-
-# Go vendor directory
-/vendor/
-
-# Go workspace files (local development only)
+# Go workspace files
 go.work
 go.work.sum
-
-# Environment files
-.env
-.env.local
-.env.production
 
 # IDE and Editor files
 .vscode/
@@ -61,57 +44,16 @@ Thumbs.db
 # Logs
 *.log
 
-# Azure logs and deployment artifacts
-azure-logs/
-deploy.zip
-
 # Backup files
 *.backup
 *.bak
 *.old
 
-# Build artifacts
-target/
-build/
-dist/
-
-volumes/
-
-# Azure deployment configuration (contains sensitive credentials)
-azure-deployment-config.txt
-.azure/
-data/
-
-# Deploy folder - keep scripts but ignore local config/credentials
+# Deployment files with sensitive info
 deploy/azure-deploy.ps1
 deploy/azure-maintenance.md
 deploy/cloudflare-setup.md
-deploy/*.md
-deploy/*.txt
-deploy/*.log
-deploy/*.backup
+deploy/cloudflare-worker.js
 
-coverage.out
-coverage.html
-
-# Temporary files
-tmp/
-temp/
-
-# Local project summaries and notes
-PROJECT_SUMMARY.md
-IMPROVEMENTS.md
-
-# Local-only files: development notes, deployment checklists, and Copilot plan
-.azure/plan.copilotmd
-docs/azure-deployment.md
-docs/deployment-checklist.md
-
-# Internal/private documentation (not for public repo)
-docs/AZURE_DEPLOYMENT_MANUAL.md
-docs/AZURE_READY.md
-docs/MARKDOWN_FIX.md
-
-# Archived publish artifacts
-.wkt_publish/
-PROJECT_SUMMARY.md
+# Internal documentation
+docs/CI_CD_GUIDE.md
