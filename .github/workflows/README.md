@@ -1,17 +1,32 @@
-# CI/CD Workflows# CI/CD Workflows
+# CI/CD Workflows# CI/CD Workflows# CI/CD Workflows
 
 
 
-Automated building, testing, and deployment for CodeJudge services.This directory contains GitHub Actions workflows for automated building, testing, and deployment of CodeJudge services.
+## `build-push-acr.yml`
 
 
 
-## Active Workflows## Workflows
+Builds and pushes Docker images to Azure Container Registry on push to `mono`.Automated building, testing, and deployment for CodeJudge services.This directory contains GitHub Actions workflows for automated building, testing, and deployment of CodeJudge services.
 
 
 
-### `build-push-acr.yml` - Azure Container Registry CI/CD### `build-push-acr.yml` - Azure Container Registry CI/CD
+Includes tests and security scanning.
 
+
+
+## Setup## Active Workflows## Workflows
+
+
+
+Add secrets: `ACR_USERNAME`, `ACR_PASSWORD`
+
+
+
+## Deploy### `build-push-acr.yml` - Azure Container Registry CI/CD### `build-push-acr.yml` - Azure Container Registry CI/CD
+
+
+
+Run `.\deploy\azure-deploy.ps1` after images are built.
 
 
 **Triggers:** Push to `mono` branch, manual dispatchAutomatically builds, tests, and pushes Docker images to Azure Container Registry.
