@@ -127,17 +127,21 @@ func (h *ContestsHandler) CreateTables() {
     CREATE INDEX IF NOT EXISTS idx_submissions_contest ON submissions(contest_id, user_id);
     CREATE INDEX IF NOT EXISTS idx_contests_time ON contests(start_time, end_time);`
 
-	tables := map[string]string{
-		"contests":             createContestsTableSQL,
-		"contest_problems":     createContestProblemsSQL,
-		"contest_participants": createParticipantsSQL,
-		"submissions_contest":  addContestToSubmissionsSQL,
-		"indexes":              createIndexesSQL,
+	// Execute in order: contests table first, then related tables, then ALTER, then indexes
+	sqlStatements := []struct {
+		name string
+		sql  string
+	}{
+		{"contests", createContestsTableSQL},
+		{"contest_problems", createContestProblemsSQL},
+		{"contest_participants", createParticipantsSQL},
+		{"submissions_contest", addContestToSubmissionsSQL},
+		{"indexes", createIndexesSQL},
 	}
 
-	for name, sql := range tables {
-		if _, err := h.dbManager.GetDB().Exec(sql); err != nil {
-			h.logger.Fatal("Failed to create table/index", zap.String("name", name), zap.Error(err))
+	for _, stmt := range sqlStatements {
+		if _, err := h.dbManager.GetDB().Exec(stmt.sql); err != nil {
+			h.logger.Fatal("Failed to create table/index", zap.String("name", stmt.name), zap.Error(err))
 		}
 	}
 
