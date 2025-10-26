@@ -1,0 +1,229 @@
+name: Build and Push to Azure Container Registry
+
+on:
+  push:
+    branches:
+      - mono
+    paths:
+      - 'monolith/**'
+      - 'judge/**'
+      - 'common/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/build-push-acr.yml'
+  workflow_dispatch:
+
+env:
+  ACR_NAME: codejudgeacr9519
+  ACR_REGISTRY: codejudgeacr9519.azurecr.io
+
+jobs:
+  build-and-push-monolith:
+    name: Build and Push Monolith to ACR
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Azure Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ACR_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push Monolith image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./monolith/Dockerfile.standalone
+          push: true
+          tags: |
+            ${{ env.ACR_REGISTRY }}/codejudge-monolith:latest
+            ${{ env.ACR_REGISTRY }}/codejudge-monolith:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+  build-and-push-judge:
+    name: Build and Push Judge to ACR
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Azure Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ACR_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push Judge image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./judge
+          file: ./judge/Dockerfile.modern
+          push: true
+          tags: |
+            ${{ env.ACR_REGISTRY }}/codejudge-judge:latest
+            ${{ env.ACR_REGISTRY }}/codejudge-judge:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+  test-monolith:
+    name: Test Monolith Image
+    needs: build-and-push-monolith
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ACR_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Pull monolith image
+        run: |
+          docker pull ${{ env.ACR_REGISTRY }}/codejudge-monolith:${{ github.sha }}
+
+      - name: Start test environment
+        run: |
+          # Create test docker-compose
+          cat > docker-compose.test.yml <<EOF
+          services:
+            db:
+              image: postgres:14-alpine
+              environment:
+                POSTGRES_USER: testuser
+                POSTGRES_PASSWORD: testpass
+                POSTGRES_DB: testdb
+              healthcheck:
+                test: ["CMD-SHELL", "pg_isready -U testuser -d testdb"]
+                interval: 5s
+                timeout: 5s
+                retries: 5
+
+            redis:
+              image: redis:7-alpine
+              healthcheck:
+                test: ["CMD", "redis-cli", "ping"]
+                interval: 5s
+                timeout: 5s
+                retries: 5
+
+            monolith:
+              image: ${{ env.ACR_REGISTRY }}/codejudge-monolith:${{ github.sha }}
+              ports:
+                - "8080:8080"
+              depends_on:
+                db:
+                  condition: service_healthy
+                redis:
+                  condition: service_healthy
+              environment:
+                - DATABASE_URL=postgres://testuser:testpass@db:5432/testdb?sslmode=disable
+                - REDIS_URL=redis://redis:6379
+                - JWT_SECRET=test-jwt-secret
+                - PORT=8080
+          EOF
+          
+          docker-compose -f docker-compose.test.yml up -d
+          sleep 30
+
+      - name: Test health endpoint
+        run: |
+          for i in {1..30}; do
+            if curl -f http://localhost:8080/health; then
+              echo "✅ Health check passed!"
+              exit 0
+            fi
+            echo "Waiting... (attempt $i/30)"
+            sleep 5
+          done
+          echo "❌ Health check failed"
+          docker-compose -f docker-compose.test.yml logs
+          exit 1
+
+      - name: Test API endpoints
+        run: |
+          # Test register
+          curl -f -X POST http://localhost:8080/api/auth/register \
+            -H "Content-Type: application/json" \
+            -d '{"username":"testuser","email":"test@example.com","password":"testpass123"}' || exit 1
+          
+          echo "✅ All API tests passed!"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker-compose -f docker-compose.test.yml down -v
+
+  security-scan:
+    name: Security Scan
+    needs: build-and-push-monolith
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ACR_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Pull image
+        run: |
+          docker pull ${{ env.ACR_REGISTRY }}/codejudge-monolith:${{ github.sha }}
+
+      - name: Run Trivy security scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.ACR_REGISTRY }}/codejudge-monolith:${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  summary:
+    name: Build Summary
+    needs: [build-and-push-monolith, build-and-push-judge, test-monolith]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## 🚀 Azure Container Registry Build" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Images Built:" >> $GITHUB_STEP_SUMMARY
+          echo "- Monolith: \`${{ env.ACR_REGISTRY }}/codejudge-monolith:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Judge: \`${{ env.ACR_REGISTRY }}/codejudge-judge:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Deploy to Azure:" >> $GITHUB_STEP_SUMMARY
+          echo "Images are ready in ACR. Run deployment script:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`powershell" >> $GITHUB_STEP_SUMMARY
+          echo ".\\deploy\\azure-deploy.ps1" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
