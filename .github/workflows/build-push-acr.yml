@@ -138,10 +138,15 @@ jobs:
                 - REDIS_URL=redis://redis:6379
                 - JWT_SECRET=test-jwt-secret
                 - PORT=8080
+              healthcheck:
+                test: ["CMD", "/app/codejudge-monolith", "-health-check"]
+                interval: 10s
+                timeout: 5s
+                retries: 5
+                start_period: 30s
           EOF
           
-          docker compose -f docker-compose.test.yml up -d
-          sleep 40
+          docker compose -f docker-compose.test.yml up -d --wait
 
       - name: Test API endpoints
         run: |
