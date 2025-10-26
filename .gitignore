@@ -1,4 +1,4 @@
-# AI Context (contains detailed deployment info)
+# GPU Context (contains detailed deployment info)
 .ai-context.md
 
 # Environment files (contain sensitive credentials)
