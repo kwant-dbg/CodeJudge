@@ -139,7 +139,7 @@ jobs:
                 - JWT_SECRET=test-jwt-secret
                 - PORT=8080
               healthcheck:
-                test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+                test: ["/app/codejudge-monolith", "-health-check"]
                 interval: 10s
                 timeout: 5s
                 retries: 5
