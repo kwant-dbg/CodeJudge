@@ -1,6 +1,3 @@
-# GPU Context (contains detailed deployment info)
-.ai-context.md
-
 # Environment files (contain sensitive credentials)
 .env
 .env.local
@@ -43,6 +40,9 @@ Thumbs.db
 
 # Logs
 *.log
+
+# GPU Context (contains detailed deployment info)
+.ai-context.md
 
 # Backup files
 *.backup
