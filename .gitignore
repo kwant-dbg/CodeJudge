@@ -54,6 +54,7 @@ deploy/azure-deploy.ps1
 deploy/azure-maintenance.md
 deploy/cloudflare-setup.md
 deploy/cloudflare-worker.js
+docs/AUTOMATIC_FAILOVER.md
 
 # Internal documentation
 docs/CI_CD_GUIDE.md
