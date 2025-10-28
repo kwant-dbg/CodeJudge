@@ -75,7 +75,7 @@ func (se *SubmissionError) Error() string {
 	return se.Message
 }
 
-// Simplified submission creation with proper error handling
+// Simplified submission creation
 func (h *SubmissionsHandler) createSubmissionTransactional(s *Submission) error {
 	// Use a simple context without external cancellation
 	ctx := context.Background()

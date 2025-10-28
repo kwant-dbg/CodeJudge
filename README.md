@@ -229,8 +229,6 @@ docker-compose down -v
 
 #### Admin User Setup
 
-The platform supports automatic admin user creation on startup. **Never commit credentials to Git!**
-
 **For Local Development (.env file):**
 ```bash
 ADMIN_USERNAME=admin
