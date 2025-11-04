@@ -60,5 +60,6 @@ docs/AUTOMATIC_FAILOVER.md
 docs/CI_CD_GUIDE.md
 TESTING_PLAN.md
 
-# Ignore all markdown files
+# Ignore all markdown files and docs directory
 *.md
+docs/
