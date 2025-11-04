@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: judge-submissions-pvc
+  namespace: codejudge
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: judge
+  namespace: codejudge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: judge
+  template:
+    metadata:
+      labels:
+        app: judge
+    spec:
+      containers:
+      - name: judge
+        image: codejudge-judge:latest
+        imagePullPolicy: Never  # Use local image
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: codejudge-secrets
+              key: DATABASE_URL
+        - name: REDIS_HOST
+          value: "redis-service"
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: codejudge-config
+              key: REDIS_PORT
+        - name: TIME_LIMIT
+          valueFrom:
+            configMapKeyRef:
+              name: codejudge-config
+              key: TIME_LIMIT
+        - name: MEMORY_LIMIT
+          valueFrom:
+            configMapKeyRef:
+              name: codejudge-config
+              key: MEMORY_LIMIT
+        - name: SANDBOX_USER
+          valueFrom:
+            configMapKeyRef:
+              name: codejudge-config
+              key: SANDBOX_USER
+        - name: ENABLE_SANDBOX
+          valueFrom:
+            configMapKeyRef:
+              name: codejudge-config
+              key: ENABLE_SANDBOX
+        volumeMounts:
+        - name: judge-submissions
+          mountPath: /app/submissions
+        securityContext:
+          capabilities:
+            add:
+            - SYS_ADMIN
+            - SYS_CHROOT
+            - SETUID
+            - SETGID
+            drop:
+            - ALL
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+      volumes:
+      - name: judge-submissions
+        persistentVolumeClaim:
+          claimName: judge-submissions-pvc

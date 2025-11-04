@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: codejudge-config
+  namespace: codejudge
+data:
+  JWT_SECRET: "your-jwt-secret-key-change-in-production"
+  PORT: "8080"
+  GIN_MODE: "release"
+  PLAGIARISM_MAX_COMPARISONS: "1000"
+  PLAGIARISM_SIMILARITY_THRESHOLD: "0.8"
+  TIME_LIMIT: "5"
+  MEMORY_LIMIT: "256"
+  SANDBOX_USER: "sandbox_user"
+  ENABLE_SANDBOX: "true"
+  REDIS_PORT: "6379"

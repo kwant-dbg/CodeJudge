@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monolith
+  namespace: codejudge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: monolith
+  template:
+    metadata:
+      labels:
+        app: monolith
+    spec:
+      containers:
+      - name: monolith
+        image: codejudge-monolith:latest
+        imagePullPolicy: Never  # Use local image
+        ports:
+        - containerPort: 8080
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: codejudge-secrets
+              key: DATABASE_URL
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: codejudge-secrets
+              key: REDIS_URL
+        - name: JWT_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: codejudge-config
+              key: JWT_SECRET
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: codejudge-config
+              key: PORT
+        - name: GIN_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: codejudge-config
+              key: GIN_MODE
+        - name: PLAGIARISM_MAX_COMPARISONS
+          valueFrom:
+            configMapKeyRef:
+              name: codejudge-config
+              key: PLAGIARISM_MAX_COMPARISONS
+        - name: PLAGIARISM_SIMILARITY_THRESHOLD
+          valueFrom:
+            configMapKeyRef:
+              name: codejudge-config
+              key: PLAGIARISM_SIMILARITY_THRESHOLD
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 10
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: monolith-service
+  namespace: codejudge
+spec:
+  selector:
+    app: monolith
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30080
+  type: NodePort
